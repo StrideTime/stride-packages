@@ -20,7 +20,6 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "private": false,
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",

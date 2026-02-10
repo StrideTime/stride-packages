@@ -53,18 +53,22 @@ jobs:
 
       - name: Build packages
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Building packages..."
             yarn build
           else
-            echo "No packages found, skipping build"
+            echo "No valid packages found (missing package.json files), skipping build"
           fi
 
       - name: Run tests
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Running tests..."
             yarn test
           else
-            echo "No packages found, skipping tests"
+            echo "No valid packages found (missing package.json files), skipping tests"
           fi
 
       # Check if changesets exist, if not create one for hotfix

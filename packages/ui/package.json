@@ -20,7 +20,6 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "private": false,
   "scripts": {
     "build": "vite build",
     "clean": "rm -rf dist",
@@ -33,7 +32,6 @@
     "version": "changeset version",
     "release": "yarn build && changeset publish"
   },
-  "dependencies": {},
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@mui/material": "^7.3.6",

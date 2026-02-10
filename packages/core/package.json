@@ -12,7 +12,6 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "private": false,
   "scripts": {
     "build": "vite build",
     "clean": "rm -rf dist",

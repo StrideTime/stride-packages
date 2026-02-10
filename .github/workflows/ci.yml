@@ -49,32 +49,40 @@ jobs:
 
       - name: Lint code
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Linting packages..."
             yarn lint
           else
-            echo "No packages found, skipping lint"
+            echo "No valid packages found (missing package.json files), skipping lint"
           fi
 
       - name: Type check
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Type checking packages..."
             yarn typecheck
           else
-            echo "No packages found, skipping typecheck"
+            echo "No valid packages found (missing package.json files), skipping typecheck"
           fi
 
       - name: Run tests
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Running tests..."
             yarn test
           else
-            echo "No packages found, skipping tests"
+            echo "No valid packages found (missing package.json files), skipping tests"
           fi
 
       - name: Build packages
         run: |
-          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+          # Check if packages directory exists and has valid packages
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Building packages..."
             yarn build
           else
-            echo "No packages found, skipping build"
+            echo "No valid packages found (missing package.json files), skipping build"
           fi
