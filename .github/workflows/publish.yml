@@ -38,35 +38,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Remove old lockfile if packages were just added
-          if [ -f yarn.lock ] && [ -d "packages" ]; then
-            # Count packages in lockfile vs filesystem
-            LOCKFILE_PACKAGES=$(grep -c "@stridetime.*@workspace" yarn.lock || echo "0")
-            FILESYSTEM_PACKAGES=$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)
-            
-            if [ "$LOCKFILE_PACKAGES" != "$FILESYSTEM_PACKAGES" ]; then
-              echo "Package count mismatch (lockfile: $LOCKFILE_PACKAGES, filesystem: $FILESYSTEM_PACKAGES)"
-              echo "Regenerating lockfile..."
-              rm -f yarn.lock
-            fi
-          fi
-          
+          # Always regenerate lockfile until stable
+          rm -f yarn.lock
           yarn install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit lockfile if changed
+      - name: Commit lockfile
         run: |
-          if [ -f yarn.lock ] && [ -n "$(git status --porcelain yarn.lock)" ]; then
+          if [ -f yarn.lock ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add yarn.lock
-            git commit -m "chore: update yarn.lock"
-            git push
-            
-            # Re-run install to ensure workspace is in sync
-            echo "Re-running install after lockfile update..."
-            yarn install
+            git commit -m "chore: regenerate yarn.lock" || echo "No changes to commit"
+            git push || echo "Nothing to push"
           fi
 
       - name: Build packages
