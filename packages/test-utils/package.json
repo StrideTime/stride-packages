@@ -1,0 +1,57 @@
+{
+  "name": "@stridetime/test-utils",
+  "version": "1.0.0",
+  "description": "Shared testing utilities for Stride packages (mock generators, fixtures, helpers)",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "private": false,
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "dev": "tsup --watch",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stridetime/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^25.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^2.0.0"
+  },
+  "keywords": [
+    "stride",
+    "testing",
+    "mocks",
+    "test-utils"
+  ],
+  "author": "Stride Team",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stridetime/stride-test-utils.git"
+  }
+}

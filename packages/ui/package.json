@@ -1,0 +1,85 @@
+{
+  "name": "@stridetime/ui",
+  "version": "1.0.0",
+  "description": "UI components, theme, and assets for Stride - Material-UI based design system",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "private": false,
+  "scripts": {
+    "build": "vite build",
+    "clean": "rm -rf dist",
+    "dev": "vite build --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "yarn build && changeset publish"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@mui/material": "^7.3.6",
+    "@svgr/rollup": "^8.1.0",
+    "@types/node": "^25.1.0",
+    "@types/react": "^19.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.2.5",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-plugin-static-copy": "^3.1.4",
+    "vite-plugin-svgr": "^4.5.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@mui/material": "^7.3.6",
+    "@types/react": "^19.2.7",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "keywords": [
+    "stride",
+    "ui",
+    "components",
+    "theme",
+    "design-system",
+    "material-ui",
+    "react"
+  ],
+  "author": "Stride Team",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stridetime/stride-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stridetime/stride-ui/issues"
+  },
+  "homepage": "https://github.com/stridetime/stride-ui#readme"
+}

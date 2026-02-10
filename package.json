@@ -1,0 +1,29 @@
+{
+  "name": "@stridetime/packages",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for all Stride packages",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach -pt run build",
+    "clean": "yarn workspaces foreach -pt run clean",
+    "lint": "yarn workspaces foreach -pt run lint",
+    "typecheck": "yarn workspaces foreach -pt run typecheck",
+    "test": "yarn workspaces foreach -pt run test",
+    "test:watch": "yarn workspaces foreach -pt run test:watch",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "yarn build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "prettier": "^3.2.5",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "yarn@4.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
