@@ -59,6 +59,11 @@ jobs:
           # Check if packages directory exists and has valid packages
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "Building packages..."
+            # Clear yarn cache to ensure fresh workspace resolution
+            yarn cache clean --all
+            # Re-install to populate cache with current lockfile
+            yarn install
+            # Now build
             yarn build
           else
             echo "No valid packages found (missing package.json files), skipping build"
