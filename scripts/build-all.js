@@ -4,13 +4,13 @@ const { readdirSync, existsSync } = require('fs');
 const { join } = require('path');
 
 const packagesDir = join(__dirname, '..', 'packages');
-const packages = readdirSync(packagesDir, { withFileTypes: true })
-  .filter(dirent => dirent.isDirectory())
-  .map(dirent => dirent.name);
 
-console.log(`Found ${packages.length} packages: ${packages.join(', ')}`);
+// Build order based on dependencies
+const buildOrder = ['types', 'db', 'test-utils', 'core', 'ui'];
 
-for (const pkg of packages) {
+console.log(`Building packages in order: ${buildOrder.join(' → ')}`);
+
+for (const pkg of buildOrder) {
   const pkgPath = join(packagesDir, pkg);
   const pkgJsonPath = join(pkgPath, 'package.json');
   
@@ -21,7 +21,8 @@ for (const pkg of packages) {
   
   console.log(`\nBuilding ${pkg}...`);
   try {
-    execSync('npm run build', { 
+    // Use yarn which understands workspace: protocol
+    execSync('yarn build', { 
       cwd: pkgPath, 
       stdio: 'inherit',
       env: { ...process.env, FORCE_COLOR: '1' }
