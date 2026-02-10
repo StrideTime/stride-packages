@@ -7,12 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "cd packages/types && yarn build && cd ../db && yarn build && cd ../core && yarn build && cd ../ui && yarn build && cd ../test-utils && yarn build",
-    "clean": "yarn workspaces foreach -A run clean",
-    "lint": "yarn workspaces foreach -A run lint",
-    "typecheck": "yarn workspaces foreach -A run typecheck",
-    "test": "yarn workspaces foreach -A run test",
-    "test:watch": "yarn workspaces foreach -A run test:watch",
+    "build": "for dir in packages/*/; do (cd \"$dir\" && npm run build); done",
+    "clean": "for dir in packages/*/; do (cd \"$dir\" && npm run clean); done",
+    "lint": "for dir in packages/*/; do (cd \"$dir\" && npm run lint); done",
+    "typecheck": "for dir in packages/*/; do (cd \"$dir\" && npm run typecheck); done",
+    "test": "for dir in packages/*/; do (cd \"$dir\" && npm run test); done",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "yarn build && changeset publish"
