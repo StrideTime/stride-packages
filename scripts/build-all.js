@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execSync } = require('child_process');
-const { readdirSync, existsSync } = require('fs');
+const { existsSync } = require('fs');
 const { join } = require('path');
 
 const packagesDir = join(__dirname, '..', 'packages');
@@ -21,10 +21,11 @@ for (const pkg of buildOrder) {
   
   console.log(`\nBuilding ${pkg}...`);
   try {
-    // Use yarn which understands workspace: protocol
-    execSync('yarn build', { 
+    // Run yarn install first to ensure workspace is linked, then build
+    execSync('yarn install --no-immutable && yarn build', { 
       cwd: pkgPath, 
       stdio: 'inherit',
+      shell: true,
       env: { ...process.env, FORCE_COLOR: '1' }
     });
     console.log(`✓ ${pkg} built successfully`);
