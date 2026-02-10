@@ -63,6 +63,10 @@ jobs:
             git add yarn.lock
             git commit -m "chore: update yarn.lock"
             git push
+            
+            # Re-run install to ensure workspace is in sync
+            echo "Re-running install after lockfile update..."
+            yarn install
           fi
 
       - name: Build packages
