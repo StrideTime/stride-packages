@@ -37,7 +37,21 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: yarn install
+        run: |
+          # Remove old lockfile if packages were just added
+          if [ -f yarn.lock ] && [ -d "packages" ]; then
+            # Count packages in lockfile vs filesystem
+            LOCKFILE_PACKAGES=$(grep -c "@stridetime.*@workspace" yarn.lock || echo "0")
+            FILESYSTEM_PACKAGES=$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)
+            
+            if [ "$LOCKFILE_PACKAGES" != "$FILESYSTEM_PACKAGES" ]; then
+              echo "Package count mismatch (lockfile: $LOCKFILE_PACKAGES, filesystem: $FILESYSTEM_PACKAGES)"
+              echo "Regenerating lockfile..."
+              rm -f yarn.lock
+            fi
+          fi
+          
+          yarn install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
