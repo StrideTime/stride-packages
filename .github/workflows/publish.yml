@@ -30,6 +30,9 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           cache: 'yarn'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Configure npm registry
         run: |
           echo "@stridetime:registry=https://npm.pkg.github.com" >> .npmrc
