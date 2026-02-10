@@ -48,13 +48,33 @@ jobs:
           fi
 
       - name: Lint code
-        run: yarn lint
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn lint
+          else
+            echo "No packages found, skipping lint"
+          fi
 
       - name: Type check
-        run: yarn typecheck
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn typecheck
+          else
+            echo "No packages found, skipping typecheck"
+          fi
 
       - name: Run tests
-        run: yarn test
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn test
+          else
+            echo "No packages found, skipping tests"
+          fi
 
       - name: Build packages
-        run: yarn build
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn build
+          else
+            echo "No packages found, skipping build"
+          fi

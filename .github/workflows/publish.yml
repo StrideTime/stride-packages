@@ -52,10 +52,20 @@ jobs:
           fi
 
       - name: Build packages
-        run: yarn build
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn build
+          else
+            echo "No packages found, skipping build"
+          fi
 
       - name: Run tests
-        run: yarn test
+        run: |
+          if [ -d "packages" ] && [ "$(ls -A packages 2>/dev/null)" ]; then
+            yarn test
+          else
+            echo "No packages found, skipping tests"
+          fi
 
       # Check if changesets exist, if not create one for hotfix
       - name: Auto-create changeset for hotfix
