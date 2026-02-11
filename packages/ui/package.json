@@ -1,6 +1,6 @@
 {
   "name": "@stridetime/ui",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "UI components, theme, and assets for Stride - Material-UI based design system",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",

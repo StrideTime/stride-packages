@@ -1,5 +1,11 @@
 # @stridetime/ui
 
+## 1.0.5
+
+### Patch Changes
+
+- 0ef1e3e: Hotfix: Automatic patch version bump
+
 ## 1.0.4
 
 ### Patch Changes
