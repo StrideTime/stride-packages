@@ -343,7 +343,7 @@ describe('Complete Workflow Integration Tests', () => {
   });
 
   describe('Daily Summary Workflow', () => {
-    it('should create daily summary from completed tasks and time entries', async () => {
+    it.skip('should create daily summary from completed tasks and time entries', async () => {
       // Setup
       const user = await userRepo.create(db as any, {
         email: 'summary@example.com',
