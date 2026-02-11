@@ -40,6 +40,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build packages
+        run: |
+          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Building packages..."
+            pnpm build
+          else
+            echo "No valid packages found, skipping build"
+          fi
+
       - name: Lint code
         run: |
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
@@ -65,14 +74,5 @@ jobs:
             pnpm test
           else
             echo "No valid packages found, skipping tests"
-          fi
-
-      - name: Build packages
-        run: |
-          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "Building packages..."
-            pnpm build
-          else
-            echo "No valid packages found, skipping build"
           fi
 
