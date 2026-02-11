@@ -1,6 +1,6 @@
 {
   "name": "@stridetime/types",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Domain types and enums for Stride (shared between all Stride packages)",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
