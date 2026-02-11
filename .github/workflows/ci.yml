@@ -18,14 +18,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://npm.pkg.github.com"
+          cache: "pnpm"
 
       - name: Configure npm registry
         run: |
@@ -33,59 +36,43 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: |
-          # Always regenerate lockfile until stable
-          rm -f yarn.lock
-          yarn install
+        run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit lockfile
-        run: |
-          if [ -f yarn.lock ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add yarn.lock
-            git commit -m "chore: regenerate yarn.lock" || echo "No changes to commit"
-            git push || echo "Nothing to push"
-          fi
-
       - name: Lint code
         run: |
-          # Check if packages directory exists and has valid packages
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "Linting packages..."
-            yarn lint
+            pnpm lint
           else
-            echo "No valid packages found (missing package.json files), skipping lint"
+            echo "No valid packages found, skipping lint"
           fi
 
       - name: Type check
         run: |
-          # Check if packages directory exists and has valid packages
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "Type checking packages..."
-            yarn typecheck
+            pnpm typecheck
           else
-            echo "No valid packages found (missing package.json files), skipping typecheck"
+            echo "No valid packages found, skipping typecheck"
           fi
 
       - name: Run tests
         run: |
-          # Check if packages directory exists and has valid packages
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "Running tests..."
-            yarn test
+            pnpm test
           else
-            echo "No valid packages found (missing package.json files), skipping tests"
+            echo "No valid packages found, skipping tests"
           fi
 
       - name: Build packages
         run: |
-          # Check if packages directory exists and has valid packages
           if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "Building packages..."
-            yarn build
+            pnpm build
           else
-            echo "No valid packages found (missing package.json files), skipping build"
+            echo "No valid packages found, skipping build"
           fi
+

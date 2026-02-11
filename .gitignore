@@ -1,17 +1,15 @@
 # Dependencies
 node_modules/
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
 
 # Build outputs
 dist/
 build/
 *.tsbuildinfo
+
+# Lockfiles (keep pnpm-lock.yaml)
+yarn.lock
+package-lock.json
 
 # Environment
 .env
@@ -38,3 +36,13 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.yarnrc.yml
