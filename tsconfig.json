@@ -16,7 +16,15 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@stridetime/types": ["./packages/types/src"],
+      "@stridetime/db": ["./packages/db/src"],
+      "@stridetime/core": ["./packages/core/src"],
+      "@stridetime/ui": ["./packages/ui/src"],
+      "@stridetime/test-utils": ["./packages/test-utils/src"]
+    }
   },
   "exclude": [
     "node_modules",
@@ -28,4 +36,5 @@
     "scripts"
   ]
 }
+
 
