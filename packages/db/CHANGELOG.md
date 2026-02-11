@@ -1,5 +1,13 @@
 # @stridetime/db
 
+## 1.0.4
+
+### Patch Changes
+
+- 0f9e9e4: Hotfix: Automatic patch version bump
+- Updated dependencies [0f9e9e4]
+  - @stridetime/types@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
