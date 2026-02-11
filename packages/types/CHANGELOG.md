@@ -1,5 +1,11 @@
 # @stridetime/types
 
+## 1.0.2
+
+### Patch Changes
+
+- cf46123: Hotfix: Automatic patch version bump
+
 ## 1.0.1
 
 ### Patch Changes
