@@ -26,6 +26,9 @@ importers:
       '@stridetime/types':
         specifier: workspace:*
         version: link:../types
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.95.3
     devDependencies:
       '@changesets/cli':
         specifier: ^2.27.1

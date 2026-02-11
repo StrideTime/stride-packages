@@ -515,7 +515,7 @@ describe('Complete Workflow Integration Tests', () => {
       });
 
       // Create summaries for 7 days
-      const summaries = [];
+      const summaries: DailySummary[] = [];
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
