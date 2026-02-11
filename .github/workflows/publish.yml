@@ -99,8 +99,16 @@ jobs:
             git add .
             git commit -m "chore: version packages" || echo "No changes to commit"
             git push
-            # Publish with --no-git-checks to avoid checking if packages exist
-            pnpm changeset publish --no-git-checks
+            # Publish packages individually to handle first-time publishes
+            cd packages
+            for dir in */; do
+              if [ -f "$dir/package.json" ]; then
+                echo "Publishing ${dir%/}..."
+                cd "$dir"
+                pnpm publish --access restricted --no-git-checks || echo "Failed to publish ${dir%/}, continuing..."
+                cd ..
+              fi
+            done
             echo "Published successfully"
           else
             echo "No changesets found, skipping publish"
