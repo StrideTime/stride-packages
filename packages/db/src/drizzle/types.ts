@@ -19,6 +19,14 @@ import {
   pointsLedgerTable,
   dailySummariesTable,
   userPreferencesTable,
+  teamsTable,
+  teamMembersTable,
+  projectTeamsTable,
+  goalsTable,
+  breaksTable,
+  workSessionsTable,
+  workspaceUserPreferencesTable,
+  workspaceStatusesTable,
 } from './schema';
 
 // User types
@@ -76,3 +84,34 @@ export type NewDailySummaryRow = typeof dailySummariesTable.$inferInsert;
 // UserPreferences types
 export type UserPreferencesRow = typeof userPreferencesTable.$inferSelect;
 export type NewUserPreferencesRow = typeof userPreferencesTable.$inferInsert;
+// Team types
+export type TeamRow = typeof teamsTable.$inferSelect;
+export type NewTeamRow = typeof teamsTable.$inferInsert;
+
+// TeamMember types
+export type TeamMemberRow = typeof teamMembersTable.$inferSelect;
+export type NewTeamMemberRow = typeof teamMembersTable.$inferInsert;
+
+// ProjectTeam types
+export type ProjectTeamRow = typeof projectTeamsTable.$inferSelect;
+export type NewProjectTeamRow = typeof projectTeamsTable.$inferInsert;
+
+// Goal types
+export type GoalRow = typeof goalsTable.$inferSelect;
+export type NewGoalRow = typeof goalsTable.$inferInsert;
+
+// Break types
+export type BreakRow = typeof breaksTable.$inferSelect;
+export type NewBreakRow = typeof breaksTable.$inferInsert;
+
+// WorkSession types
+export type WorkSessionRow = typeof workSessionsTable.$inferSelect;
+export type NewWorkSessionRow = typeof workSessionsTable.$inferInsert;
+
+// WorkspaceUserPreferences types
+export type WorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTable.$inferSelect;
+export type NewWorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTable.$inferInsert;
+
+// WorkspaceStatus types
+export type WorkspaceStatusRow = typeof workspaceStatusesTable.$inferSelect;
+export type NewWorkspaceStatusRow = typeof workspaceStatusesTable.$inferInsert;

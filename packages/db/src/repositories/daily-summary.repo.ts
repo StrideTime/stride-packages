@@ -6,7 +6,7 @@
  */
 
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
-import type { DailySummary } from '@stridetime/types';
+import type { DailySummary, CreateDailySummaryInput } from '@stridetime/types';
 import { dailySummariesTable } from '../drizzle/schema';
 import type { DailySummaryRow, NewDailySummaryRow } from '../drizzle/types';
 import type { StrideDatabase } from '../db/client';
@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain DailySummary type.
- * Excludes DB-only fields (createdAt).
  */
 function toDomain(row: DailySummaryRow): DailySummary {
   return {
@@ -29,15 +28,20 @@ function toDomain(row: DailySummaryRow): DailySummary {
     tasksWorkedOn: row.tasksWorkedOn,
     totalPoints: row.totalPoints,
     focusMinutes: row.focusMinutes,
+    breakMinutes: row.breakMinutes,
+    workSessionCount: row.workSessionCount,
     efficiencyRating: row.efficiencyRating,
     standoutMoment: row.standoutMoment,
+    clockInTime: row.clockInTime,
+    clockOutTime: row.clockOutTime,
+    createdAt: row.createdAt,
   };
 }
 
 /**
  * Map domain DailySummary to database insert row.
  */
-function toDbInsert(summary: Omit<DailySummary, 'id'>): Omit<NewDailySummaryRow, 'id'> {
+function toDbInsert(summary: CreateDailySummaryInput): Omit<NewDailySummaryRow, 'id'> {
   return {
     userId: summary.userId,
     date: summary.date,
@@ -45,8 +49,12 @@ function toDbInsert(summary: Omit<DailySummary, 'id'>): Omit<NewDailySummaryRow,
     tasksWorkedOn: summary.tasksWorkedOn,
     totalPoints: summary.totalPoints,
     focusMinutes: summary.focusMinutes,
+    breakMinutes: summary.breakMinutes,
+    workSessionCount: summary.workSessionCount,
     efficiencyRating: summary.efficiencyRating,
     standoutMoment: summary.standoutMoment,
+    clockInTime: summary.clockInTime,
+    clockOutTime: summary.clockOutTime,
     createdAt: now(),
   };
 }
@@ -129,7 +137,7 @@ export class DailySummaryRepository {
   /**
    * Create a new daily summary.
    */
-  async create(db: StrideDatabase, summary: Omit<DailySummary, 'id'>): Promise<DailySummary> {
+  async create(db: StrideDatabase, summary: CreateDailySummaryInput): Promise<DailySummary> {
     const id = generateId();
     const dbSummary = toDbInsert(summary);
 
@@ -148,13 +156,14 @@ export class DailySummaryRepository {
   /**
    * Update a daily summary.
    */
-  async update(db: StrideDatabase, id: string, updates: Partial<DailySummary>): Promise<DailySummary> {
+  async update(
+    db: StrideDatabase,
+    id: string,
+    updates: Partial<DailySummary>
+  ): Promise<DailySummary> {
     const dbUpdates = toDbUpdate(updates);
 
-    await db
-      .update(dailySummariesTable)
-      .set(dbUpdates)
-      .where(eq(dailySummariesTable.id, id));
+    await db.update(dailySummariesTable).set(dbUpdates).where(eq(dailySummariesTable.id, id));
 
     const updated = await this.findById(db, id);
     if (!updated) {
@@ -166,7 +175,7 @@ export class DailySummaryRepository {
   /**
    * Upsert a daily summary (create or update if exists).
    */
-  async upsert(db: StrideDatabase, summary: Omit<DailySummary, 'id'>): Promise<DailySummary> {
+  async upsert(db: StrideDatabase, summary: CreateDailySummaryInput): Promise<DailySummary> {
     const existing = await this.findByDate(db, summary.userId, summary.date);
 
     if (existing) {

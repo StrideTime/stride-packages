@@ -44,6 +44,14 @@ const drizzleSchema = {
   pointsLedgerTable: schema.pointsLedgerTable,
   dailySummariesTable: schema.dailySummariesTable,
   userPreferencesTable: schema.userPreferencesTable,
+  teamsTable: schema.teamsTable,
+  teamMembersTable: schema.teamMembersTable,
+  projectTeamsTable: schema.projectTeamsTable,
+  goalsTable: schema.goalsTable,
+  breaksTable: schema.breaksTable,
+  workSessionsTable: schema.workSessionsTable,
+  workspaceUserPreferencesTable: schema.workspaceUserPreferencesTable,
+  workspaceStatusesTable: schema.workspaceStatusesTable,
   // Relations
   usersRelations: schema.usersRelations,
   rolesRelations: schema.rolesRelations,
@@ -59,6 +67,14 @@ const drizzleSchema = {
   pointsLedgerRelations: schema.pointsLedgerRelations,
   dailySummariesRelations: schema.dailySummariesRelations,
   userPreferencesRelations: schema.userPreferencesRelations,
+  teamsRelations: schema.teamsRelations,
+  teamMembersRelations: schema.teamMembersRelations,
+  projectTeamsRelations: schema.projectTeamsRelations,
+  goalsRelations: schema.goalsRelations,
+  breaksRelations: schema.breaksRelations,
+  workSessionsRelations: schema.workSessionsRelations,
+  workspaceUserPreferencesRelations: schema.workspaceUserPreferencesRelations,
+  workspaceStatusesRelations: schema.workspaceStatusesRelations,
 };
 
 /**
@@ -355,11 +371,11 @@ export async function closeDatabase(): Promise<void> {
 
 function updateSyncStatus(status: SyncStatus): void {
   currentSyncStatus = status;
-  for (const listener of syncStatusListeners) {
+  syncStatusListeners.forEach(listener => {
     try {
       listener(status);
     } catch {
       // Don't let listener errors break sync status updates
     }
-  }
+  });
 }

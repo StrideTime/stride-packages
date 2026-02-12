@@ -34,10 +34,7 @@
     "test:ci": "vitest run --coverage --reporter=verbose",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "yarn build && changeset publish"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@journeyapps/wa-sqlite": "^1.4.1",
@@ -50,10 +47,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@stridetime/test-utils": "workspace:*",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^25.1.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^2.0.0",
     "better-sqlite3": "^11.0.0",
     "drizzle-kit": "^0.30.0",
     "eslint": "^8.57.0",
@@ -76,10 +75,11 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stridetime/stride-db.git"
+    "url": "https://github.com/StrideTime/stride-packages.git",
+    "directory": "packages/db"
   },
   "bugs": {
-    "url": "https://github.com/stridetime/stride-db/issues"
+    "url": "https://github.com/StrideTime/stride-packages/issues"
   },
-  "homepage": "https://github.com/stridetime/stride-db#readme"
+  "homepage": "https://github.com/StrideTime/stride-packages/tree/main/packages/db#readme"
 }

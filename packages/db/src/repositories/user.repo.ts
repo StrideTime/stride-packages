@@ -6,7 +6,7 @@
  */
 
 import { eq, and } from 'drizzle-orm';
-import type { User } from '@stridetime/types';
+import type { User, CreateUserInput } from '@stridetime/types';
 import { usersTable } from '../drizzle/schema';
 import type { UserRow, NewUserRow } from '../drizzle/types';
 import type { StrideDatabase } from '../db/client';
@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain User type.
- * Excludes DB-only fields (createdAt, updatedAt, deleted).
  */
 function toDomain(row: UserRow): User {
   return {
@@ -28,13 +27,16 @@ function toDomain(row: UserRow): User {
     lastName: row.lastName,
     avatarUrl: row.avatarUrl,
     timezone: row.timezone,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
 /**
  * Map domain User to database insert row.
  */
-function toDbInsert(user: Omit<User, 'id'>): Omit<NewUserRow, 'id'> {
+function toDbInsert(user: CreateUserInput): Omit<NewUserRow, 'id'> {
   const timestamp = now();
   return {
     email: user.email,
@@ -92,7 +94,7 @@ export class UserRepository {
    * instead of generating a new one. This ensures the local user record's
    * id matches auth.uid() for RLS policies.
    */
-  async create(db: StrideDatabase, user: Omit<User, 'id'>, id?: string): Promise<User> {
+  async create(db: StrideDatabase, user: CreateUserInput, id?: string): Promise<User> {
     const userId = id ?? generateId();
     const dbUser = toDbInsert(user);
 
@@ -134,7 +136,7 @@ export class UserRepository {
   async delete(db: StrideDatabase, id: string): Promise<void> {
     await db
       .update(usersTable)
-      .set({ deleted: true, updatedAt: now() })
+      .set({ deleted: true, updatedAt: now() } as any)
       .where(eq(usersTable.id, id));
   }
 

@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { dailySummaryRepo } from '../../repositories/daily-summary.repo';
 import { createTestDb } from '../setup';
-import type { DailySummary } from '@stridetime/types';
+import { createMockDailySummary } from '@stridetime/test-utils';
 
 describe('DailySummaryRepository', () => {
   let db: any;
@@ -16,7 +16,7 @@ describe('DailySummaryRepository', () => {
 
   describe('create', () => {
     it('creates a daily summary', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
@@ -25,9 +25,9 @@ describe('DailySummaryRepository', () => {
         focusMinutes: 240,
         efficiencyRating: 0.85,
         standoutMoment: 'Completed the refactoring!',
-      };
+      });
 
-      const created = await dailySummaryRepo.create(db, summary);
+      const created = await dailySummaryRepo.create(db, summaryInput);
 
       expect(created.id).toBeTruthy();
       expect(created.userId).toBe('user_1');
@@ -40,7 +40,7 @@ describe('DailySummaryRepository', () => {
 
   describe('findById', () => {
     it('returns summary when found', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
@@ -48,10 +48,9 @@ describe('DailySummaryRepository', () => {
         totalPoints: 120,
         focusMinutes: 240,
         efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const created = await dailySummaryRepo.create(db, summary);
+      const created = await dailySummaryRepo.create(db, summaryInput);
       const found = await dailySummaryRepo.findById(db, created.id);
 
       expect(found).toBeDefined();
@@ -67,18 +66,12 @@ describe('DailySummaryRepository', () => {
 
   describe('findByDate', () => {
     it('returns summary for specific date', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
-        tasksCompleted: 5,
-        tasksWorkedOn: 8,
-        totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary);
+      await dailySummaryRepo.create(db, summaryInput);
       const found = await dailySummaryRepo.findByDate(db, 'user_1', '2024-01-15');
 
       expect(found).toBeDefined();
@@ -93,35 +86,35 @@ describe('DailySummaryRepository', () => {
 
   describe('findByUserId', () => {
     it('returns all summaries for a user', async () => {
-      const summary1: Omit<DailySummary, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        ...summary1Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const summary2: Omit<DailySummary, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        ...summary2Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-16',
         tasksCompleted: 3,
-        tasksWorkedOn: 6,
         totalPoints: 80,
-        focusMinutes: 180,
-        efficiencyRating: 0.75,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary1);
-      await dailySummaryRepo.create(db, summary2);
+      await dailySummaryRepo.create(db, summary1Input);
+      await dailySummaryRepo.create(db, summary2Input);
 
       const summaries = await dailySummaryRepo.findByUserId(db, 'user_1');
 
       expect(summaries).toHaveLength(2);
-      expect(summaries.every((s) => s.userId === 'user_1')).toBe(true);
+      expect(summaries.every(s => s.userId === 'user_1')).toBe(true);
       // Should be ordered by date descending
       expect(summaries[0].date).toBe('2024-01-16');
       expect(summaries[1].date).toBe('2024-01-15');
@@ -130,42 +123,42 @@ describe('DailySummaryRepository', () => {
 
   describe('findByDateRange', () => {
     it('returns summaries within date range', async () => {
-      const summary1: Omit<DailySummary, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        ...summary1Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-10',
         tasksCompleted: 2,
-        tasksWorkedOn: 4,
         totalPoints: 50,
-        focusMinutes: 120,
-        efficiencyRating: 0.7,
-        standoutMoment: null,
-      };
+      });
 
-      const summary2: Omit<DailySummary, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        ...summary2Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const summary3: Omit<DailySummary, 'id'> = {
+      const {
+        id: id3,
+        createdAt: c3,
+        ...summary3Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-20',
         tasksCompleted: 4,
-        tasksWorkedOn: 7,
         totalPoints: 100,
-        focusMinutes: 200,
-        efficiencyRating: 0.8,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary1);
-      await dailySummaryRepo.create(db, summary2);
-      await dailySummaryRepo.create(db, summary3);
+      await dailySummaryRepo.create(db, summary1Input);
+      await dailySummaryRepo.create(db, summary2Input);
+      await dailySummaryRepo.create(db, summary3Input);
 
       const summaries = await dailySummaryRepo.findByDateRange(
         db,
@@ -181,42 +174,42 @@ describe('DailySummaryRepository', () => {
 
   describe('findRecent', () => {
     it('returns recent summaries limited by days', async () => {
-      const summary1: Omit<DailySummary, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        ...summary1Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-10',
         tasksCompleted: 2,
-        tasksWorkedOn: 4,
         totalPoints: 50,
-        focusMinutes: 120,
-        efficiencyRating: 0.7,
-        standoutMoment: null,
-      };
+      });
 
-      const summary2: Omit<DailySummary, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        ...summary2Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const summary3: Omit<DailySummary, 'id'> = {
+      const {
+        id: id3,
+        createdAt: c3,
+        ...summary3Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-20',
         tasksCompleted: 4,
-        tasksWorkedOn: 7,
         totalPoints: 100,
-        focusMinutes: 200,
-        efficiencyRating: 0.8,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary1);
-      await dailySummaryRepo.create(db, summary2);
-      await dailySummaryRepo.create(db, summary3);
+      await dailySummaryRepo.create(db, summary1Input);
+      await dailySummaryRepo.create(db, summary2Input);
+      await dailySummaryRepo.create(db, summary3Input);
 
       const summaries = await dailySummaryRepo.findRecent(db, 'user_1', 2);
 
@@ -229,18 +222,14 @@ describe('DailySummaryRepository', () => {
 
   describe('update', () => {
     it('updates summary fields', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const created = await dailySummaryRepo.create(db, summary);
+      const created = await dailySummaryRepo.create(db, summaryInput);
       const updated = await dailySummaryRepo.update(db, created.id, {
         standoutMoment: 'Achieved great progress!',
         tasksCompleted: 6,
@@ -254,18 +243,14 @@ describe('DailySummaryRepository', () => {
 
   describe('upsert', () => {
     it('creates summary if it does not exist', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const upserted = await dailySummaryRepo.upsert(db, summary);
+      const upserted = await dailySummaryRepo.upsert(db, summaryInput);
 
       expect(upserted.id).toBeTruthy();
       expect(upserted.date).toBe('2024-01-15');
@@ -273,23 +258,19 @@ describe('DailySummaryRepository', () => {
     });
 
     it('updates summary if it already exists', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
         tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
       // Create first time
-      const created = await dailySummaryRepo.upsert(db, summary);
+      const created = await dailySummaryRepo.upsert(db, summaryInput);
 
       // Upsert with updated values
-      const updatedSummary: Omit<DailySummary, 'id'> = {
-        ...summary,
+      const updatedSummary = {
+        ...summaryInput,
         tasksCompleted: 6,
         totalPoints: 140,
       };
@@ -304,18 +285,12 @@ describe('DailySummaryRepository', () => {
 
   describe('delete', () => {
     it('deletes a summary', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
-        tasksCompleted: 5,
-        tasksWorkedOn: 8,
-        totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const created = await dailySummaryRepo.create(db, summary);
+      const created = await dailySummaryRepo.create(db, summaryInput);
       await dailySummaryRepo.delete(db, created.id);
 
       const found = await dailySummaryRepo.findById(db, created.id);
@@ -325,42 +300,39 @@ describe('DailySummaryRepository', () => {
 
   describe('calculateAveragePoints', () => {
     it('calculates average points over N days', async () => {
-      const summary1: Omit<DailySummary, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        ...summary1Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
-        tasksCompleted: 5,
-        tasksWorkedOn: 8,
         totalPoints: 100,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const summary2: Omit<DailySummary, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        ...summary2Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-16',
-        tasksCompleted: 3,
-        tasksWorkedOn: 6,
         totalPoints: 80,
-        focusMinutes: 180,
-        efficiencyRating: 0.75,
-        standoutMoment: null,
-      };
+      });
 
-      const summary3: Omit<DailySummary, 'id'> = {
+      const {
+        id: id3,
+        createdAt: c3,
+        ...summary3Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-17',
-        tasksCompleted: 4,
-        tasksWorkedOn: 7,
         totalPoints: 120,
-        focusMinutes: 200,
-        efficiencyRating: 0.8,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary1);
-      await dailySummaryRepo.create(db, summary2);
-      await dailySummaryRepo.create(db, summary3);
+      await dailySummaryRepo.create(db, summary1Input);
+      await dailySummaryRepo.create(db, summary2Input);
+      await dailySummaryRepo.create(db, summary3Input);
 
       const avgPoints = await dailySummaryRepo.calculateAveragePoints(db, 'user_1', 3);
 
@@ -375,42 +347,39 @@ describe('DailySummaryRepository', () => {
 
   describe('calculateTotalFocusMinutes', () => {
     it('calculates total focus minutes in date range', async () => {
-      const summary1: Omit<DailySummary, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        ...summary1Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-10',
-        tasksCompleted: 2,
-        tasksWorkedOn: 4,
-        totalPoints: 50,
         focusMinutes: 120,
-        efficiencyRating: 0.7,
-        standoutMoment: null,
-      };
+      });
 
-      const summary2: Omit<DailySummary, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        ...summary2Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
-        tasksCompleted: 5,
-        tasksWorkedOn: 8,
-        totalPoints: 120,
         focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const summary3: Omit<DailySummary, 'id'> = {
+      const {
+        id: id3,
+        createdAt: c3,
+        ...summary3Input
+      } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-20',
-        tasksCompleted: 4,
-        tasksWorkedOn: 7,
-        totalPoints: 100,
         focusMinutes: 180,
-        efficiencyRating: 0.8,
-        standoutMoment: null,
-      };
+      });
 
-      await dailySummaryRepo.create(db, summary1);
-      await dailySummaryRepo.create(db, summary2);
-      await dailySummaryRepo.create(db, summary3);
+      await dailySummaryRepo.create(db, summary1Input);
+      await dailySummaryRepo.create(db, summary2Input);
+      await dailySummaryRepo.create(db, summary3Input);
 
       const totalMinutes = await dailySummaryRepo.calculateTotalFocusMinutes(
         db,
@@ -424,21 +393,15 @@ describe('DailySummaryRepository', () => {
   });
 
   describe('mapper integrity', () => {
-    it('excludes DB-only fields', async () => {
-      const summary: Omit<DailySummary, 'id'> = {
+    it('includes timestamp fields', async () => {
+      const { id, createdAt, ...summaryInput } = createMockDailySummary({
         userId: 'user_1',
         date: '2024-01-15',
-        tasksCompleted: 5,
-        tasksWorkedOn: 8,
-        totalPoints: 120,
-        focusMinutes: 240,
-        efficiencyRating: 0.85,
-        standoutMoment: null,
-      };
+      });
 
-      const created = await dailySummaryRepo.create(db, summary);
+      const created = await dailySummaryRepo.create(db, summaryInput);
 
-      expect(created).not.toHaveProperty('createdAt');
+      expect(created.createdAt).toBeTruthy();
     });
   });
 });

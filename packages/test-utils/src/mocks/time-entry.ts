@@ -14,6 +14,9 @@ export function createMockTimeEntry(overrides: Partial<TimeEntry> = {}): TimeEnt
     taskId: 'task-123',
     startedAt: new Date().toISOString(),
     endedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deleted: false,
     ...overrides,
   };
 }
@@ -21,7 +24,10 @@ export function createMockTimeEntry(overrides: Partial<TimeEntry> = {}): TimeEnt
 /**
  * Create multiple mock time entries with sequential IDs
  */
-export function createMockTimeEntries(count: number, overrides: Partial<TimeEntry> = {}): TimeEntry[] {
+export function createMockTimeEntries(
+  count: number,
+  overrides: Partial<TimeEntry> = {}
+): TimeEntry[] {
   return Array.from({ length: count }, (_, i) =>
     createMockTimeEntry({
       id: `entry-${i + 1}`,
@@ -33,7 +39,10 @@ export function createMockTimeEntries(count: number, overrides: Partial<TimeEntr
 /**
  * Create a mock completed time entry (with endedAt)
  */
-export function createMockCompletedTimeEntry(durationMinutes: number = 60, overrides: Partial<TimeEntry> = {}): TimeEntry {
+export function createMockCompletedTimeEntry(
+  durationMinutes: number = 60,
+  overrides: Partial<TimeEntry> = {}
+): TimeEntry {
   const startedAt = new Date();
   const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000);
 

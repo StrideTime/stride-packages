@@ -7,4 +7,7 @@ export type TaskType = {
   color: string | null;
   isDefault: boolean;
   displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
 };

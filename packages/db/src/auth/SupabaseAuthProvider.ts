@@ -84,16 +84,11 @@ export class SupabaseAuthProvider implements AuthProvider {
     return session ? this.mapSession(session) : null;
   }
 
-  onAuthChange(
-    callback: (session: AuthSession | null, event: AuthEventType) => void,
-  ): () => void {
+  onAuthChange(callback: (session: AuthSession | null, event: AuthEventType) => void): () => void {
     const {
       data: { subscription },
     } = this.supabase.auth.onAuthStateChange((event, session) =>
-      callback(
-        session ? this.mapSession(session) : null,
-        event as AuthEventType,
-      )
+      callback(session ? this.mapSession(session) : null, event as AuthEventType)
     );
 
     return () => subscription.unsubscribe();
@@ -101,7 +96,7 @@ export class SupabaseAuthProvider implements AuthProvider {
 
   async resetPasswordForEmail(
     email: string,
-    options?: { redirectTo?: string },
+    options?: { redirectTo?: string }
   ): Promise<{ error?: Error }> {
     const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
       redirectTo: options?.redirectTo,
@@ -110,9 +105,7 @@ export class SupabaseAuthProvider implements AuthProvider {
   }
 
   async updateUser(attributes: { password?: string }): Promise<{ error?: Error }> {
-    console.log('SupabaseAuthProvider.updateUser called with:', attributes);
     const { error } = await this.supabase.auth.updateUser(attributes);
-    console.log('Supabase auth.updateUser result:', { error });
     return { error: error || undefined };
   }
 
@@ -125,6 +118,9 @@ export class SupabaseAuthProvider implements AuthProvider {
         lastName: session.user.user_metadata?.last_name,
         avatarUrl: session.user.user_metadata?.avatar_url,
         timezone: '', // Will be populated from user preferences
+        createdAt: session.user.created_at || new Date().toISOString(),
+        updatedAt: session.user.updated_at || new Date().toISOString(),
+        deleted: false,
       },
       accessToken: session.access_token,
       refreshToken: session.refresh_token,

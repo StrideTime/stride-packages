@@ -1,6 +1,3 @@
-import type { WorkspaceType } from '../enums/WorkspaceType';
+import type { Workspace } from '../entities/Workspace';
 
-export interface CreateWorkspaceInput {
-  name: string;
-  type: WorkspaceType;
-}
+export type CreateWorkspaceInput = Omit<Workspace, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>;

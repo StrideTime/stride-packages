@@ -18,14 +18,23 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain Workspace type.
- * Excludes DB-only fields (createdAt, updatedAt, deleted).
  */
 function toDomain(row: WorkspaceRow): Workspace {
   return {
     id: row.id,
     ownerUserId: row.ownerUserId,
     name: row.name,
+    description: row.description,
+    icon: row.icon,
     type: row.type,
+    color: row.color,
+    timezone: row.timezone,
+    weekStartsOn: row.weekStartsOn,
+    defaultProjectId: row.defaultProjectId,
+    defaultTeamId: row.defaultTeamId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
@@ -33,12 +42,21 @@ function toDomain(row: WorkspaceRow): Workspace {
  * Map domain Workspace to database insert row.
  * Adds DB-only fields with appropriate defaults.
  */
-function toDbInsert(workspace: Omit<Workspace, 'id'>): Omit<NewWorkspaceRow, 'id'> {
+function toDbInsert(
+  workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+): Omit<NewWorkspaceRow, 'id'> {
   const timestamp = now();
   return {
     ownerUserId: workspace.ownerUserId,
     name: workspace.name,
+    description: workspace.description,
+    icon: workspace.icon,
     type: workspace.type,
+    color: workspace.color,
+    timezone: workspace.timezone,
+    weekStartsOn: workspace.weekStartsOn,
+    defaultProjectId: workspace.defaultProjectId,
+    defaultTeamId: workspace.defaultTeamId,
     createdAt: timestamp,
     updatedAt: timestamp,
     deleted: false,
@@ -87,7 +105,10 @@ export class WorkspaceRepository {
    * Create a new workspace.
    * Returns the created workspace with generated ID.
    */
-  async create(db: StrideDatabase, workspace: Omit<Workspace, 'id'>): Promise<Workspace> {
+  async create(
+    db: StrideDatabase,
+    workspace: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+  ): Promise<Workspace> {
     const id = generateId();
     const dbWorkspace = toDbInsert(workspace);
 
@@ -129,7 +150,7 @@ export class WorkspaceRepository {
   async delete(db: StrideDatabase, id: string): Promise<void> {
     await db
       .update(workspacesTable)
-      .set({ deleted: true, updatedAt: now() })
+      .set({ deleted: true, updatedAt: now() } as any)
       .where(eq(workspacesTable.id, id));
   }
 

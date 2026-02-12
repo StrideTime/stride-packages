@@ -5,7 +5,7 @@ import {
   type TaskRepository,
   type ProjectRepository,
 } from '@stridetime/db';
-import { Task, TaskDifficulty, TaskStatus } from '@stridetime/types';
+import { Task, TaskDifficulty, TaskPriority, TaskStatus } from '@stridetime/types';
 
 /**
  * Parameters for creating a new task
@@ -167,14 +167,21 @@ export class TaskService {
       title: params.title.trim(),
       description: params.description?.trim() || null,
       difficulty: params.difficulty || TaskDifficulty.MEDIUM,
+      priority: TaskPriority.NONE,
       progress: 0,
       status: TaskStatus.BACKLOG,
+      assigneeUserId: null,
+      teamId: null,
       estimatedMinutes: params.estimatedMinutes || null,
       maxMinutes: params.maxMinutes || null,
       actualMinutes: 0,
       plannedForDate: params.plannedForDate || null,
       dueDate: params.dueDate || null,
       taskTypeId: params.taskTypeId || null,
+      displayOrder: 0,
+      tags: null,
+      externalId: null,
+      externalSource: null,
       completedAt: null,
     });
 

@@ -1,0 +1,12 @@
+<svg width="1000" height="400" viewBox="0 0 1000 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded rectangle - dark gray -->
+  <rect width="1000" height="400" rx="80" fill="#1F2937"/>
+
+  <!-- Chevrons -->
+  <path d="M94 109L172 200L94 291" stroke="white" stroke-width="31" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+  <path d="M172 109L250 200L172 291" stroke="white" stroke-width="31" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+  <path d="M250 109L328 200L250 291" stroke="white" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Stride text -->
+  <text x="420" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="140" font-weight="700" fill="white">Stride</text>
+</svg>

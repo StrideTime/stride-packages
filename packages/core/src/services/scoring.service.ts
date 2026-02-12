@@ -4,13 +4,18 @@
  * Based on BUSINESS_LOGIC.md specifications
  */
 
-import type { StrideDatabase, TaskRepository, TimeEntryRepository, DailySummaryRepository } from '@stridetime/db';
+import type {
+  StrideDatabase,
+  TaskRepository,
+  TimeEntryRepository,
+  DailySummaryRepository,
+} from '@stridetime/db';
 import {
   taskRepo as defaultTaskRepo,
   timeEntryRepo as defaultTimeEntryRepo,
-  dailySummaryRepo as defaultDailySummaryRepo
+  dailySummaryRepo as defaultDailySummaryRepo,
 } from '@stridetime/db';
-import type { Task, TaskDifficulty } from '@stridetime/types';
+import type { Task, TaskDifficulty, CreateDailySummaryInput } from '@stridetime/types';
 
 /**
  * Difficulty multipliers for base points calculation
@@ -31,7 +36,7 @@ export type TaskScore = {
   efficiencyBonus: number;
   focusBonus: number;
   totalPoints: number;
-}
+};
 
 /**
  * Context for calculating task score
@@ -41,7 +46,7 @@ export type ScoringContext = {
    * Number of different task types worked on today
    */
   taskTypesWorkedToday: number;
-}
+};
 
 /**
  * Scoring Service for business logic
@@ -163,13 +168,13 @@ export class ScoringService {
     const entries = await this.timeEntryRepo.findByDateRange(db, userId, startOfDay, endOfDay);
 
     // Get unique task IDs
-    const taskIds = [...new Set(entries.map((e) => e.taskId))];
+    const taskIds = [...new Set(entries.map(e => e.taskId))];
 
     // Get tasks and their types
-    const tasks = await Promise.all(taskIds.map((id) => this.taskRepo.findById(db, id)));
+    const tasks = await Promise.all(taskIds.map(id => this.taskRepo.findById(db, id)));
     const taskTypeIds = tasks
       .filter((t): t is Task => t !== null && t.taskTypeId !== null)
-      .map((t) => t.taskTypeId);
+      .map(t => t.taskTypeId);
 
     // Return count of unique task types
     return new Set(taskTypeIds).size;
@@ -187,6 +192,8 @@ export class ScoringService {
     tasksWorkedOn: number;
     totalPoints: number;
     focusMinutes: number;
+    breakMinutes: number;
+    workSessionCount: number;
     efficiencyRating: number;
   }> {
     // Get time entries for the day
@@ -195,13 +202,13 @@ export class ScoringService {
     const entries = await this.timeEntryRepo.findByDateRange(db, userId, startOfDay, endOfDay);
 
     // Get unique tasks worked on
-    const taskIds = [...new Set(entries.map((e) => e.taskId))];
-    const tasks = (await Promise.all(taskIds.map((id) => this.taskRepo.findById(db, id)))).filter(
+    const taskIds = [...new Set(entries.map(e => e.taskId))];
+    const tasks = (await Promise.all(taskIds.map(id => this.taskRepo.findById(db, id)))).filter(
       (t): t is Task => t !== null
     );
 
     // Count completed tasks
-    const completedTasks = tasks.filter((t) => t.status === 'COMPLETED');
+    const completedTasks = tasks.filter(t => t.status === 'COMPLETED');
 
     // Calculate total focus minutes
     const focusMinutes = entries.reduce((total, entry) => {
@@ -219,9 +226,7 @@ export class ScoringService {
     const totalPoints = this.calculateDailyScore(completedTasks, context);
 
     // Calculate average efficiency rating
-    const tasksWithEstimates = tasks.filter(
-      (t) => t.estimatedMinutes && t.actualMinutes > 0
-    );
+    const tasksWithEstimates = tasks.filter(t => t.estimatedMinutes && t.actualMinutes > 0);
     const efficiencyRating =
       tasksWithEstimates.length > 0
         ? tasksWithEstimates.reduce((sum, t) => sum + this.calculateEfficiency(t), 0) /
@@ -233,6 +238,8 @@ export class ScoringService {
       tasksWorkedOn: tasks.length,
       totalPoints,
       focusMinutes,
+      breakMinutes: 0, // TODO: Calculate from breaks table when break tracking is implemented
+      workSessionCount: 0, // TODO: Calculate from work_sessions table when session tracking is implemented
       efficiencyRating: Math.round(efficiencyRating * 100) / 100, // Round to 2 decimals
     };
   }
@@ -248,16 +255,21 @@ export class ScoringService {
   ): Promise<void> {
     const summary = await this.calculateDailySummary(db, userId, date);
 
-    await this.dailySummaryRepo.upsert(db, {
+    const summaryInput: CreateDailySummaryInput = {
       userId,
       date,
       tasksCompleted: summary.tasksCompleted,
       tasksWorkedOn: summary.tasksWorkedOn,
       totalPoints: summary.totalPoints,
       focusMinutes: summary.focusMinutes,
+      breakMinutes: summary.breakMinutes,
+      workSessionCount: summary.workSessionCount,
       efficiencyRating: summary.efficiencyRating,
       standoutMoment: standoutMoment || null,
-    });
+      clockInTime: null,
+      clockOutTime: null,
+    };
+    await this.dailySummaryRepo.upsert(db, summaryInput);
   }
 
   /**

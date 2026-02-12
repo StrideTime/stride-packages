@@ -15,6 +15,9 @@ export function createMockUser(overrides: Partial<User> = {}): User {
     lastName: 'User',
     avatarUrl: null,
     timezone: 'UTC',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deleted: false,
     ...overrides,
   };
 }

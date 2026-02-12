@@ -14,6 +14,14 @@ export default defineConfig({
           src: "src/assets/*",
           dest: "assets",
         },
+        {
+          src: "src/assets/branding/svg/*",
+          dest: "assets/branding/svg",
+        },
+        {
+          src: "src/assets/branding/png/*",
+          dest: "assets/branding/png",
+        },
       ],
     }),
     dts({

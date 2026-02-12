@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { taskTypeRepo } from '../../repositories/task-type.repo';
 import { createTestDb } from '../setup';
-import type { TaskType } from '@stridetime/types';
+import { createMockTaskType } from '@stridetime/test-utils';
 
 describe('TaskTypeRepository', () => {
   let db: any;
@@ -16,7 +16,7 @@ describe('TaskTypeRepository', () => {
 
   describe('create', () => {
     it('creates a task type', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
@@ -24,9 +24,9 @@ describe('TaskTypeRepository', () => {
         color: '#3B82F6',
         isDefault: false,
         displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
 
       expect(created.id).toBeTruthy();
       expect(created.name).toBe('Feature');
@@ -36,17 +36,15 @@ describe('TaskTypeRepository', () => {
     });
 
     it('creates a workspace-scoped task type', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: 'workspace_1',
         name: 'Team Task',
         icon: '👥',
         color: '#8B5CF6',
-        isDefault: false,
-        displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
 
       expect(created.workspaceId).toBe('workspace_1');
       expect(created.name).toBe('Team Task');
@@ -55,17 +53,15 @@ describe('TaskTypeRepository', () => {
 
   describe('findById', () => {
     it('returns task type when found', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Bug',
         icon: '🐛',
         color: '#EF4444',
-        isDefault: false,
-        displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
       const found = await taskTypeRepo.findById(db, created.id);
 
       expect(found).toBeDefined();
@@ -81,95 +77,111 @@ describe('TaskTypeRepository', () => {
 
   describe('findByUser', () => {
     it('returns all task types for a user', async () => {
-      const taskType1: Omit<TaskType, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        updatedAt: u1,
+        deleted: d1,
+        ...taskType1Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
-        isDefault: false,
         displayOrder: 0,
-      };
+      });
 
-      const taskType2: Omit<TaskType, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        updatedAt: u2,
+        deleted: d2,
+        ...taskType2Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Bug',
-        icon: '🐛',
-        color: '#EF4444',
-        isDefault: false,
         displayOrder: 1,
-      };
+      });
 
-      await taskTypeRepo.create(db, taskType1);
-      await taskTypeRepo.create(db, taskType2);
+      await taskTypeRepo.create(db, taskType1Input);
+      await taskTypeRepo.create(db, taskType2Input);
 
       const taskTypes = await taskTypeRepo.findByUser(db, 'user_1');
 
       expect(taskTypes).toHaveLength(2);
-      expect(taskTypes.every((t) => t.userId === 'user_1')).toBe(true);
+      expect(taskTypes.every(t => t.userId === 'user_1')).toBe(true);
     });
 
     it('includes workspace-scoped task types when workspaceId provided', async () => {
-      const personalType: Omit<TaskType, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        updatedAt: u1,
+        deleted: d1,
+        ...personalTypeInput
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Personal',
-        icon: '👤',
-        color: '#6B7280',
-        isDefault: false,
         displayOrder: 0,
-      };
+      });
 
-      const workspaceType: Omit<TaskType, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        updatedAt: u2,
+        deleted: d2,
+        ...workspaceTypeInput
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: 'workspace_1',
         name: 'Team',
-        icon: '👥',
-        color: '#8B5CF6',
-        isDefault: false,
         displayOrder: 1,
-      };
+      });
 
-      await taskTypeRepo.create(db, personalType);
-      await taskTypeRepo.create(db, workspaceType);
+      await taskTypeRepo.create(db, personalTypeInput);
+      await taskTypeRepo.create(db, workspaceTypeInput);
 
       const taskTypes = await taskTypeRepo.findByUser(db, 'user_1', 'workspace_1');
 
-      // Should include both personal and workspace types
       expect(taskTypes.length).toBeGreaterThanOrEqual(2);
-      const names = taskTypes.map((t) => t.name);
+      const names = taskTypes.map(t => t.name);
       expect(names).toContain('Personal');
       expect(names).toContain('Team');
     });
 
     it('excludes workspace-scoped task types when no workspaceId provided', async () => {
-      const personalType: Omit<TaskType, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        updatedAt: u1,
+        deleted: d1,
+        ...personalTypeInput
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Personal',
-        icon: '👤',
-        color: '#6B7280',
-        isDefault: false,
         displayOrder: 0,
-      };
+      });
 
-      const workspaceType: Omit<TaskType, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        updatedAt: u2,
+        deleted: d2,
+        ...workspaceTypeInput
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: 'workspace_1',
         name: 'Team',
-        icon: '👥',
-        color: '#8B5CF6',
-        isDefault: false,
         displayOrder: 1,
-      };
+      });
 
-      await taskTypeRepo.create(db, personalType);
-      await taskTypeRepo.create(db, workspaceType);
+      await taskTypeRepo.create(db, personalTypeInput);
+      await taskTypeRepo.create(db, workspaceTypeInput);
 
       const taskTypes = await taskTypeRepo.findByUser(db, 'user_1');
 
-      // Should only include personal types
       expect(taskTypes).toHaveLength(1);
       expect(taskTypes[0].name).toBe('Personal');
     });
@@ -177,28 +189,36 @@ describe('TaskTypeRepository', () => {
 
   describe('findDefault', () => {
     it('returns default task type for user', async () => {
-      const taskType1: Omit<TaskType, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        updatedAt: u1,
+        deleted: d1,
+        ...taskType1Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
         isDefault: false,
         displayOrder: 0,
-      };
+      });
 
-      const taskType2: Omit<TaskType, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        updatedAt: u2,
+        deleted: d2,
+        ...taskType2Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Default',
-        icon: '⭐',
-        color: '#10B981',
         isDefault: true,
         displayOrder: 1,
-      };
+      });
 
-      await taskTypeRepo.create(db, taskType1);
-      const defaultType = await taskTypeRepo.create(db, taskType2);
+      await taskTypeRepo.create(db, taskType1Input);
+      const defaultType = await taskTypeRepo.create(db, taskType2Input);
 
       const found = await taskTypeRepo.findDefault(db, 'user_1');
 
@@ -215,30 +235,37 @@ describe('TaskTypeRepository', () => {
 
   describe('setDefault', () => {
     it('sets a task type as default and clears others', async () => {
-      const taskType1: Omit<TaskType, 'id'> = {
+      const {
+        id: id1,
+        createdAt: c1,
+        updatedAt: u1,
+        deleted: d1,
+        ...taskType1Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
         isDefault: true,
         displayOrder: 0,
-      };
+      });
 
-      const taskType2: Omit<TaskType, 'id'> = {
+      const {
+        id: id2,
+        createdAt: c2,
+        updatedAt: u2,
+        deleted: d2,
+        ...taskType2Input
+      } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Bug',
-        icon: '🐛',
-        color: '#EF4444',
         isDefault: false,
         displayOrder: 1,
-      };
+      });
 
-      const created1 = await taskTypeRepo.create(db, taskType1);
-      const created2 = await taskTypeRepo.create(db, taskType2);
+      const created1 = await taskTypeRepo.create(db, taskType1Input);
+      const created2 = await taskTypeRepo.create(db, taskType2Input);
 
-      // Set taskType2 as default
       await taskTypeRepo.setDefault(db, 'user_1', created2.id);
 
       const found1 = await taskTypeRepo.findById(db, created1.id);
@@ -251,17 +278,13 @@ describe('TaskTypeRepository', () => {
 
   describe('update', () => {
     it('updates task type fields', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
-        isDefault: false,
-        displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
       const updated = await taskTypeRepo.update(db, created.id, {
         name: 'Epic Feature',
         icon: '🎯',
@@ -269,23 +292,18 @@ describe('TaskTypeRepository', () => {
 
       expect(updated.name).toBe('Epic Feature');
       expect(updated.icon).toBe('🎯');
-      expect(updated.color).toBe('#3B82F6'); // Unchanged
+      expect(updated.color).toBe(created.color);
     });
   });
 
   describe('delete', () => {
     it('deletes a task type', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
-        name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
-        isDefault: false,
-        displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
       await taskTypeRepo.delete(db, created.id);
 
       const found = await taskTypeRepo.findById(db, created.id);
@@ -294,20 +312,16 @@ describe('TaskTypeRepository', () => {
   });
 
   describe('mapper integrity', () => {
-    it('excludes DB-only fields', async () => {
-      const taskType: Omit<TaskType, 'id'> = {
+    it('includes timestamp fields', async () => {
+      const { id, createdAt, updatedAt, deleted, ...taskTypeInput } = createMockTaskType({
         userId: 'user_1',
         workspaceId: null,
         name: 'Feature',
-        icon: '🚀',
-        color: '#3B82F6',
-        isDefault: false,
-        displayOrder: 0,
-      };
+      });
 
-      const created = await taskTypeRepo.create(db, taskType);
+      const created = await taskTypeRepo.create(db, taskTypeInput);
 
-      expect(created).not.toHaveProperty('createdAt');
+      expect(created.createdAt).toBeTruthy();
     });
   });
 });

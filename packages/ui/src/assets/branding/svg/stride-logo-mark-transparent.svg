@@ -1,0 +1,6 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chevrons only - no background circle -->
+  <path d="M94 109L172 200L94 291" stroke="#1A99E6" stroke-width="31" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+  <path d="M172 109L250 200L172 291" stroke="#1A99E6" stroke-width="31" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+  <path d="M250 109L328 200L250 291" stroke="#1A99E6" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

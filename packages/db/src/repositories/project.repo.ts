@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain Project type.
- * Excludes DB-only fields (createdAt, updatedAt, deleted).
  */
 function toDomain(row: ProjectRow): Project {
   return {
@@ -28,7 +27,12 @@ function toDomain(row: ProjectRow): Project {
     name: row.name,
     description: row.description,
     color: row.color,
+    icon: row.icon,
+    status: row.status,
     completionPercentage: row.completionPercentage,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
@@ -36,7 +40,9 @@ function toDomain(row: ProjectRow): Project {
  * Map domain Project to database insert row.
  * Adds DB-only fields with appropriate defaults.
  */
-function toDbInsert(project: Omit<Project, 'id'>): Omit<NewProjectRow, 'id'> {
+function toDbInsert(
+  project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+): Omit<NewProjectRow, 'id'> {
   const timestamp = now();
   return {
     workspaceId: project.workspaceId,
@@ -44,6 +50,8 @@ function toDbInsert(project: Omit<Project, 'id'>): Omit<NewProjectRow, 'id'> {
     name: project.name,
     description: project.description,
     color: project.color,
+    icon: project.icon,
+    status: project.status,
     completionPercentage: project.completionPercentage,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -105,7 +113,10 @@ export class ProjectRepository {
    * Create a new project.
    * Returns the created project with generated ID.
    */
-  async create(db: StrideDatabase, project: Omit<Project, 'id'>): Promise<Project> {
+  async create(
+    db: StrideDatabase,
+    project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+  ): Promise<Project> {
     const id = generateId();
     const dbProject = toDbInsert(project);
 
@@ -147,7 +158,7 @@ export class ProjectRepository {
   async delete(db: StrideDatabase, id: string): Promise<void> {
     await db
       .update(projectsTable)
-      .set({ deleted: true, updatedAt: now() })
+      .set({ deleted: true, updatedAt: now() } as any)
       .where(eq(projectsTable.id, id));
   }
 

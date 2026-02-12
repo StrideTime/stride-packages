@@ -10,9 +10,19 @@ import type { Workspace, WorkspaceType } from '@stridetime/types';
 export function createMockWorkspace(overrides: Partial<Workspace> = {}): Workspace {
   return {
     id: 'workspace-123',
-    name: 'Test Workspace',
-    type: 'PERSONAL' as WorkspaceType,
     ownerUserId: 'user-123',
+    name: 'Test Workspace',
+    description: null,
+    icon: null,
+    type: 'PERSONAL' as WorkspaceType,
+    color: null,
+    timezone: 'UTC',
+    weekStartsOn: 0,
+    defaultProjectId: null,
+    defaultTeamId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deleted: false,
     ...overrides,
   };
 }
@@ -20,7 +30,10 @@ export function createMockWorkspace(overrides: Partial<Workspace> = {}): Workspa
 /**
  * Create multiple mock workspaces with sequential IDs
  */
-export function createMockWorkspaces(count: number, overrides: Partial<Workspace> = {}): Workspace[] {
+export function createMockWorkspaces(
+  count: number,
+  overrides: Partial<Workspace> = {}
+): Workspace[] {
   return Array.from({ length: count }, (_, i) =>
     createMockWorkspace({
       id: `workspace-${i + 1}`,

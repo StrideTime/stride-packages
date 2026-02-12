@@ -142,7 +142,10 @@ describe('TimeEntryService', () => {
   describe('stop', () => {
     it('should stop a time entry', async () => {
       const activeEntry = createMockActiveTimeEntry({ id: 'entry-123', taskId: 'task-123' });
-      const stoppedEntry = createMockCompletedTimeEntry(60, { id: 'entry-123', taskId: 'task-123' });
+      const stoppedEntry = createMockCompletedTimeEntry(60, {
+        id: 'entry-123',
+        taskId: 'task-123',
+      });
 
       mockTimeEntryRepo.findById.mockResolvedValue(activeEntry);
       mockTimeEntryRepo.stop.mockResolvedValue(stoppedEntry);
@@ -192,7 +195,11 @@ describe('TimeEntryService', () => {
 
   describe('stopActive', () => {
     it('should stop the active time entry for a user', async () => {
-      const activeEntry = createMockActiveTimeEntry({ id: 'entry-123', userId: 'user-123', taskId: 'task-123' });
+      const activeEntry = createMockActiveTimeEntry({
+        id: 'entry-123',
+        userId: 'user-123',
+        taskId: 'task-123',
+      });
       const stoppedEntry = createMockCompletedTimeEntry(60, { id: 'entry-123' });
 
       mockTimeEntryRepo.findActive.mockResolvedValue(activeEntry);

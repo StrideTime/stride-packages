@@ -1,6 +1,3 @@
-export interface CreateProjectInput {
-  workspaceId: string;
-  name: string;
-  description?: string;
-  color?: string;
-}
+import type { Project } from '../entities/Project';
+
+export type CreateProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>;

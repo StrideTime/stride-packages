@@ -4,12 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ScoringService, DIFFICULTY_MULTIPLIERS } from '../../services/scoring.service';
-import {
-  createMockTask,
-  createMockTimeEntry,
-  createMockDatabase,
-  createMockCompletedTask,
-} from '@stridetime/test-utils';
+import { createMockTask, createMockCompletedTask } from '@stridetime/test-utils';
 import type { ScoringContext } from '../../services/scoring.service';
 
 // Mock the repositories - inline to avoid hoisting issues
@@ -29,11 +24,9 @@ vi.mock('@stridetime/db', () => ({
 
 describe('ScoringService', () => {
   let scoringService: ScoringService;
-  let mockDb: any;
 
   beforeEach(() => {
     scoringService = new ScoringService();
-    mockDb = createMockDatabase();
     vi.clearAllMocks();
   });
 
@@ -42,7 +35,11 @@ describe('ScoringService', () => {
       const context: ScoringContext = { taskTypesWorkedToday: 0 };
 
       // TRIVIAL: 1 point at 100%
-      const trivialTask = createMockTask({ difficulty: 'TRIVIAL', progress: 100, actualMinutes: 60 });
+      const trivialTask = createMockTask({
+        difficulty: 'TRIVIAL',
+        progress: 100,
+        actualMinutes: 60,
+      });
       const trivialScore = scoringService.calculateTaskScore(trivialTask, context);
       expect(trivialScore.basePoints).toBe(1);
       expect(trivialScore.totalPoints).toBe(1);
@@ -66,7 +63,11 @@ describe('ScoringService', () => {
       expect(hardScore.totalPoints).toBe(5);
 
       // EXTREME: 8 points at 100%
-      const extremeTask = createMockTask({ difficulty: 'EXTREME', progress: 100, actualMinutes: 60 });
+      const extremeTask = createMockTask({
+        difficulty: 'EXTREME',
+        progress: 100,
+        actualMinutes: 60,
+      });
       const extremeScore = scoringService.calculateTaskScore(extremeTask, context);
       expect(extremeScore.basePoints).toBe(8);
       expect(extremeScore.totalPoints).toBe(8);

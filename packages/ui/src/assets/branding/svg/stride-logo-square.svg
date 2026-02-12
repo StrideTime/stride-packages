@@ -1,0 +1,9 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background square with rounded corners - primary blue -->
+  <rect width="1024" height="1024" rx="180" fill="#1A99E6"/>
+
+  <!-- Three chevrons pointing right - thicker strokes with better spacing -->
+  <path d="M240 280L440 512L240 744" stroke="white" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+  <path d="M440 280L640 512L440 744" stroke="white" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+  <path d="M640 280L840 512L640 744" stroke="white" stroke-width="80" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain Task type.
- * Excludes DB-only fields (createdAt, updatedAt, deleted).
  */
 function toDomain(row: TaskRow): Task {
   return {
@@ -29,15 +28,25 @@ function toDomain(row: TaskRow): Task {
     title: row.title,
     description: row.description,
     difficulty: row.difficulty,
+    priority: row.priority,
     progress: row.progress,
     status: row.status,
+    assigneeUserId: row.assigneeUserId,
+    teamId: row.teamId,
     estimatedMinutes: row.estimatedMinutes,
     maxMinutes: row.maxMinutes,
     actualMinutes: row.actualMinutes,
     plannedForDate: row.plannedForDate,
     dueDate: row.dueDate,
     taskTypeId: row.taskTypeId,
+    displayOrder: row.displayOrder,
+    tags: row.tags,
+    externalId: row.externalId,
+    externalSource: row.externalSource,
     completedAt: row.completedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
@@ -45,7 +54,9 @@ function toDomain(row: TaskRow): Task {
  * Map domain Task to database insert row.
  * Adds DB-only fields with appropriate defaults.
  */
-function toDbInsert(task: Omit<Task, 'id'>): Omit<NewTaskRow, 'id'> {
+function toDbInsert(
+  task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+): Omit<NewTaskRow, 'id'> {
   const timestamp = now();
   return {
     userId: task.userId,
@@ -54,14 +65,21 @@ function toDbInsert(task: Omit<Task, 'id'>): Omit<NewTaskRow, 'id'> {
     title: task.title,
     description: task.description,
     difficulty: task.difficulty,
+    priority: task.priority,
     progress: task.progress,
     status: task.status,
+    assigneeUserId: task.assigneeUserId,
+    teamId: task.teamId,
     estimatedMinutes: task.estimatedMinutes,
     maxMinutes: task.maxMinutes,
     actualMinutes: task.actualMinutes,
     plannedForDate: task.plannedForDate,
     dueDate: task.dueDate,
     taskTypeId: task.taskTypeId,
+    displayOrder: task.displayOrder,
+    tags: task.tags,
+    externalId: task.externalId,
+    externalSource: task.externalSource,
     completedAt: task.completedAt,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -203,7 +221,10 @@ export class TaskRepository {
    * Create a new task.
    * Returns the created task with generated ID.
    */
-  async create(db: StrideDatabase, task: Omit<Task, 'id'>): Promise<Task> {
+  async create(
+    db: StrideDatabase,
+    task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'deleted'>
+  ): Promise<Task> {
     const id = generateId();
     const dbTask = toDbInsert(task);
 
@@ -243,7 +264,10 @@ export class TaskRepository {
    * Sets deleted flag to true.
    */
   async delete(db: StrideDatabase, id: string): Promise<void> {
-    await db.update(tasksTable).set({ deleted: true, updatedAt: now() }).where(eq(tasksTable.id, id));
+    await db
+      .update(tasksTable)
+      .set({ deleted: true, updatedAt: now() } as any)
+      .where(eq(tasksTable.id, id));
   }
 
   /**

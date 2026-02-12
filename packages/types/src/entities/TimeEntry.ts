@@ -4,4 +4,7 @@ export type TimeEntry = {
   userId: string;
   startedAt: string;
   endedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
 };

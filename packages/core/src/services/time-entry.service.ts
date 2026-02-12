@@ -5,7 +5,7 @@
 
 import type { StrideDatabase, TimeEntryRepository, TaskRepository } from '@stridetime/db';
 import { timeEntryRepo as defaultTimeEntryRepo, taskRepo as defaultTaskRepo } from '@stridetime/db';
-import type { TimeEntry } from '@stridetime/types';
+import type { TimeEntry, CreateTimeEntryInput } from '@stridetime/types';
 
 /**
  * Parameters for starting a time entry
@@ -42,12 +42,13 @@ export class TimeEntryService {
     }
 
     // Create time entry
-    const entry = await this.timeEntryRepo.create(db, {
+    const entryInput: CreateTimeEntryInput = {
       taskId: params.taskId,
       userId: params.userId,
       startedAt: params.startedAt || new Date().toISOString(),
       endedAt: null,
-    });
+    };
+    const entry = await this.timeEntryRepo.create(db, entryInput);
 
     return entry;
   }
@@ -77,7 +78,11 @@ export class TimeEntryService {
   /**
    * Stop the active time entry for a user
    */
-  async stopActive(db: StrideDatabase, userId: string, endedAt?: string): Promise<TimeEntry | null> {
+  async stopActive(
+    db: StrideDatabase,
+    userId: string,
+    endedAt?: string
+  ): Promise<TimeEntry | null> {
     const activeEntry = await this.timeEntryRepo.findActive(db, userId);
     if (!activeEntry) {
       return null;

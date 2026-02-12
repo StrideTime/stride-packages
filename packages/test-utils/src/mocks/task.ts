@@ -2,7 +2,7 @@
  * Mock task generator for testing
  */
 
-import type { Task, TaskDifficulty, TaskStatus } from '@stridetime/types';
+import type { Task, TaskDifficulty, TaskPriority, TaskStatus } from '@stridetime/types';
 
 /**
  * Create a mock task with optional overrides
@@ -16,15 +16,25 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     title: 'Test Task',
     description: null,
     difficulty: 'MEDIUM' as TaskDifficulty,
+    priority: 'NONE' as TaskPriority,
     progress: 0,
     status: 'BACKLOG' as TaskStatus,
+    assigneeUserId: null,
+    teamId: null,
     estimatedMinutes: 60,
     maxMinutes: null,
     actualMinutes: 0,
     plannedForDate: null,
     dueDate: null,
     taskTypeId: null,
+    displayOrder: 0,
+    tags: null,
+    externalId: null,
+    externalSource: null,
     completedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deleted: false,
     ...overrides,
   };
 }

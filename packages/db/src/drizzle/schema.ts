@@ -24,6 +24,16 @@ import type {
   Theme,
   PlanningMode,
   PointsReason,
+  TeamMemberRole,
+  GoalType,
+  GoalPeriod,
+  BreakType,
+  WorkSessionStatus,
+  TaskPriority,
+  ExternalSource,
+  ProjectStatus,
+  FontSize,
+  Density,
 } from '@stridetime/types';
 
 // ============================================================================
@@ -65,6 +75,12 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     references: [userPreferencesTable.userId],
   }),
   pointsLedger: many(pointsLedgerTable),
+  ledTeams: many(teamsTable),
+  teamMemberships: many(teamMembersTable),
+  goals: many(goalsTable),
+  breaks: many(breaksTable),
+  workSessions: many(workSessionsTable),
+  workspaceUserPreferences: many(workspaceUserPreferencesTable),
 }));
 
 // ============================================================================
@@ -196,6 +212,13 @@ export const workspacesTable = sqliteTable(
     id: text('id').primaryKey(),
     ownerUserId: text('owner_user_id').notNull(),
     name: text('name').notNull(),
+    description: text('description'),
+    icon: text('icon'),
+    color: text('color'),
+    timezone: text('timezone').notNull().default('America/New_York'),
+    weekStartsOn: integer('week_starts_on').notNull().default(1),
+    defaultProjectId: text('default_project_id'),
+    defaultTeamId: text('default_team_id'),
     type: text('type').notNull().$type<WorkspaceType>(),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -211,6 +234,11 @@ export const workspacesRelations = relations(workspacesTable, ({ one, many }) =>
   }),
   members: many(workspaceMembersTable),
   projects: many(projectsTable),
+  teams: many(teamsTable),
+  goals: many(goalsTable),
+  workSessions: many(workSessionsTable),
+  workspaceUserPreferences: many(workspaceUserPreferencesTable),
+  workspaceStatuses: many(workspaceStatusesTable),
 }));
 
 // ============================================================================
@@ -226,6 +254,9 @@ export const workspaceMembersTable = sqliteTable(
     role: text('role').notNull().$type<WorkspaceMemberRole>(),
     invitedBy: text('invited_by'),
     joinedAt: text('joined_at').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     uniqueIndex('idx_workspace_members_workspace_user').on(table.workspaceId, table.userId),
@@ -257,6 +288,8 @@ export const projectsTable = sqliteTable(
     name: text('name').notNull(),
     description: text('description'),
     color: text('color'),
+    icon: text('icon'),
+    status: text('status').notNull().default('ACTIVE').$type<ProjectStatus>(),
     completionPercentage: integer('completion_percentage').notNull().default(0),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -279,6 +312,7 @@ export const projectsRelations = relations(projectsTable, ({ one, many }) => ({
     references: [usersTable.id],
   }),
   tasks: many(tasksTable),
+  projectTeams: many(projectTeamsTable),
 }));
 
 // ============================================================================
@@ -297,6 +331,8 @@ export const taskTypesTable = sqliteTable(
     isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
     displayOrder: integer('display_order').notNull().default(0),
     createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     index('idx_task_types_user_id').on(table.userId),
@@ -327,8 +363,13 @@ export const tasksTable = sqliteTable(
     title: text('title').notNull(),
     description: text('description'),
     difficulty: text('difficulty').notNull().$type<TaskDifficulty>(),
+    priority: text('priority').notNull().default('NONE').$type<TaskPriority>(),
     progress: integer('progress').notNull().default(0),
     status: text('status').notNull().default('BACKLOG').$type<TaskStatus>(),
+
+    // Assignment
+    assigneeUserId: text('assignee_user_id'),
+    teamId: text('team_id'),
 
     // Time tracking
     estimatedMinutes: integer('estimated_minutes'),
@@ -339,6 +380,12 @@ export const tasksTable = sqliteTable(
     plannedForDate: text('planned_for_date'),
     dueDate: text('due_date'),
     taskTypeId: text('task_type_id'),
+    displayOrder: integer('display_order').notNull().default(0),
+
+    // External integration
+    tags: text('tags'),
+    externalId: text('external_id'),
+    externalSource: text('external_source').$type<ExternalSource>(),
 
     // Timestamps
     createdAt: text('created_at').notNull(),
@@ -395,6 +442,8 @@ export const timeEntriesTable = sqliteTable(
     startedAt: text('started_at').notNull(),
     endedAt: text('ended_at'),
     createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     index('idx_time_entries_task_id').on(table.taskId),
@@ -430,8 +479,11 @@ export const scheduledEventsTable = sqliteTable(
     label: text('label').notNull(),
     type: text('type').notNull().$type<ScheduledEventType>(),
     externalId: text('external_id'),
+    externalSource: text('external_source').$type<ExternalSource>(),
+    metadata: text('metadata'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     index('idx_scheduled_events_user_id').on(table.userId),
@@ -466,6 +518,8 @@ export const pointsLedgerTable = sqliteTable(
     reason: text('reason').notNull().$type<PointsReason>(),
     description: text('description'),
     createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     index('idx_points_ledger_user_id').on(table.userId),
@@ -503,6 +557,10 @@ export const dailySummariesTable = sqliteTable(
     tasksWorkedOn: integer('tasks_worked_on').notNull().default(0),
     totalPoints: integer('total_points').notNull().default(0),
     focusMinutes: integer('focus_minutes').notNull().default(0),
+    breakMinutes: integer('break_minutes').notNull().default(0),
+    workSessionCount: integer('work_session_count').notNull().default(0),
+    clockInTime: text('clock_in_time'),
+    clockOutTime: text('clock_out_time'),
     efficiencyRating: real('efficiency_rating').notNull().default(0.0),
     standoutMoment: text('standout_moment'),
     createdAt: text('created_at').notNull(),
@@ -546,6 +604,19 @@ export const userPreferencesTable = sqliteTable('user_preferences', {
     .default(true),
   breakReminderMinutes: integer('break_reminder_minutes').notNull().default(90),
 
+  workingHoursStart: text('working_hours_start').notNull().default('09:00'),
+  workingHoursEnd: text('working_hours_end').notNull().default('17:00'),
+  workingDays: text('working_days').notNull().default('[1,2,3,4,5]'),
+  accentColor: text('accent_color'),
+  fontSize: text('font_size').notNull().default('MEDIUM').$type<FontSize>(),
+  density: text('density').notNull().default('COMFORTABLE').$type<Density>(),
+  keyboardShortcuts: text('keyboard_shortcuts'),
+  enableSoundEffects: integer('enable_sound_effects', { mode: 'boolean' }).notNull().default(true),
+  enableHapticFeedback: integer('enable_haptic_feedback', { mode: 'boolean' })
+    .notNull()
+    .default(false),
+  autoStartTimer: integer('auto_start_timer', { mode: 'boolean' }).notNull().default(false),
+
   updatedAt: text('updated_at').notNull(),
 });
 
@@ -557,3 +628,320 @@ export const userPreferencesRelations = relations(userPreferencesTable, ({ one }
 }));
 
 // ============================================================================
+// TEAMS TABLE
+// ============================================================================
+
+export const teamsTable = sqliteTable(
+  'teams',
+  {
+    id: text('id').primaryKey(),
+    workspaceId: text('workspace_id').notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    color: text('color'),
+    icon: text('icon'),
+    isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+    leadUserId: text('lead_user_id').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_teams_workspace_id').on(table.workspaceId),
+    index('idx_teams_lead_user_id').on(table.leadUserId),
+  ]
+);
+
+export const teamsRelations = relations(teamsTable, ({ one, many }) => ({
+  workspace: one(workspacesTable, {
+    fields: [teamsTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+  leadUser: one(usersTable, {
+    fields: [teamsTable.leadUserId],
+    references: [usersTable.id],
+  }),
+  members: many(teamMembersTable),
+  projectTeams: many(projectTeamsTable),
+}));
+
+// ============================================================================
+// TEAM MEMBERS TABLE
+// ============================================================================
+
+export const teamMembersTable = sqliteTable(
+  'team_members',
+  {
+    id: text('id').primaryKey(),
+    teamId: text('team_id').notNull(),
+    userId: text('user_id').notNull(),
+    role: text('role').notNull().$type<TeamMemberRole>(),
+    addedBy: text('added_by'),
+    addedAt: text('added_at').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    uniqueIndex('idx_team_members_team_user').on(table.teamId, table.userId),
+    index('idx_team_members_user_id').on(table.userId),
+  ]
+);
+
+export const teamMembersRelations = relations(teamMembersTable, ({ one }) => ({
+  team: one(teamsTable, {
+    fields: [teamMembersTable.teamId],
+    references: [teamsTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [teamMembersTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+
+// ============================================================================
+// PROJECT TEAMS TABLE
+// ============================================================================
+
+export const projectTeamsTable = sqliteTable(
+  'project_teams',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id').notNull(),
+    teamId: text('team_id').notNull(),
+    addedAt: text('added_at').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    uniqueIndex('idx_project_teams_project_team').on(table.projectId, table.teamId),
+    index('idx_project_teams_team_id').on(table.teamId),
+  ]
+);
+
+export const projectTeamsRelations = relations(projectTeamsTable, ({ one }) => ({
+  project: one(projectsTable, {
+    fields: [projectTeamsTable.projectId],
+    references: [projectsTable.id],
+  }),
+  team: one(teamsTable, {
+    fields: [projectTeamsTable.teamId],
+    references: [teamsTable.id],
+  }),
+}));
+
+// ============================================================================
+// GOALS TABLE
+// ============================================================================
+
+export const goalsTable = sqliteTable(
+  'goals',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    workspaceId: text('workspace_id').notNull(),
+    type: text('type').notNull().$type<GoalType>(),
+    targetValue: integer('target_value').notNull(),
+    period: text('period').notNull().$type<GoalPeriod>(),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_goals_user_id').on(table.userId),
+    index('idx_goals_workspace_id').on(table.workspaceId),
+  ]
+);
+
+export const goalsRelations = relations(goalsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [goalsTable.userId],
+    references: [usersTable.id],
+  }),
+  workspace: one(workspacesTable, {
+    fields: [goalsTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+}));
+
+// ============================================================================
+// BREAKS TABLE
+// ============================================================================
+
+export const breaksTable = sqliteTable(
+  'breaks',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    type: text('type').notNull().$type<BreakType>(),
+    startedAt: text('started_at').notNull(),
+    endedAt: text('ended_at'),
+    durationMinutes: integer('duration_minutes'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_breaks_user_id').on(table.userId),
+    index('idx_breaks_started_at').on(table.startedAt),
+  ]
+);
+
+export const breaksRelations = relations(breaksTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [breaksTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+
+// ============================================================================
+// WORK SESSIONS TABLE
+// ============================================================================
+
+export const workSessionsTable = sqliteTable(
+  'work_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    workspaceId: text('workspace_id').notNull(),
+    status: text('status').notNull().$type<WorkSessionStatus>(),
+    clockedInAt: text('clocked_in_at').notNull(),
+    clockedOutAt: text('clocked_out_at'),
+    totalFocusMinutes: integer('total_focus_minutes').notNull().default(0),
+    totalBreakMinutes: integer('total_break_minutes').notNull().default(0),
+    date: text('date').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_work_sessions_user_id').on(table.userId),
+    index('idx_work_sessions_date').on(table.date),
+  ]
+);
+
+export const workSessionsRelations = relations(workSessionsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [workSessionsTable.userId],
+    references: [usersTable.id],
+  }),
+  workspace: one(workspacesTable, {
+    fields: [workSessionsTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+}));
+
+// ============================================================================
+// WORKSPACE USER PREFERENCES TABLE
+// ============================================================================
+
+export const workspaceUserPreferencesTable = sqliteTable(
+  'workspace_user_preferences',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    workspaceId: text('workspace_id').notNull(),
+
+    // Task views
+    defaultView: text('default_view').notNull().default('TODAY'),
+    groupTasksBy: text('group_tasks_by').notNull().default('PROJECT'),
+    sortTasksBy: text('sort_tasks_by').notNull().default('PRIORITY'),
+    showCompletedTasks: integer('show_completed_tasks', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+
+    // UI preferences
+    showQuickAddButton: integer('show_quick_add_button', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    keyboardShortcutsEnabled: integer('keyboard_shortcuts_enabled', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    autoStartTimerOnTask: integer('auto_start_timer_on_task', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+
+    // Tracking toggles
+    trackTime: integer('track_time', { mode: 'boolean' }).notNull().default(true),
+    trackBreaks: integer('track_breaks', { mode: 'boolean' }).notNull().default(true),
+    trackCompletionTimes: integer('track_completion_times', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    trackFocus: integer('track_focus', { mode: 'boolean' }).notNull().default(true),
+    trackProjectSwitching: integer('track_project_switching', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+
+    // Stats visibility
+    statsVisibility: text('stats_visibility').notNull().default('ONLY_ME'),
+    showOnLeaderboard: integer('show_on_leaderboard', { mode: 'boolean' }).notNull().default(false),
+    shareAchievements: integer('share_achievements', { mode: 'boolean' }).notNull().default(false),
+
+    // Data retention
+    dataRetention: text('data_retention').notNull().default('FOREVER'),
+
+    // Per-workspace notification overrides
+    taskReminders: integer('task_reminders', { mode: 'boolean' }).notNull().default(true),
+    goalProgressNotifications: integer('goal_progress_notifications', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    breakReminders: integer('break_reminders', { mode: 'boolean' }).notNull().default(true),
+    dailySummary: integer('daily_summary', { mode: 'boolean' }).notNull().default(true),
+
+    // Weekly schedule (JSON: { mon: { enabled, startTime, endTime, breakTime, breakDuration }, ... })
+    weeklySchedule: text('weekly_schedule'),
+
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    uniqueIndex('idx_workspace_user_prefs_user_workspace').on(table.userId, table.workspaceId),
+  ]
+);
+
+export const workspaceUserPreferencesRelations = relations(
+  workspaceUserPreferencesTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [workspaceUserPreferencesTable.userId],
+      references: [usersTable.id],
+    }),
+    workspace: one(workspacesTable, {
+      fields: [workspaceUserPreferencesTable.workspaceId],
+      references: [workspacesTable.id],
+    }),
+  })
+);
+
+// ============================================================================
+// WORKSPACE STATUSES TABLE
+// ============================================================================
+
+export const workspaceStatusesTable = sqliteTable(
+  'workspace_statuses',
+  {
+    id: text('id').primaryKey(),
+    workspaceId: text('workspace_id').notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    icon: text('icon').notNull().default('Circle'),
+    color: text('color').notNull().default('#22c55e'),
+    isEnabled: integer('is_enabled', { mode: 'boolean' }).notNull().default(true),
+    displayOrder: integer('display_order').notNull().default(0),
+    isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [index('idx_workspace_statuses_workspace_id').on(table.workspaceId)]
+);
+
+export const workspaceStatusesRelations = relations(workspaceStatusesTable, ({ one }) => ({
+  workspace: one(workspacesTable, {
+    fields: [workspaceStatusesTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+}));

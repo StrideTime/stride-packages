@@ -40,8 +40,8 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
   private powersyncUrl: string;
 
   constructor(config: SupabaseConnectorConfig) {
-    this.supabase = config.supabaseClient
-      ?? createClient(config.supabaseUrl, config.supabaseAnonKey);
+    this.supabase =
+      config.supabaseClient ?? createClient(config.supabaseUrl, config.supabaseAnonKey);
     this.powersyncUrl = config.powersyncUrl;
   }
 
@@ -74,9 +74,7 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
     return {
       endpoint: this.powersyncUrl,
       token: session.access_token,
-      expiresAt: session.expires_at
-        ? new Date(session.expires_at * 1000)
-        : undefined,
+      expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : undefined,
     };
   }
 
@@ -107,17 +105,14 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
     }
 
     // Ensure the Supabase client has a fresh session before uploading.
-    const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await this.supabase.auth.getSession();
     if (sessionError) {
       console.error('[PowerSync] Failed to get session for upload:', sessionError);
       throw sessionError;
     }
-    console.log('[PowerSync] Upload session check:', {
-      hasSession: !!session,
-      userId: session?.user?.id,
-      role: session?.user?.role,
-      expiresAt: session?.expires_at,
-    });
     if (!session) {
       console.warn('[PowerSync] No active session — skipping upload, will retry');
       return;
@@ -129,16 +124,11 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
         const record = op.opData;
         const pkColumn = this.getPkColumn(table);
 
-        console.log(`[PowerSync] Upload ${op.op} to ${table}:`, { [pkColumn]: op.id, ...record });
-
         switch (op.op) {
           case 'PUT': {
             const { error } = await this.supabase
               .from(table)
-              .upsert(
-                { ...record, [pkColumn]: op.id },
-                { onConflict: pkColumn }
-              );
+              .upsert({ ...record, [pkColumn]: op.id }, { onConflict: pkColumn });
             if (error) {
               console.error(`[PowerSync] Upsert to ${table} failed:`, error);
               throw error;
@@ -146,10 +136,7 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
             break;
           }
           case 'PATCH': {
-            const { error } = await this.supabase
-              .from(table)
-              .update(record)
-              .eq(pkColumn, op.id);
+            const { error } = await this.supabase.from(table).update(record).eq(pkColumn, op.id);
             if (error) {
               console.error(`[PowerSync] Update to ${table} failed:`, error);
               throw error;
@@ -157,10 +144,7 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
             break;
           }
           case 'DELETE': {
-            const { error } = await this.supabase
-              .from(table)
-              .delete()
-              .eq(pkColumn, op.id);
+            const { error } = await this.supabase.from(table).delete().eq(pkColumn, op.id);
             if (error) {
               console.error(`[PowerSync] Delete from ${table} failed:`, error);
               throw error;
@@ -171,7 +155,6 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
       }
 
       await transaction.complete();
-      console.log(`[PowerSync] Upload transaction completed (${transaction.crud.length} operations)`);
     } catch (error) {
       // Transaction will be retried on next sync cycle
       console.error('[PowerSync] Upload failed, will retry:', error);

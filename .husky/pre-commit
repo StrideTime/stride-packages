@@ -1,0 +1,6 @@
+# Run lint-staged
+pnpm exec lint-staged
+
+# Run tests with coverage threshold check
+echo "Checking test coverage (90% threshold)..."
+pnpm test:coverage

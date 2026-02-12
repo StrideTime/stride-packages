@@ -3,4 +3,5 @@ export const SubscriptionChangeReason = {
   DOWNGRADE: 'DOWNGRADE',
   PRICE_CHANGE: 'PRICE_CHANGE',
 } as const;
-export type SubscriptionChangeReason = (typeof SubscriptionChangeReason)[keyof typeof SubscriptionChangeReason];
+export type SubscriptionChangeReason =
+  (typeof SubscriptionChangeReason)[keyof typeof SubscriptionChangeReason];

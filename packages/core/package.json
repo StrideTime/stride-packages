@@ -22,10 +22,7 @@
     "test:watch": "vitest",
     "test:unit": "vitest run src/tests/services/",
     "test:coverage": "vitest run --coverage",
-    "test:ci": "vitest run --coverage --reporter=verbose",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "yarn build && changeset publish"
+    "test:ci": "vitest run --coverage --reporter=verbose"
   },
   "dependencies": {
     "@stridetime/db": "workspace:*",
@@ -38,6 +35,7 @@
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^2.0.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "typescript": "^5.8.3",
@@ -56,10 +54,11 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stridetime/stride-core.git"
+    "url": "https://github.com/StrideTime/stride-packages.git",
+    "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/stridetime/stride-core/issues"
+    "url": "https://github.com/StrideTime/stride-packages/issues"
   },
-  "homepage": "https://github.com/stridetime/stride-core#readme"
+  "homepage": "https://github.com/StrideTime/stride-packages/tree/main/packages/core#readme"
 }

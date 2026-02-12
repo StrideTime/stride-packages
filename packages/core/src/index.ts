@@ -10,11 +10,8 @@ export * from './services';
 export { AuthService } from './auth/AuthService';
 export { createAuthService } from './auth/createAuthService';
 
-// Validation utilities
-export * from './validation';
-
-// Planning utilities
-export * from './planning';
+// Sanitization utilities
+export * from './utils';
 
 // Database functions (re-exported from @stridetime/db)
 export {
@@ -35,14 +32,4 @@ export {
   type SyncState,
 } from '@stridetime/db';
 
-// Repositories (re-exported from @stridetime/db for client use)
-// Note: Services should be preferred when available
-export {
-  projectRepo,
-  workspaceRepo,
-  type ProjectRepository,
-  type WorkspaceRepository,
-} from '@stridetime/db';
-
 // Re-export enums from @stridetime/types
-

@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { userRepo } from '../../repositories/user.repo';
 import { createTestDb } from '../setup';
-import type { User } from '@stridetime/types';
+import { createMockUser } from '@stridetime/test-utils';
 
 describe('UserRepository', () => {
   let db: any;
@@ -16,15 +16,12 @@ describe('UserRepository', () => {
 
   describe('create', () => {
     it('creates a user', async () => {
-      const user: Omit<User, 'id'> = {
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser({
         email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
         timezone: 'America/Los_Angeles',
-      };
+      });
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
 
       expect(created.id).toBeTruthy();
       expect(created.email).toBe('test@example.com');
@@ -36,15 +33,9 @@ describe('UserRepository', () => {
 
   describe('findById', () => {
     it('returns user when found', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       const found = await userRepo.findById(db, created.id);
 
       expect(found).toBeDefined();
@@ -58,15 +49,9 @@ describe('UserRepository', () => {
     });
 
     it('returns null when user is soft deleted', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       await userRepo.delete(db, created.id);
 
       const found = await userRepo.findById(db, created.id);
@@ -76,15 +61,9 @@ describe('UserRepository', () => {
 
   describe('findByEmail', () => {
     it('returns user when found by email', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      await userRepo.create(db, user);
+      await userRepo.create(db, userInput);
       const found = await userRepo.findByEmail(db, 'test@example.com');
 
       expect(found).toBeDefined();
@@ -97,15 +76,9 @@ describe('UserRepository', () => {
     });
 
     it('returns null when user is soft deleted', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       await userRepo.delete(db, created.id);
 
       const found = await userRepo.findByEmail(db, 'test@example.com');
@@ -115,15 +88,9 @@ describe('UserRepository', () => {
 
   describe('emailExists', () => {
     it('returns true when email exists', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      await userRepo.create(db, user);
+      await userRepo.create(db, userInput);
       const exists = await userRepo.emailExists(db, 'test@example.com');
 
       expect(exists).toBe(true);
@@ -135,15 +102,9 @@ describe('UserRepository', () => {
     });
 
     it('returns false when user is soft deleted', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       await userRepo.delete(db, created.id);
 
       const exists = await userRepo.emailExists(db, 'test@example.com');
@@ -153,15 +114,9 @@ describe('UserRepository', () => {
 
   describe('update', () => {
     it('updates user fields', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       const updated = await userRepo.update(db, created.id, {
         firstName: 'Updated',
         timezone: 'America/New_York',
@@ -175,15 +130,9 @@ describe('UserRepository', () => {
 
   describe('delete', () => {
     it('soft deletes a user', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
       await userRepo.delete(db, created.id);
 
       const found = await userRepo.findById(db, created.id);
@@ -192,20 +141,14 @@ describe('UserRepository', () => {
   });
 
   describe('mapper integrity', () => {
-    it('excludes DB-only fields', async () => {
-      const user: Omit<User, 'id'> = {
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        avatarUrl: null,
-        timezone: 'UTC',
-      };
+    it('includes timestamp and soft delete fields', async () => {
+      const { id, createdAt, updatedAt, deleted, ...userInput } = createMockUser();
 
-      const created = await userRepo.create(db, user);
+      const created = await userRepo.create(db, userInput);
 
-      expect(created).not.toHaveProperty('createdAt');
-      expect(created).not.toHaveProperty('updatedAt');
-      expect(created).not.toHaveProperty('deleted');
+      expect(created.createdAt).toBeTruthy();
+      expect(created.updatedAt).toBeTruthy();
+      expect(created.deleted).toBe(false);
     });
   });
 });

@@ -7,4 +7,7 @@ export type WorkspaceMember = {
   role: WorkspaceMemberRole;
   invitedBy: string | null;
   joinedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
 };

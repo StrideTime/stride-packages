@@ -8,5 +8,7 @@ export type PointsLedgerEntry = {
   points: number;
   reason: PointsReason;
   description: string | null;
-  earnedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deleted: boolean;
 };

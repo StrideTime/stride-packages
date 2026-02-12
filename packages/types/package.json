@@ -27,10 +27,7 @@
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "yarn build && changeset publish"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -53,10 +50,11 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stridetime/stride-types.git"
+    "url": "https://github.com/StrideTime/stride-packages.git",
+    "directory": "packages/types"
   },
   "bugs": {
-    "url": "https://github.com/stridetime/stride-types/issues"
+    "url": "https://github.com/StrideTime/stride-packages/issues"
   },
-  "homepage": "https://github.com/stridetime/stride-types#readme"
+  "homepage": "https://github.com/StrideTime/stride-packages/tree/main/packages/types#readme"
 }

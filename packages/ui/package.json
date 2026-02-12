@@ -27,10 +27,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "yarn build && changeset publish"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -48,6 +45,7 @@
     "prettier": "^3.2.5",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "sharp": "^0.34.5",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-plugin-dts": "^4.5.4",
@@ -74,10 +72,11 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stridetime/stride-ui.git"
+    "url": "https://github.com/StrideTime/stride-packages.git",
+    "directory": "packages/ui"
   },
   "bugs": {
-    "url": "https://github.com/stridetime/stride-ui/issues"
+    "url": "https://github.com/StrideTime/stride-packages/issues"
   },
-  "homepage": "https://github.com/stridetime/stride-ui#readme"
+  "homepage": "https://github.com/StrideTime/stride-packages/tree/main/packages/ui#readme"
 }

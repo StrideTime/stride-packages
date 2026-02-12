@@ -7,6 +7,7 @@ import type {
   AuthSession,
   AuthEventType,
   OAuthProvider,
+  CreateUserInput,
 } from '@stridetime/types';
 import { userRepo } from '@stridetime/db';
 import { getDatabase } from '@stridetime/db';
@@ -51,16 +52,11 @@ export class AuthService {
     await this.provider.signInWithOAuth(provider);
   }
 
-  onAuthChange(
-    callback: (session: AuthSession | null, event: AuthEventType) => void,
-  ): () => void {
+  onAuthChange(callback: (session: AuthSession | null, event: AuthEventType) => void): () => void {
     return this.provider.onAuthChange(callback);
   }
 
-  async resetPassword(
-    email: string,
-    options?: { redirectTo?: string },
-  ): Promise<void> {
+  async resetPassword(email: string, options?: { redirectTo?: string }): Promise<void> {
     const { error } = await this.provider.resetPasswordForEmail(email, options);
     if (error) {
       throw new Error('Failed to send reset email');
@@ -68,12 +64,9 @@ export class AuthService {
   }
 
   async updatePassword(newPassword: string): Promise<void> {
-    console.log('AuthService.updatePassword called with:', newPassword.length, 'characters');
     const { error } = await this.provider.updateUser({
       password: newPassword,
     });
-
-    console.log('Provider updateUser result:', { error });
 
     if (error) {
       console.error('Password update failed:', error);
@@ -88,13 +81,14 @@ export class AuthService {
     if (!existingUser) {
       // Use the Supabase auth UID as the local user record's id.
       // This is critical for RLS policies which check auth.uid()::text = id.
-      await userRepo.create(db, {
+      const userInput: CreateUserInput = {
         email: authUser.email,
         firstName: authUser.firstName,
         lastName: authUser.lastName,
         avatarUrl: authUser.avatarUrl,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }, authUser.id);
+      };
+      await userRepo.create(db, userInput, authUser.id);
     }
   }
 }

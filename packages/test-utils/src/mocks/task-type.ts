@@ -17,6 +17,9 @@ export function createMockTaskType(overrides: Partial<TaskType> = {}): TaskType 
     color: '#10b981',
     isDefault: false,
     displayOrder: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deleted: false,
     ...overrides,
   };
 }

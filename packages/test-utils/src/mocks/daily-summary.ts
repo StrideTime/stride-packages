@@ -16,8 +16,13 @@ export function createMockDailySummary(overrides: Partial<DailySummary> = {}): D
     tasksWorkedOn: 0,
     totalPoints: 0,
     focusMinutes: 0,
+    breakMinutes: 0,
+    workSessionCount: 0,
     efficiencyRating: 1.0,
     standoutMoment: null,
+    clockInTime: null,
+    clockOutTime: null,
+    createdAt: new Date().toISOString(),
     ...overrides,
   };
 }
@@ -25,7 +30,10 @@ export function createMockDailySummary(overrides: Partial<DailySummary> = {}): D
 /**
  * Create multiple mock daily summaries with sequential dates
  */
-export function createMockDailySummaries(count: number, overrides: Partial<DailySummary> = {}): DailySummary[] {
+export function createMockDailySummaries(
+  count: number,
+  overrides: Partial<DailySummary> = {}
+): DailySummary[] {
   const today = new Date();
   return Array.from({ length: count }, (_, i) => {
     const date = new Date(today);

@@ -31,9 +31,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24.x
+          node-version: 22.x
           registry-url: 'https://npm.pkg.github.com'
-          cache: 'pnpm'
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Configure npm registry
         run: |
@@ -46,45 +58,40 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build packages
-        run: |
-          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "Building packages..."
-            pnpm build
-          else
-            echo "No valid packages found, skipping build"
-          fi
+        run: pnpm build
 
       - name: Run tests
-        run: |
-          if [ -d "packages" ] && [ "$(find packages -maxdepth 2 -name 'package.json' -type f 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "Running tests..."
-            pnpm test
-          else
-            echo "No valid packages found, skipping tests"
-          fi
+        run: pnpm test
 
       # Check if changesets exist, if not create one for hotfix
       - name: Auto-create changeset for hotfix
         if: github.ref == 'refs/heads/main'
         run: |
           if [ -z "$(find .changeset -name '*.md' ! -name 'README.md' -type f)" ]; then
-            echo "No changesets found, creating automatic patch bump for hotfix"
-            cat << EOF > .changeset/auto-hotfix-$(date +%s).md
-          ---
-          "@stridetime/ui": patch
-          "@stridetime/core": patch
-          "@stridetime/db": patch
-          "@stridetime/types": patch
-          "@stridetime/test-utils": patch
+            echo "No changesets found, detecting changed packages..."
+            CHANGED_DIRS=$(git diff --name-only HEAD~1 -- packages/ | cut -d'/' -f2 | sort -u)
+            if [ -n "$CHANGED_DIRS" ]; then
+              CHANGESET_CONTENT="---"
+              for dir in $CHANGED_DIRS; do
+                if [ -f "packages/$dir/package.json" ]; then
+                  PKG_NAME=$(node -p "require('./packages/$dir/package.json').name")
+                  CHANGESET_CONTENT="$CHANGESET_CONTENT
+          \"$PKG_NAME\": patch"
+                fi
+              done
+              CHANGESET_CONTENT="$CHANGESET_CONTENT
           ---
 
-          Hotfix: Automatic patch version bump
-          EOF
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add .changeset/
-            git commit -m "chore: auto-create changeset for hotfix"
-            git push
+          Hotfix: Automatic patch version bump"
+              echo "$CHANGESET_CONTENT" > .changeset/auto-hotfix-$(date +%s).md
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .changeset/
+              git commit -m "chore: auto-create changeset for hotfix"
+              git push
+            else
+              echo "No package changes detected, skipping changeset creation"
+            fi
           fi
 
       # Stable release from main branch
@@ -99,17 +106,23 @@ jobs:
             git add .
             git commit -m "chore: version packages" || echo "No changes to commit"
             git push
-            # Publish packages individually to handle first-time publishes
-            cd packages
-            for dir in */; do
-              if [ -f "$dir/package.json" ]; then
-                echo "Publishing ${dir%/}..."
-                cd "$dir"
-                pnpm publish --access restricted --no-git-checks || echo "Failed to publish ${dir%/}, continuing..."
-                cd ..
+            # Publish packages in dependency order, skip private packages
+            echo "Publishing packages in dependency order..."
+            PUBLISH_ORDER="types test-utils db core ui"
+            for pkg in $PUBLISH_ORDER; do
+              if [ -d "packages/$pkg" ]; then
+                IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
+                if [ "$IS_PRIVATE" = "false" ]; then
+                  echo "📦 Publishing @stridetime/$pkg..."
+                  cd "packages/$pkg"
+                  pnpm publish --access restricted --tag latest --no-git-checks || echo "⚠️ Failed to publish $pkg"
+                  cd ../..
+                else
+                  echo "⏭️  Skipping private package: $pkg"
+                fi
               fi
             done
-            echo "Published successfully"
+            echo "✅ Publish complete"
           else
             echo "No changesets found, skipping publish"
           fi
@@ -122,26 +135,40 @@ jobs:
         if: github.ref == 'refs/heads/beta'
         run: |
           if [ -z "$(find .changeset -name '*.md' ! -name 'README.md' -type f)" ]; then
-            echo "No changesets found, creating automatic patch bump for beta hotfix"
-            cat << EOF > .changeset/auto-hotfix-$(date +%s).md
-          ---
-          "@stridetime/ui": patch
-          "@stridetime/core": patch
-          "@stridetime/db": patch
-          "@stridetime/types": patch
-          "@stridetime/test-utils": patch
+            echo "No changesets found, detecting changed packages..."
+            CHANGED_DIRS=$(git diff --name-only origin/beta -- packages/ | cut -d'/' -f2 | sort -u)
+            if [ -n "$CHANGED_DIRS" ]; then
+              CHANGESET_CONTENT="---"
+              for dir in $CHANGED_DIRS; do
+                if [ -f "packages/$dir/package.json" ]; then
+                  PKG_NAME=$(node -p "require('./packages/$dir/package.json').name")
+                  CHANGESET_CONTENT="$CHANGESET_CONTENT
+          \"$PKG_NAME\": patch"
+                fi
+              done
+              CHANGESET_CONTENT="$CHANGESET_CONTENT
           ---
 
-          Beta hotfix: Automatic patch version bump
-          EOF
+          Beta hotfix: Automatic patch version bump"
+              echo "$CHANGESET_CONTENT" > .changeset/auto-hotfix-$(date +%s).md
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .changeset/
+              git commit -m "chore: auto-create changeset for beta hotfix"
+              git push
+            else
+              echo "No package changes detected, skipping changeset creation"
+            fi
           fi
 
       - name: Publish beta pre-release
         if: github.ref == 'refs/heads/beta'
         run: |
+          echo "📦 Publishing beta pre-release..."
           pnpm changeset version --snapshot beta
           pnpm build
           pnpm changeset publish --tag beta --no-git-checks
+          echo "✅ Beta publish complete"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -151,26 +178,40 @@ jobs:
         if: github.ref == 'refs/heads/alpha'
         run: |
           if [ -z "$(find .changeset -name '*.md' ! -name 'README.md' -type f)" ]; then
-            echo "No changesets found, creating automatic patch bump for alpha hotfix"
-            cat << EOF > .changeset/auto-hotfix-$(date +%s).md
-          ---
-          "@stridetime/ui": patch
-          "@stridetime/core": patch
-          "@stridetime/db": patch
-          "@stridetime/types": patch
-          "@stridetime/test-utils": patch
+            echo "No changesets found, detecting changed packages..."
+            CHANGED_DIRS=$(git diff --name-only origin/alpha -- packages/ | cut -d'/' -f2 | sort -u)
+            if [ -n "$CHANGED_DIRS" ]; then
+              CHANGESET_CONTENT="---"
+              for dir in $CHANGED_DIRS; do
+                if [ -f "packages/$dir/package.json" ]; then
+                  PKG_NAME=$(node -p "require('./packages/$dir/package.json').name")
+                  CHANGESET_CONTENT="$CHANGESET_CONTENT
+          \"$PKG_NAME\": patch"
+                fi
+              done
+              CHANGESET_CONTENT="$CHANGESET_CONTENT
           ---
 
-          Alpha hotfix: Automatic patch version bump
-          EOF
+          Alpha hotfix: Automatic patch version bump"
+              echo "$CHANGESET_CONTENT" > .changeset/auto-hotfix-$(date +%s).md
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .changeset/
+              git commit -m "chore: auto-create changeset for alpha hotfix"
+              git push
+            else
+              echo "No package changes detected, skipping changeset creation"
+            fi
           fi
 
       - name: Publish alpha pre-release
         if: github.ref == 'refs/heads/alpha'
         run: |
+          echo "📦 Publishing alpha pre-release..."
           pnpm changeset version --snapshot alpha
           pnpm build
           pnpm changeset publish --tag alpha --no-git-checks
+          echo "✅ Alpha publish complete"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

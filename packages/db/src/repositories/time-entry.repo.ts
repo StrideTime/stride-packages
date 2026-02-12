@@ -6,7 +6,7 @@
  */
 
 import { eq, and, gte, lte, desc, isNull } from 'drizzle-orm';
-import type { TimeEntry } from '@stridetime/types';
+import type { TimeEntry, CreateTimeEntryInput } from '@stridetime/types';
 import { timeEntriesTable } from '../drizzle/schema';
 import type { TimeEntryRow, NewTimeEntryRow } from '../drizzle/types';
 import type { StrideDatabase } from '../db/client';
@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain TimeEntry type.
- * Excludes DB-only fields (createdAt).
  */
 function toDomain(row: TimeEntryRow): TimeEntry {
   return {
@@ -27,19 +26,25 @@ function toDomain(row: TimeEntryRow): TimeEntry {
     userId: row.userId,
     startedAt: row.startedAt,
     endedAt: row.endedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
 /**
  * Map domain TimeEntry to database insert row.
  */
-function toDbInsert(entry: Omit<TimeEntry, 'id'>): Omit<NewTimeEntryRow, 'id'> {
+function toDbInsert(entry: CreateTimeEntryInput): Omit<NewTimeEntryRow, 'id'> {
+  const timestamp = now();
   return {
     taskId: entry.taskId,
     userId: entry.userId,
     startedAt: entry.startedAt,
     endedAt: entry.endedAt,
-    createdAt: now(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    deleted: false,
   };
 }
 
@@ -114,7 +119,7 @@ export class TimeEntryRepository {
   /**
    * Create a new time entry (start timer).
    */
-  async create(db: StrideDatabase, entry: Omit<TimeEntry, 'id'>): Promise<TimeEntry> {
+  async create(db: StrideDatabase, entry: CreateTimeEntryInput): Promise<TimeEntry> {
     const id = generateId();
     const dbEntry = toDbInsert(entry);
 
@@ -134,10 +139,7 @@ export class TimeEntryRepository {
    * Stop a time entry (end timer).
    */
   async stop(db: StrideDatabase, id: string, endedAt: string): Promise<TimeEntry> {
-    await db
-      .update(timeEntriesTable)
-      .set({ endedAt })
-      .where(eq(timeEntriesTable.id, id));
+    await db.update(timeEntriesTable).set({ endedAt }).where(eq(timeEntriesTable.id, id));
 
     const updated = await this.findById(db, id);
     if (!updated) {

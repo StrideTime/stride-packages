@@ -6,7 +6,7 @@
  */
 
 import { eq, and, or, isNull, asc } from 'drizzle-orm';
-import type { TaskType } from '@stridetime/types';
+import type { TaskType, CreateTaskTypeInput } from '@stridetime/types';
 import { taskTypesTable } from '../drizzle/schema';
 import type { TaskTypeRow, NewTaskTypeRow } from '../drizzle/types';
 import type { StrideDatabase } from '../db/client';
@@ -18,7 +18,6 @@ import { generateId, now } from '../db/utils';
 
 /**
  * Map database row to domain TaskType type.
- * Excludes DB-only fields (createdAt).
  */
 function toDomain(row: TaskTypeRow): TaskType {
   return {
@@ -30,13 +29,17 @@ function toDomain(row: TaskTypeRow): TaskType {
     color: row.color,
     isDefault: row.isDefault,
     displayOrder: row.displayOrder,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    deleted: row.deleted,
   };
 }
 
 /**
  * Map domain TaskType to database insert row.
  */
-function toDbInsert(taskType: Omit<TaskType, 'id'>): Omit<NewTaskTypeRow, 'id'> {
+function toDbInsert(taskType: CreateTaskTypeInput): Omit<NewTaskTypeRow, 'id'> {
+  const timestamp = now();
   return {
     workspaceId: taskType.workspaceId,
     userId: taskType.userId,
@@ -45,7 +48,9 @@ function toDbInsert(taskType: Omit<TaskType, 'id'>): Omit<NewTaskTypeRow, 'id'> 
     color: taskType.color,
     isDefault: taskType.isDefault,
     displayOrder: taskType.displayOrder,
-    createdAt: now(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    deleted: false,
   };
 }
 
@@ -53,7 +58,10 @@ function toDbInsert(taskType: Omit<TaskType, 'id'>): Omit<NewTaskTypeRow, 'id'> 
  * Map domain TaskType partial update to database update row.
  */
 function toDbUpdate(taskType: Partial<TaskType>): Partial<TaskTypeRow> {
-  return taskType;
+  return {
+    ...taskType,
+    updatedAt: now(),
+  };
 }
 
 // ============================================================================
@@ -113,7 +121,7 @@ export class TaskTypeRepository {
   /**
    * Create a new task type.
    */
-  async create(db: StrideDatabase, taskType: Omit<TaskType, 'id'>): Promise<TaskType> {
+  async create(db: StrideDatabase, taskType: CreateTaskTypeInput): Promise<TaskType> {
     const id = generateId();
     const dbTaskType = toDbInsert(taskType);
 
@@ -135,10 +143,7 @@ export class TaskTypeRepository {
   async update(db: StrideDatabase, id: string, updates: Partial<TaskType>): Promise<TaskType> {
     const dbUpdates = toDbUpdate(updates);
 
-    await db
-      .update(taskTypesTable)
-      .set(dbUpdates)
-      .where(eq(taskTypesTable.id, id));
+    await db.update(taskTypesTable).set(dbUpdates).where(eq(taskTypesTable.id, id));
 
     const updated = await this.findById(db, id);
     if (!updated) {
