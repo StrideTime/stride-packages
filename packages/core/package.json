@@ -32,7 +32,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@stridetime/test-utils": "workspace:*",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.1.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^2.0.0",
