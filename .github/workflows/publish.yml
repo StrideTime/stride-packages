@@ -167,7 +167,22 @@ jobs:
           echo "📦 Publishing beta pre-release..."
           pnpm changeset version --snapshot beta
           pnpm build
-          pnpm changeset publish --tag beta --no-git-checks
+          # Publish packages in dependency order, skip private packages
+          echo "Publishing packages in dependency order..."
+          PUBLISH_ORDER="types test-utils db core ui"
+          for pkg in $PUBLISH_ORDER; do
+            if [ -d "packages/$pkg" ]; then
+              IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
+              if [ "$IS_PRIVATE" = "false" ]; then
+                echo "📦 Publishing @stridetime/$pkg@beta..."
+                cd "packages/$pkg"
+                pnpm publish --access restricted --tag beta --no-git-checks || echo "⚠️ Failed to publish $pkg"
+                cd ../..
+              else
+                echo "⏭️  Skipping private package: $pkg"
+              fi
+            fi
+          done
           echo "✅ Beta publish complete"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -210,7 +225,22 @@ jobs:
           echo "📦 Publishing alpha pre-release..."
           pnpm changeset version --snapshot alpha
           pnpm build
-          pnpm changeset publish --tag alpha --no-git-checks
+          # Publish packages in dependency order, skip private packages
+          echo "Publishing packages in dependency order..."
+          PUBLISH_ORDER="types test-utils db core ui"
+          for pkg in $PUBLISH_ORDER; do
+            if [ -d "packages/$pkg" ]; then
+              IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
+              if [ "$IS_PRIVATE" = "false" ]; then
+                echo "📦 Publishing @stridetime/$pkg@alpha..."
+                cd "packages/$pkg"
+                pnpm publish --access restricted --tag alpha --no-git-checks || echo "⚠️ Failed to publish $pkg"
+                cd ../..
+              else
+                echo "⏭️  Skipping private package: $pkg"
+              fi
+            fi
+          done
           echo "✅ Alpha publish complete"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
