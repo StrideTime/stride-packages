@@ -28,3 +28,8 @@ export {
 } from './workspace-user-preferences.repo';
 export { WorkspaceStatusRepository, workspaceStatusRepo } from './workspace-status.repo';
 export { ProjectTeamRepository, projectTeamRepo } from './project-team.repo';
+export { FeatureRepository, featureRepo } from './feature.repo';
+export { PlanRepository, planRepo } from './plan.repo';
+export { PlanPriceRepository, planPriceRepo } from './plan-price.repo';
+export { SubscriptionRepository, subscriptionRepo } from './subscription.repo';
+export { AdminAuditRepository, adminAuditRepo } from './admin-audit.repo';

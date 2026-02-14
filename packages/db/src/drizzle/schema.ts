@@ -34,6 +34,7 @@ import type {
   ProjectStatus,
   FontSize,
   Density,
+  FeatureValueType,
 } from '@stridetime/types';
 
 // ============================================================================
@@ -87,30 +88,13 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
 // ROLES TABLE
 // ============================================================================
 
+// NOTE: This table serves as the "plans" table but keeps the SQL name "roles" to avoid migration complexity.
+// Hardcoded feature flags and limit columns have been removed — they are now managed dynamically via
+// the features + plan_features tables below (T104).
 export const rolesTable = sqliteTable('roles', {
   id: text('id').primaryKey(),
   displayName: text('display_name').notNull(),
   description: text('description'),
-
-  // Feature flags
-  cloudSync: integer('cloud_sync', { mode: 'boolean' }).notNull().default(false),
-  mobileApp: integer('mobile_app', { mode: 'boolean' }).notNull().default(false),
-  teamWorkspaces: integer('team_workspaces', { mode: 'boolean' }).notNull().default(false),
-  exportReports: integer('export_reports', { mode: 'boolean' }).notNull().default(false),
-  apiAccess: integer('api_access', { mode: 'boolean' }).notNull().default(false),
-  sso: integer('sso', { mode: 'boolean' }).notNull().default(false),
-  auditLogs: integer('audit_logs', { mode: 'boolean' }).notNull().default(false),
-  customIntegrations: integer('custom_integrations', { mode: 'boolean' }).notNull().default(false),
-  prioritySupport: integer('priority_support', { mode: 'boolean' }).notNull().default(false),
-
-  // Resource limits (null = unlimited)
-  maxWorkspaces: integer('max_workspaces'),
-  maxProjects: integer('max_projects'),
-  maxTeamMembers: integer('max_team_members'),
-  maxApiCallsPerDay: integer('max_api_calls_per_day'),
-  maxStorageMb: integer('max_storage_mb'),
-
-  // Metadata
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -118,6 +102,127 @@ export const rolesTable = sqliteTable('roles', {
 
 export const rolesRelations = relations(rolesTable, ({ many }) => ({
   subscriptions: many(userSubscriptionsTable),
+  features: many(planFeaturesTable),
+  prices: many(planPricesTable),
+}));
+
+// ============================================================================
+// FEATURES TABLE (Dynamic Feature Registry — T104)
+// ============================================================================
+
+// NOTE: Uses isActive instead of deleted — features are deactivated, not soft-deleted.
+export const featuresTable = sqliteTable(
+  'features',
+  {
+    id: text('id').primaryKey(),
+    key: text('key').notNull().unique(), // e.g. 'cloud_sync', 'max_workspaces'
+    displayName: text('display_name').notNull(),
+    description: text('description'),
+    valueType: text('value_type').notNull().$type<FeatureValueType>(), // BOOLEAN or LIMIT
+    category: text('category').notNull(), // e.g. 'sync', 'collaboration', 'limits'
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  table => [index('idx_features_category').on(table.category)]
+);
+
+export const featuresRelations = relations(featuresTable, ({ many }) => ({
+  planFeatures: many(planFeaturesTable),
+}));
+
+// ============================================================================
+// PLAN FEATURES TABLE (Join: What Each Plan Includes — T104)
+// ============================================================================
+
+// NOTE: Join table — no soft delete, uses createdAt/updatedAt only.
+export const planFeaturesTable = sqliteTable(
+  'plan_features',
+  {
+    id: text('id').primaryKey(),
+    roleId: text('role_id').notNull(), // references roles (plans)
+    featureId: text('feature_id').notNull(), // references features
+    enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+    limitValue: integer('limit_value'), // for LIMIT-type features (null = unlimited)
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  table => [
+    uniqueIndex('idx_plan_features_role_feature').on(table.roleId, table.featureId),
+    index('idx_plan_features_feature_id').on(table.featureId),
+  ]
+);
+
+export const planFeaturesRelations = relations(planFeaturesTable, ({ one }) => ({
+  plan: one(rolesTable, {
+    fields: [planFeaturesTable.roleId],
+    references: [rolesTable.id],
+  }),
+  feature: one(featuresTable, {
+    fields: [planFeaturesTable.featureId],
+    references: [featuresTable.id],
+  }),
+}));
+
+// ============================================================================
+// PLAN PRICES TABLE (Pricing Per Billing Period Per Plan — T104)
+// ============================================================================
+
+export const planPricesTable = sqliteTable(
+  'plan_prices',
+  {
+    id: text('id').primaryKey(),
+    roleId: text('role_id').notNull(), // references roles (plans)
+    billingPeriod: text('billing_period').notNull().$type<BillingPeriod>(),
+    priceCents: integer('price_cents').notNull(),
+    currency: text('currency').notNull().default('USD'),
+    stripePriceId: text('stripe_price_id'),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  table => [
+    index('idx_plan_prices_role_id').on(table.roleId),
+    uniqueIndex('idx_plan_prices_role_period').on(table.roleId, table.billingPeriod),
+  ]
+);
+
+export const planPricesRelations = relations(planPricesTable, ({ one }) => ({
+  plan: one(rolesTable, {
+    fields: [planPricesTable.roleId],
+    references: [rolesTable.id],
+  }),
+}));
+
+// ============================================================================
+// ADMIN AUDIT LOG TABLE (Append-Only — T104)
+// ============================================================================
+
+// NOTE: EXCEPTION — append-only table with no updatedAt, no soft delete.
+// Audit entries are never modified or deleted.
+export const adminAuditLogTable = sqliteTable(
+  'admin_audit_log',
+  {
+    id: text('id').primaryKey(),
+    adminUserId: text('admin_user_id').notNull(),
+    action: text('action').notNull(), // e.g. 'create_plan', 'retire_plan', 'change_user_plan'
+    entityType: text('entity_type').notNull(), // e.g. 'plan', 'feature', 'subscription', 'user'
+    entityId: text('entity_id').notNull(),
+    details: text('details'), // JSON of change details
+    performedAt: text('performed_at').notNull(), // serves as createdAt
+  },
+  table => [
+    index('idx_admin_audit_log_admin').on(table.adminUserId),
+    index('idx_admin_audit_log_entity').on(table.entityType, table.entityId),
+    index('idx_admin_audit_log_performed_at').on(table.performedAt),
+  ]
+);
+
+export const adminAuditLogRelations = relations(adminAuditLogTable, ({ one }) => ({
+  admin: one(usersTable, {
+    fields: [adminAuditLogTable.adminUserId],
+    references: [usersTable.id],
+  }),
 }));
 
 // ============================================================================

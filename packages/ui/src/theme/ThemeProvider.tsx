@@ -1,46 +1,78 @@
-import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
-import { lightTheme, darkTheme } from "./theme";
-import { type ReactNode, createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-interface ThemeProviderProps {
-  children: ReactNode;
-  mode?: "light" | "dark";
+type Theme = "light" | "dark" | "system";
+
+type ThemeProviderProps = {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+};
+
+type ThemeProviderState = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+const initialState: ThemeProviderState = {
+  theme: "system",
+  setTheme: () => null,
+};
+
+const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "stride-ui-theme",
+  ...props
+}: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return defaultTheme;
+    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const root = window.document.documentElement;
+
+    root.classList.remove("light", "dark");
+
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+
+      root.classList.add(systemTheme);
+      return;
+    }
+
+    root.classList.add(theme);
+  }, [theme]);
+
+  const value = {
+    theme,
+    setTheme: (theme: Theme) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, theme);
+      }
+      setTheme(theme);
+    },
+  };
+
+  return (
+    <ThemeProviderContext.Provider {...props} value={value}>
+      {children}
+    </ThemeProviderContext.Provider>
+  );
 }
-
-interface ThemeContextValue {
-  mode: "light" | "dark";
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
+  const context = useContext(ThemeProviderContext);
+
+  if (context === undefined) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
+
   return context;
-}
-
-export function ThemeProvider({ children, mode: initialMode = "light" }: ThemeProviderProps) {
- const [mode, setMode] = useState<"light" | "dark">(initialMode);
-
- const theme = mode === "dark" ? darkTheme : lightTheme;
-
- const contextValue = useMemo(
-   () => ({
-     mode,
-     toggleTheme: () => setMode((prev) => (prev === "light" ? "dark" : "light")),
-   }),
-   [mode]
- );
-
- return (
-  <ThemeContext.Provider value={contextValue}>
-    <MuiThemeProvider theme={theme}>
-     <CssBaseline />
-     {children}
-    </MuiThemeProvider>
-  </ThemeContext.Provider>
- );
 }

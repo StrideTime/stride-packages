@@ -32,6 +32,10 @@ const drizzleSchema = {
   // Tables
   usersTable: schema.usersTable,
   rolesTable: schema.rolesTable,
+  featuresTable: schema.featuresTable,
+  planFeaturesTable: schema.planFeaturesTable,
+  planPricesTable: schema.planPricesTable,
+  adminAuditLogTable: schema.adminAuditLogTable,
   userSubscriptionsTable: schema.userSubscriptionsTable,
   subscriptionHistoryTable: schema.subscriptionHistoryTable,
   workspacesTable: schema.workspacesTable,
@@ -55,6 +59,10 @@ const drizzleSchema = {
   // Relations
   usersRelations: schema.usersRelations,
   rolesRelations: schema.rolesRelations,
+  featuresRelations: schema.featuresRelations,
+  planFeaturesRelations: schema.planFeaturesRelations,
+  planPricesRelations: schema.planPricesRelations,
+  adminAuditLogRelations: schema.adminAuditLogRelations,
   userSubscriptionsRelations: schema.userSubscriptionsRelations,
   subscriptionHistoryRelations: schema.subscriptionHistoryRelations,
   workspacesRelations: schema.workspacesRelations,

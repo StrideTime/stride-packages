@@ -32,6 +32,8 @@
     "**/dist",
     "**/build",
     "**/coverage",
+    "**/storybook-static",
+    "**/*.config.js",
     "**/*.test.ts",
     "**/*.test.tsx",
     "scripts"

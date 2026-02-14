@@ -4,7 +4,11 @@
 
 export * from './break';
 export * from './daily-summary';
+export * from './feature';
 export * from './goal';
+export * from './plan';
+export * from './plan-feature';
+export * from './plan-price';
 export * from './points-ledger';
 export * from './project';
 export * from './project-team';

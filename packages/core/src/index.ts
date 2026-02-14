@@ -17,6 +17,7 @@ export * from './utils';
 export {
   initDatabase,
   getDatabase,
+  getPowerSyncDatabase,
   closeDatabase,
   isDatabaseInitialized,
   connectSync,

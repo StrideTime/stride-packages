@@ -10,3 +10,5 @@ export * from './project.service';
 export * from './goal.service';
 export * from './break.service';
 export * from './work-session.service';
+export * from './pricing.service';
+export * from './admin.service';

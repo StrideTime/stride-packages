@@ -37,6 +37,15 @@ export function createTestDb(): TestDatabase {
       deleted INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS roles (
+      id TEXT PRIMARY KEY,
+      display_name TEXT NOT NULL,
+      description TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS workspaces (
       id TEXT PRIMARY KEY,
       owner_user_id TEXT NOT NULL,
@@ -330,6 +339,52 @@ export function createTestDb(): TestDatabase {
       updated_at TEXT NOT NULL,
       deleted INTEGER NOT NULL DEFAULT 0,
       UNIQUE(workspace_id, user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS features (
+      id TEXT PRIMARY KEY,
+      key TEXT NOT NULL UNIQUE,
+      display_name TEXT NOT NULL,
+      description TEXT,
+      value_type TEXT NOT NULL,
+      category TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS plan_features (
+      id TEXT PRIMARY KEY,
+      role_id TEXT NOT NULL,
+      feature_id TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      limit_value INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(role_id, feature_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS plan_prices (
+      id TEXT PRIMARY KEY,
+      role_id TEXT NOT NULL,
+      billing_period TEXT NOT NULL,
+      price_cents INTEGER NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'USD',
+      stripe_price_id TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(role_id, billing_period)
+    );
+
+    CREATE TABLE IF NOT EXISTS admin_audit_log (
+      id TEXT PRIMARY KEY,
+      admin_user_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      details TEXT,
+      performed_at TEXT NOT NULL
     );
   `);
 

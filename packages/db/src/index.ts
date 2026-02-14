@@ -100,6 +100,16 @@ export {
   workspaceStatusRepo,
   ProjectTeamRepository,
   projectTeamRepo,
+  FeatureRepository,
+  featureRepo,
+  PlanRepository,
+  planRepo,
+  PlanPriceRepository,
+  planPriceRepo,
+  SubscriptionRepository,
+  subscriptionRepo,
+  AdminAuditRepository,
+  adminAuditRepo,
 } from './repositories';
 
 // ============================================================================
