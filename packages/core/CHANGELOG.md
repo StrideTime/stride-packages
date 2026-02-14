@@ -1,5 +1,14 @@
 # @stridetime/core
 
+## 1.0.5-alpha.1
+
+### Patch Changes
+
+- 2c2a4ad: Updated logic for watch queries
+- Updated dependencies [2c2a4ad]
+  - @stridetime/db@1.0.5-alpha.1
+  - @stridetime/types@1.0.5-alpha.1
+
 ## 1.0.5-alpha.0
 
 ### Patch Changes
