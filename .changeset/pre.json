@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@stridetime/core": "1.0.4",
+    "@stridetime/db": "1.0.4",
+    "@stridetime/test-utils": "1.0.4",
+    "@stridetime/types": "1.0.4",
+    "@stridetime/ui": "1.0.4"
+  },
+  "changesets": []
+}
