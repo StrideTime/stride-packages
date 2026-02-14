@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./SplashScreen.css";
 
-const MIN_DISPLAY_MS = 4000;
+const MIN_DISPLAY_MS = 4200;
 
 export interface SplashScreenProps {
   /** While true the splash stays visible; once false the fade-out countdown begins. */
@@ -11,36 +11,39 @@ export interface SplashScreenProps {
 }
 
 /**
- * Uses the exact logo SVG (viewBox 0 0 400 400, strokeWidth 31) rendered
- * as three separate paths inside one SVG. Each path starts as a vertical
- * line at its chevron's X-center and morphs to the real chevron shape.
+ * Uses the exact logo SVG (viewBox 0 0 400 400, strokeWidth 31).
  *
- * Logo paths:
- *   chevron 1: M94  109 L172 200 L94  291   opacity 0.35
- *   chevron 2: M172 109 L250 200 L172 291   opacity 0.65
- *   chevron 3: M250 109 L328 200 L250 291   opacity 1.0
+ * Three vertical lines start spread out on the left. The leftmost
+ * line snaps into a chevron — its midpoint swings right and reaches
+ * the next line, visually "pushing" it. That line then snaps and
+ * pushes the third. Domino cascade.
  *
- * Vertical line equivalents (same X for top, mid, bottom):
- *   line 1: M133 109 L133 200 L133 291   (center of 94–172)
- *   line 2: M211 109 L211 200 L211 291   (center of 172–250)
- *   line 3: M289 109 L289 200 L289 291   (center of 250–328)
+ * Starting positions (vertical lines, spread apart):
+ *   line 0: x=30    → snaps + slides right past line 1 at x=165, keeps going
+ *   line 1: x=165   → snaps + slides right with #0 toward line 2 at x=370
+ *   line 2: x=340   → snaps when #0+#1 reach it
+ *
+ * Logo final positions:
+ *   chevron 0: M 94  109 L 172 200 L 94  291   opacity 0.35
+ *   chevron 1: M 172 109 L 250 200 L 172 291   opacity 0.65
+ *   chevron 2: M 250 109 L 328 200 L 250 291   opacity 1.0
  */
 
 const CHEVRONS = [
   {
     opacity: 0.35,
-    line: "M 133 109 L 133 200 L 133 291",
-    chevron: "M 94 109 L 172 200 L 94 291",
+    start: "M 30 109 L 30 200 L 30 291",
+    end: "M 94 109 L 172 200 L 94 291",
   },
   {
     opacity: 0.65,
-    line: "M 211 109 L 211 200 L 211 291",
-    chevron: "M 172 109 L 250 200 L 172 291",
+    start: "M 165 109 L 165 200 L 165 291",
+    end: "M 172 109 L 250 200 L 172 291",
   },
   {
     opacity: 1.0,
-    line: "M 289 109 L 289 200 L 289 291",
-    chevron: "M 250 109 L 328 200 L 250 291",
+    start: "M 340 109 L 340 200 L 340 291",
+    end: "M 250 109 L 328 200 L 250 291",
   },
 ];
 
@@ -84,7 +87,7 @@ export function SplashScreen({ loading, onComplete }: SplashScreenProps) {
             <path
               key={i}
               className={`splash-stroke splash-stroke--${i}`}
-              d={c.line}
+              d={c.start}
               stroke="#1A99E6"
               strokeWidth="31"
               strokeLinecap="round"

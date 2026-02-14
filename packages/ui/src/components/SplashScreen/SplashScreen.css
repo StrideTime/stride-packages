@@ -20,18 +20,17 @@
 .splash-group {
   display: flex;
   align-items: center;
-  gap: 24px;
-  animation: splash-sweep 1s cubic-bezier(0.22, 1, 0.36, 1) 1.6s both;
+  gap: 12px;
+  animation: splash-sweep 1s cubic-bezier(0.22, 1, 0.36, 1) 2.6s both;
 }
 
 @keyframes splash-sweep {
-  from { transform: translateX(-60px); }
-  to   { transform: translateX(0); }
+  0%   { transform: translateX(-200px); }
+  65%  { transform: translateX(30px); }
+  100% { transform: translateX(0); }
 }
 
-/* ── Chevron SVG ──
-   Uses the full logo viewBox (0 0 400 400) so stroke proportions
-   are pixel-perfect. Rendered at 110px tall. */
+/* ── Chevron SVG ── */
 .splash-chevrons {
   width: 110px;
   height: 110px;
@@ -39,82 +38,237 @@
 }
 
 /* ── Stroke Paths ──
-   Each starts as a vertical line at the chevron's center X,
-   then morphs to the real chevron shape via CSS `d` animation.
-   strokeWidth, linecap, linejoin match LogoMark.tsx exactly. */
+   Single animation per path. Linear easing for constant velocity.
+   Every d-path keyframe is strictly further right than the previous.
 
-/* Phase 1: Rise — all three strokes slide up and fade in (staggered) */
-.splash-stroke {
-  opacity: 0;
-  transform: translateY(30px);
-}
+   Absolute timeline (accounting for delays):
+     t=0–0.9s     All three lines rise (fade in + slide up)
+     t=0.9–1.15s  #0 snaps into chevron
+     t=1.15–2.3s  #0 slides right continuously
+     t=1.35s      #0 tip reaches line 1 at x=165 → #1 starts snapping
+     t=1.35–1.55s #1 snaps into chevron while moving right
+     t=1.55–2.3s  #1 slides right continuously
+     t=2.0s       #1 tip reaches line 2 at x=340 → #2 snaps
+     t=2.0–2.15s  #2 snaps into chevron
+     t=2.3–2.6s   All three settle to final logo positions
+     t=2.6–3.6s   Sweep: group slides in, overshoots, bounces */
 
 .splash-stroke--0 {
-  animation:
-    splash-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0s both,
-    splash-morph-0 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.90s both;
+  opacity: 0;
+  animation: splash-path-0 2.6s linear 0s both;
 }
 
 .splash-stroke--1 {
-  animation:
-    splash-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both,
-    splash-morph-1 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.0s both;
+  opacity: 0;
+  animation: splash-path-1 2.5s linear 0.1s both;
 }
 
 .splash-stroke--2 {
-  animation:
-    splash-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both,
-    splash-morph-2 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.1s both;
+  opacity: 0;
+  animation: splash-path-2 2.4s linear 0.2s both;
 }
 
-@keyframes splash-rise {
-  from {
+/* ── Path 0 (leftmost) ── 2.6s, delay 0s
+   35% = t=0.9s (rise done)
+   44% = t=1.14s (snap done)
+   52% = t=1.35s (tip reaches line 1)
+   ...continuous slide...
+   88% = t=2.29s (furthest right)
+   100% = t=2.6s (settled) */
+@keyframes splash-path-0 {
+  0% {
     opacity: 0;
     transform: translateY(30px);
+    d: path("M 30 109 L 30 200 L 30 291");
   }
-  to {
+  35% {
     opacity: 1;
     transform: translateY(0);
+    d: path("M 30 109 L 30 200 L 30 291");
+  }
+  44% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 74 109 L 152 200 L 74 291");
+  }
+  52% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 100 109 L 178 200 L 100 291");
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 125 109 L 203 200 L 125 291");
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 148 109 L 226 200 L 148 291");
+  }
+  76% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 168 109 L 246 200 L 168 291");
+  }
+  84% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 183 109 L 261 200 L 183 291");
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 190 109 L 268 200 L 190 291");
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 94 109 L 172 200 L 94 291");
   }
 }
 
-/* Phase 2: Morph — vertical lines bend into chevrons.
-   Each chevron has its own keyframes because the start/end paths differ. */
-@keyframes splash-morph-0 {
-  from { d: path("M 133 109 L 133 200 L 133 291"); }
-  to   { d: path("M 94 109 L 172 200 L 94 291"); }
+/* ── Path 1 (middle) ── 2.5s, delay 0.1s
+   36% = t=1.0s (rise done)
+   50% = t=1.35s (tip of #0 reaches here → start snapping)
+   58% = t=1.55s (snap done, sliding right)
+   ...continuous slide...
+   88% = t=2.3s (furthest right)
+   100% = t=2.6s (settled) */
+@keyframes splash-path-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+    d: path("M 165 109 L 165 200 L 165 291");
+  }
+  36% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 165 109 L 165 200 L 165 291");
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 165 109 L 165 200 L 165 291");
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 210 109 L 288 200 L 210 291");
+  }
+  66% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 235 109 L 313 200 L 235 291");
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 253 109 L 331 200 L 253 291");
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 268 109 L 346 200 L 268 291");
+  }
+  84% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 278 109 L 356 200 L 278 291");
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 285 109 L 363 200 L 285 291");
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 172 109 L 250 200 L 172 291");
+  }
 }
 
-@keyframes splash-morph-1 {
-  from { d: path("M 211 109 L 211 200 L 211 291"); }
-  to   { d: path("M 172 109 L 250 200 L 172 291"); }
+/* ── Path 2 (rightmost) ── 2.4s, delay 0.2s
+   38% = t=1.1s (rise done)
+   75% = t=2.0s (tip of #1 reaches here → snap)
+   83% = t=2.2s (snap done)
+   90% = t=2.36s (hold)
+   100% = t=2.6s (settled) */
+@keyframes splash-path-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+    d: path("M 340 109 L 340 200 L 340 291");
+  }
+  38% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 340 109 L 340 200 L 340 291");
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 340 109 L 340 200 L 340 291");
+  }
+  83% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 290 109 L 368 200 L 290 291");
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 290 109 L 368 200 L 290 291");
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    d: path("M 250 109 L 328 200 L 250 291");
+  }
 }
 
-@keyframes splash-morph-2 {
-  from { d: path("M 289 109 L 289 200 L 289 291"); }
-  to   { d: path("M 250 109 L 328 200 L 250 291"); }
-}
-
-/* ── Stride Text ── */
+/* ── Stride Text ──
+   Fades in at its natural position, then drifts leftward as the
+   chevrons approach. Ends slightly closer than resting gap. */
 .splash-title {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 4rem;
   font-weight: 700;
   color: hsl(var(--color-foreground));
   opacity: 0;
-  animation: splash-text-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  animation: splash-text-in 2.2s linear 0.4s both;
   letter-spacing: -0.02em;
   user-select: none;
 }
 
 @keyframes splash-text-in {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(20px);
   }
-  to {
+  25% {
     opacity: 1;
     transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(-2px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateX(-4px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-6px);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(-7px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-8px);
   }
 }
 
@@ -125,8 +279,8 @@
   font-weight: 400;
   color: hsl(var(--color-muted-foreground));
   opacity: 0;
-  margin-top: 12px;
-  animation: splash-tagline-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 3.0s both;
+  margin-top: 4px;
+  animation: splash-tagline-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 3.2s both;
   user-select: none;
   letter-spacing: 0.02em;
 }

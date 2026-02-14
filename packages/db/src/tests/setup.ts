@@ -377,6 +377,28 @@ export function createTestDb(): TestDatabase {
       UNIQUE(role_id, billing_period)
     );
 
+    CREATE TABLE IF NOT EXISTS user_subscriptions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      role_id TEXT NOT NULL,
+      status TEXT NOT NULL,
+      price_cents INTEGER NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'USD',
+      billing_period TEXT NOT NULL,
+      stripe_customer_id TEXT,
+      stripe_subscription_id TEXT,
+      stripe_price_id TEXT,
+      started_at TEXT NOT NULL,
+      current_period_start TEXT,
+      current_period_end TEXT,
+      canceled_at TEXT,
+      trial_ends_at TEXT,
+      is_grandfathered INTEGER NOT NULL DEFAULT 0,
+      grandfathered_reason TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS admin_audit_log (
       id TEXT PRIMARY KEY,
       admin_user_id TEXT NOT NULL,

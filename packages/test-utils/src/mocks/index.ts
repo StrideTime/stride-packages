@@ -2,6 +2,7 @@
  * Mock generators for testing
  */
 
+export * from './admin-audit';
 export * from './break';
 export * from './daily-summary';
 export * from './feature';
@@ -13,6 +14,7 @@ export * from './points-ledger';
 export * from './project';
 export * from './project-team';
 export * from './scheduled-event';
+export * from './subscription';
 export * from './task';
 export * from './task-type';
 export * from './team';

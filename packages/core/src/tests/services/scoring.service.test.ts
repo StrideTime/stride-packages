@@ -4,29 +4,96 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ScoringService, DIFFICULTY_MULTIPLIERS } from '../../services/scoring.service';
-import { createMockTask, createMockCompletedTask } from '@stridetime/test-utils';
+import {
+  createMockTask,
+  createMockCompletedTask,
+  createMockDatabase,
+  createMockCompletedTimeEntry,
+  createMockActiveTimeEntry,
+} from '@stridetime/test-utils';
 import type { ScoringContext } from '../../services/scoring.service';
 
-// Mock the repositories - inline to avoid hoisting issues
-vi.mock('@stridetime/db', () => ({
-  taskRepo: {
+// Create hoisted mocks
+const { mockTaskRepo, mockTimeEntryRepo, mockDailySummaryRepo } = vi.hoisted(() => ({
+  mockTaskRepo: {
     findById: vi.fn(),
     findByUser: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
-  timeEntryRepo: {
+  mockTimeEntryRepo: {
     findByDateRange: vi.fn(),
+    create: vi.fn(),
+    findById: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
-  dailySummaryRepo: {
+  mockDailySummaryRepo: {
     upsert: vi.fn(),
     calculateAveragePoints: vi.fn(),
+    findById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
+}));
+
+// Mock the module
+vi.mock('@stridetime/db', () => ({
+  taskRepo: mockTaskRepo,
+  TaskRepository: vi.fn(),
+  timeEntryRepo: mockTimeEntryRepo,
+  TimeEntryRepository: vi.fn(),
+  dailySummaryRepo: mockDailySummaryRepo,
+  DailySummaryRepository: vi.fn(),
+  initDatabase: vi.fn(),
+  getDatabase: vi.fn(),
+  closeDatabase: vi.fn(),
+  isDatabaseInitialized: vi.fn(),
+  getPowerSyncDatabase: vi.fn(),
+  getConnector: vi.fn(),
+  connectSync: vi.fn(),
+  disconnectSync: vi.fn(),
+  isSyncEnabled: vi.fn(),
+  getSyncStatus: vi.fn(),
+  onSyncStatusChange: vi.fn(),
+  SupabaseConnector: vi.fn(),
+  SupabaseAuthProvider: vi.fn(),
+  WorkspaceRepository: vi.fn(),
+  workspaceRepo: vi.fn(),
+  UserRepository: vi.fn(),
+  userRepo: vi.fn(),
+  ProjectRepository: vi.fn(),
+  projectRepo: vi.fn(),
+  BreakRepository: vi.fn(),
+  breakRepo: vi.fn(),
+  FeatureRepository: vi.fn(),
+  featureRepo: vi.fn(),
+  PlanRepository: vi.fn(),
+  planRepo: vi.fn(),
+  PlanPriceRepository: vi.fn(),
+  planPriceRepo: vi.fn(),
+  SubscriptionRepository: vi.fn(),
+  subscriptionRepo: vi.fn(),
+  AdminAuditRepository: vi.fn(),
+  adminAuditRepo: vi.fn(),
+  generateId: vi.fn(),
+  now: vi.fn(),
+  today: vi.fn(),
 }));
 
 describe('ScoringService', () => {
   let scoringService: ScoringService;
+  let mockDb: any;
 
   beforeEach(() => {
-    scoringService = new ScoringService();
+    scoringService = new ScoringService(
+      mockTaskRepo as any,
+      mockTimeEntryRepo as any,
+      mockDailySummaryRepo as any
+    );
+    mockDb = createMockDatabase();
     vi.clearAllMocks();
   });
 
@@ -285,6 +352,238 @@ describe('ScoringService', () => {
       expect(DIFFICULTY_MULTIPLIERS.MEDIUM).toBe(3);
       expect(DIFFICULTY_MULTIPLIERS.HARD).toBe(5);
       expect(DIFFICULTY_MULTIPLIERS.EXTREME).toBe(8);
+    });
+  });
+
+  // ==========================================================================
+  // ASYNC METHODS (require mocked repos)
+  // ==========================================================================
+
+  describe('getTaskTypesWorkedToday', () => {
+    it('should count unique task types from time entries', async () => {
+      const entries = [
+        createMockCompletedTimeEntry(30, { taskId: 'task-1' }),
+        createMockCompletedTimeEntry(45, { taskId: 'task-2' }),
+        createMockCompletedTimeEntry(60, { taskId: 'task-3' }),
+      ];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      const task1 = createMockTask({ id: 'task-1', taskTypeId: 'type-dev' });
+      const task2 = createMockTask({ id: 'task-2', taskTypeId: 'type-design' });
+      const task3 = createMockTask({ id: 'task-3', taskTypeId: 'type-dev' }); // same as task1
+
+      mockTaskRepo.findById.mockImplementation((_db: any, id: string) => {
+        if (id === 'task-1') return Promise.resolve(task1);
+        if (id === 'task-2') return Promise.resolve(task2);
+        if (id === 'task-3') return Promise.resolve(task3);
+        return Promise.resolve(null);
+      });
+
+      const count = await scoringService.getTaskTypesWorkedToday(mockDb, 'user-1', '2026-02-13');
+
+      expect(count).toBe(2); // type-dev and type-design
+    });
+
+    it('should return 0 when no time entries', async () => {
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue([]);
+
+      const count = await scoringService.getTaskTypesWorkedToday(mockDb, 'user-1', '2026-02-13');
+
+      expect(count).toBe(0);
+    });
+
+    it('should exclude tasks with null taskTypeId', async () => {
+      const entries = [
+        createMockCompletedTimeEntry(30, { taskId: 'task-1' }),
+        createMockCompletedTimeEntry(30, { taskId: 'task-2' }),
+      ];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      mockTaskRepo.findById.mockImplementation((_db: any, id: string) => {
+        if (id === 'task-1')
+          return Promise.resolve(createMockTask({ id: 'task-1', taskTypeId: 'type-dev' }));
+        if (id === 'task-2')
+          return Promise.resolve(createMockTask({ id: 'task-2', taskTypeId: null }));
+        return Promise.resolve(null);
+      });
+
+      const count = await scoringService.getTaskTypesWorkedToday(mockDb, 'user-1', '2026-02-13');
+
+      expect(count).toBe(1);
+    });
+
+    it('should deduplicate task IDs from multiple entries', async () => {
+      const entries = [
+        createMockCompletedTimeEntry(30, { taskId: 'task-1' }),
+        createMockCompletedTimeEntry(30, { taskId: 'task-1' }), // same task
+      ];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      mockTaskRepo.findById.mockResolvedValue(
+        createMockTask({ id: 'task-1', taskTypeId: 'type-dev' })
+      );
+
+      const count = await scoringService.getTaskTypesWorkedToday(mockDb, 'user-1', '2026-02-13');
+
+      // findById should only be called once due to deduplication
+      expect(mockTaskRepo.findById).toHaveBeenCalledTimes(1);
+      expect(count).toBe(1);
+    });
+  });
+
+  describe('calculateDailySummary', () => {
+    it('should calculate summary for a day with completed tasks', async () => {
+      const startTime = new Date('2026-02-13T09:00:00.000Z');
+      const endTime = new Date('2026-02-13T10:00:00.000Z');
+
+      const entries = [
+        createMockCompletedTimeEntry(60, {
+          taskId: 'task-1',
+          startedAt: startTime.toISOString(),
+          endedAt: endTime.toISOString(),
+        }),
+      ];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      const completedTask = createMockCompletedTask({
+        id: 'task-1',
+        difficulty: 'MEDIUM',
+        status: 'COMPLETED',
+        taskTypeId: 'type-dev',
+        estimatedMinutes: 90,
+        actualMinutes: 60,
+      });
+      mockTaskRepo.findById.mockResolvedValue(completedTask);
+
+      const summary = await scoringService.calculateDailySummary(mockDb, 'user-1', '2026-02-13');
+
+      expect(summary.tasksCompleted).toBe(1);
+      expect(summary.tasksWorkedOn).toBe(1);
+      expect(summary.focusMinutes).toBe(60);
+      expect(summary.totalPoints).toBeGreaterThan(0);
+      expect(summary.efficiencyRating).toBeGreaterThan(1.0); // Under estimate
+    });
+
+    it('should return zero summary for day with no entries', async () => {
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue([]);
+
+      const summary = await scoringService.calculateDailySummary(mockDb, 'user-1', '2026-02-13');
+
+      expect(summary.tasksCompleted).toBe(0);
+      expect(summary.tasksWorkedOn).toBe(0);
+      expect(summary.totalPoints).toBe(0);
+      expect(summary.focusMinutes).toBe(0);
+      expect(summary.efficiencyRating).toBe(1.0);
+    });
+
+    it('should handle active time entries (no endedAt)', async () => {
+      const entries = [createMockActiveTimeEntry({ taskId: 'task-1' })];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      const task = createMockTask({ id: 'task-1', status: 'IN_PROGRESS' });
+      mockTaskRepo.findById.mockResolvedValue(task);
+
+      const summary = await scoringService.calculateDailySummary(mockDb, 'user-1', '2026-02-13');
+
+      expect(summary.focusMinutes).toBe(0); // Active entries contribute 0 minutes
+      expect(summary.tasksWorkedOn).toBe(1);
+      expect(summary.tasksCompleted).toBe(0);
+    });
+
+    it('should calculate average efficiency across tasks with estimates', async () => {
+      const entries = [
+        createMockCompletedTimeEntry(30, { taskId: 'task-1' }),
+        createMockCompletedTimeEntry(45, { taskId: 'task-2' }),
+      ];
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue(entries);
+
+      const task1 = createMockTask({
+        id: 'task-1',
+        status: 'COMPLETED',
+        estimatedMinutes: 60,
+        actualMinutes: 30,
+        taskTypeId: null,
+      });
+      const task2 = createMockTask({
+        id: 'task-2',
+        status: 'COMPLETED',
+        estimatedMinutes: 60,
+        actualMinutes: 60,
+        taskTypeId: null,
+      });
+
+      mockTaskRepo.findById.mockImplementation((_db: any, id: string) => {
+        if (id === 'task-1') return Promise.resolve(task1);
+        if (id === 'task-2') return Promise.resolve(task2);
+        return Promise.resolve(null);
+      });
+
+      const summary = await scoringService.calculateDailySummary(mockDb, 'user-1', '2026-02-13');
+
+      // task1: 60/30 = 2.0, task2: 60/60 = 1.0, average = 1.5
+      expect(summary.efficiencyRating).toBe(1.5);
+    });
+  });
+
+  describe('saveDailySummary', () => {
+    it('should calculate and upsert daily summary', async () => {
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue([]);
+      mockDailySummaryRepo.upsert.mockResolvedValue(undefined);
+
+      await scoringService.saveDailySummary(mockDb, 'user-1', '2026-02-13');
+
+      expect(mockDailySummaryRepo.upsert).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({
+          userId: 'user-1',
+          date: '2026-02-13',
+          tasksCompleted: 0,
+          tasksWorkedOn: 0,
+          standoutMoment: null,
+        })
+      );
+    });
+
+    it('should pass standout moment to summary', async () => {
+      mockTimeEntryRepo.findByDateRange.mockResolvedValue([]);
+      mockDailySummaryRepo.upsert.mockResolvedValue(undefined);
+
+      await scoringService.saveDailySummary(
+        mockDb,
+        'user-1',
+        '2026-02-13',
+        'Finished the big refactor!'
+      );
+
+      expect(mockDailySummaryRepo.upsert).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({
+          standoutMoment: 'Finished the big refactor!',
+        })
+      );
+    });
+  });
+
+  describe('getAverageScore', () => {
+    it('should return average score from daily summary repo', async () => {
+      mockDailySummaryRepo.calculateAveragePoints.mockResolvedValue(42);
+
+      const avg = await scoringService.getAverageScore(mockDb, 'user-1');
+
+      expect(avg).toBe(42);
+      expect(mockDailySummaryRepo.calculateAveragePoints).toHaveBeenCalledWith(
+        mockDb,
+        'user-1',
+        30
+      );
+    });
+
+    it('should pass custom days parameter', async () => {
+      mockDailySummaryRepo.calculateAveragePoints.mockResolvedValue(10);
+
+      await scoringService.getAverageScore(mockDb, 'user-1', 7);
+
+      expect(mockDailySummaryRepo.calculateAveragePoints).toHaveBeenCalledWith(mockDb, 'user-1', 7);
     });
   });
 });
