@@ -1,5 +1,12 @@
 # @stridetime/db
 
+## 1.0.5-alpha.0
+
+### Patch Changes
+
+- 68132cc: Updated UI components, added features and pricing plan repos and services
+  - @stridetime/types@1.0.5-alpha.0
+
 ## 1.0.4
 
 ### Patch Changes

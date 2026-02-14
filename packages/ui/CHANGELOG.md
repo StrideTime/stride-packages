@@ -1,5 +1,11 @@
 # @stridetime/ui
 
+## 1.0.5-alpha.0
+
+### Patch Changes
+
+- 68132cc: Updated UI components, added features and pricing plan repos and services
+
 ## 1.0.4
 
 ### Patch Changes
