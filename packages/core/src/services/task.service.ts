@@ -355,6 +355,26 @@ export class TaskService {
   async findSubTasks(db: StrideDatabase, parentTaskId: string): Promise<Task[]> {
     return this.taskRepo.findByParentId(db, parentTaskId);
   }
+
+  // ==========================================================================
+  // REACTIVE QUERIES (return CompilableQuery for use with useQuery)
+  // ==========================================================================
+
+  /**
+   * Reactive query: tasks planned for a specific date.
+   * Pass the result to useQuery() from @powersync/react.
+   */
+  watchTodayTasks(db: StrideDatabase, userId: string, date: string) {
+    return this.taskRepo.watchByPlannedDate(db, userId, date);
+  }
+
+  /**
+   * Reactive query: all tasks for a user.
+   * Pass the result to useQuery() from @powersync/react.
+   */
+  watchAllTasks(db: StrideDatabase, userId: string) {
+    return this.taskRepo.watchByUser(db, userId);
+  }
 }
 
 /**

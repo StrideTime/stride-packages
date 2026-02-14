@@ -200,6 +200,18 @@ export class ProjectService {
     return this.projectRepo.findByWorkspaceId(db, workspaceId);
   }
 
+  // ==========================================================================
+  // REACTIVE QUERIES (return CompilableQuery for use with useQuery)
+  // ==========================================================================
+
+  /**
+   * Reactive query: all projects for a user.
+   * Pass the result to useQuery() from @powersync/react.
+   */
+  watchByUser(db: StrideDatabase, userId: string) {
+    return this.projectRepo.watchByUser(db, userId);
+  }
+
   /**
    * Update project completion percentage based on task completion
    */

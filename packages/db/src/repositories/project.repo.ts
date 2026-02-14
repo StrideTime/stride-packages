@@ -6,6 +6,7 @@
  */
 
 import { eq, and } from 'drizzle-orm';
+import { toCompilableQuery } from '@powersync/drizzle-driver';
 import type { Project } from '@stridetime/types';
 import { projectsTable } from '../drizzle/schema';
 import type { ProjectRow, NewProjectRow } from '../drizzle/types';
@@ -182,6 +183,23 @@ export class ProjectRepository {
       .from(projectsTable)
       .where(and(eq(projectsTable.workspaceId, workspaceId), eq(projectsTable.deleted, false)));
     return result.length;
+  }
+
+  // ==========================================================================
+  // REACTIVE QUERIES (return CompilableQuery for use with useQuery)
+  // ==========================================================================
+
+  /**
+   * Reactive query: all projects for a user.
+   * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
+   */
+  watchByUser(db: StrideDatabase, userId: string) {
+    return toCompilableQuery(
+      db
+        .select()
+        .from(projectsTable)
+        .where(and(eq(projectsTable.userId, userId), eq(projectsTable.deleted, false)))
+    );
   }
 }
 

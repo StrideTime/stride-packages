@@ -5,7 +5,8 @@
  * All methods accept a DB instance to support transactions.
  */
 
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and, isNull, asc, desc } from 'drizzle-orm';
+import { toCompilableQuery } from '@powersync/drizzle-driver';
 import type { Task, TaskStatus } from '@stridetime/types';
 import { tasksTable } from '../drizzle/schema';
 import type { TaskRow, NewTaskRow } from '../drizzle/types';
@@ -290,6 +291,44 @@ export class TaskRepository {
       .from(tasksTable)
       .where(and(eq(tasksTable.projectId, projectId), eq(tasksTable.deleted, false)));
     return result.length;
+  }
+
+  // ==========================================================================
+  // REACTIVE QUERIES (return CompilableQuery for use with useQuery)
+  // ==========================================================================
+
+  /**
+   * Reactive query: tasks planned for a specific date.
+   * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
+   */
+  watchByPlannedDate(db: StrideDatabase, userId: string, date: string) {
+    return toCompilableQuery(
+      db
+        .select()
+        .from(tasksTable)
+        .where(
+          and(
+            eq(tasksTable.userId, userId),
+            eq(tasksTable.plannedForDate, date),
+            eq(tasksTable.deleted, false)
+          )
+        )
+        .orderBy(asc(tasksTable.displayOrder))
+    );
+  }
+
+  /**
+   * Reactive query: all tasks for a user.
+   * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
+   */
+  watchByUser(db: StrideDatabase, userId: string) {
+    return toCompilableQuery(
+      db
+        .select()
+        .from(tasksTable)
+        .where(and(eq(tasksTable.userId, userId), eq(tasksTable.deleted, false)))
+        .orderBy(desc(tasksTable.updatedAt))
+    );
   }
 }
 

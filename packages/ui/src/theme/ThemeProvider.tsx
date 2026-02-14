@@ -36,18 +36,24 @@ export function ThemeProvider({
 
     const root = window.document.documentElement;
 
-    root.classList.remove("light", "dark");
+    const applyTheme = (resolved: "light" | "dark") => {
+      root.classList.remove("light", "dark");
+      root.classList.add(resolved);
+    };
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+      const mql = window.matchMedia("(prefers-color-scheme: dark)");
+      applyTheme(mql.matches ? "dark" : "light");
 
-      root.classList.add(systemTheme);
-      return;
+      const handler = (e: MediaQueryListEvent) => {
+        applyTheme(e.matches ? "dark" : "light");
+      };
+
+      mql.addEventListener("change", handler);
+      return () => mql.removeEventListener("change", handler);
     }
 
-    root.classList.add(theme);
+    applyTheme(theme);
   }, [theme]);
 
   const value = {
