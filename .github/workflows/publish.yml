@@ -94,6 +94,21 @@ jobs:
             fi
           fi
 
+      # Exit pre-release mode if pre.json arrived via merge from beta/alpha
+      - name: Exit pre-release mode if needed
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if [ -f ".changeset/pre.json" ]; then
+            echo "Found pre.json on main, exiting pre-release mode..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            pnpm changeset pre exit
+            git add .changeset/pre.json
+            git commit -m "chore: exit pre-release mode for stable release"
+            git pull --rebase origin main
+            git push
+          fi
+
       # Stable release from main branch
       - name: Version and Publish (main)
         if: github.ref == 'refs/heads/main'
@@ -161,29 +176,68 @@ jobs:
             fi
           fi
 
-      - name: Publish beta pre-release
+      - name: Enter beta pre-release mode
         if: github.ref == 'refs/heads/beta'
         run: |
-          echo "📦 Publishing beta pre-release..."
-          pnpm changeset version --snapshot beta
-          pnpm build
-          # Publish packages in dependency order, skip private packages
-          echo "Publishing packages in dependency order..."
-          PUBLISH_ORDER="types test-utils db core ui"
-          for pkg in $PUBLISH_ORDER; do
-            if [ -d "packages/$pkg" ]; then
-              IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
-              if [ "$IS_PRIVATE" = "false" ]; then
-                echo "📦 Publishing @stridetime/$pkg@beta..."
-                cd "packages/$pkg"
-                pnpm publish --access restricted --tag beta --no-git-checks || echo "⚠️ Failed to publish $pkg"
-                cd ../..
-              else
-                echo "⏭️  Skipping private package: $pkg"
-              fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f ".changeset/pre.json" ]; then
+            CURRENT_MODE=$(node -p "require('./.changeset/pre.json').mode")
+            CURRENT_TAG=$(node -p "require('./.changeset/pre.json').tag")
+            if [ "$CURRENT_MODE" = "pre" ] && [ "$CURRENT_TAG" = "beta" ]; then
+              echo "Already in beta pre-release mode, skipping enter"
+            else
+              echo "pre.json exists with mode=$CURRENT_MODE tag=$CURRENT_TAG, re-entering as beta..."
+              rm .changeset/pre.json
+              pnpm changeset pre enter beta
+              git add .changeset/pre.json
+              git commit -m "chore: enter beta pre-release mode"
+              git pull --rebase origin beta
+              git push
             fi
-          done
-          echo "✅ Beta publish complete"
+          else
+            echo "Entering beta pre-release mode..."
+            pnpm changeset pre enter beta
+            git add .changeset/pre.json
+            git commit -m "chore: enter beta pre-release mode"
+            git pull --rebase origin beta
+            git push
+          fi
+
+      - name: Version and publish beta pre-release
+        if: github.ref == 'refs/heads/beta'
+        run: |
+          if [ -n "$(find .changeset -name '*.md' ! -name 'README.md' -type f)" ]; then
+            echo "📦 Changesets found, versioning beta pre-release..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            pnpm changeset version
+            git add .
+            git commit -m "chore: version packages (beta pre-release)" || echo "No changes to commit"
+            git pull --rebase origin beta
+            git push
+            # Rebuild with updated internal dependency versions
+            pnpm build
+            # Publish packages in dependency order, skip private packages
+            echo "Publishing packages in dependency order..."
+            PUBLISH_ORDER="types test-utils db core ui"
+            for pkg in $PUBLISH_ORDER; do
+              if [ -d "packages/$pkg" ]; then
+                IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
+                if [ "$IS_PRIVATE" = "false" ]; then
+                  echo "📦 Publishing @stridetime/$pkg@beta..."
+                  cd "packages/$pkg"
+                  pnpm publish --access restricted --tag beta --no-git-checks || echo "⚠️ Failed to publish $pkg"
+                  cd ../..
+                else
+                  echo "⏭️  Skipping private package: $pkg"
+                fi
+              fi
+            done
+            echo "✅ Beta publish complete"
+          else
+            echo "No changesets found, skipping publish"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -219,29 +273,68 @@ jobs:
             fi
           fi
 
-      - name: Publish alpha pre-release
+      - name: Enter alpha pre-release mode
         if: github.ref == 'refs/heads/alpha'
         run: |
-          echo "📦 Publishing alpha pre-release..."
-          pnpm changeset version --snapshot alpha
-          pnpm build
-          # Publish packages in dependency order, skip private packages
-          echo "Publishing packages in dependency order..."
-          PUBLISH_ORDER="types test-utils db core ui"
-          for pkg in $PUBLISH_ORDER; do
-            if [ -d "packages/$pkg" ]; then
-              IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
-              if [ "$IS_PRIVATE" = "false" ]; then
-                echo "📦 Publishing @stridetime/$pkg@alpha..."
-                cd "packages/$pkg"
-                pnpm publish --access restricted --tag alpha --no-git-checks || echo "⚠️ Failed to publish $pkg"
-                cd ../..
-              else
-                echo "⏭️  Skipping private package: $pkg"
-              fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f ".changeset/pre.json" ]; then
+            CURRENT_MODE=$(node -p "require('./.changeset/pre.json').mode")
+            CURRENT_TAG=$(node -p "require('./.changeset/pre.json').tag")
+            if [ "$CURRENT_MODE" = "pre" ] && [ "$CURRENT_TAG" = "alpha" ]; then
+              echo "Already in alpha pre-release mode, skipping enter"
+            else
+              echo "pre.json exists with mode=$CURRENT_MODE tag=$CURRENT_TAG, re-entering as alpha..."
+              rm .changeset/pre.json
+              pnpm changeset pre enter alpha
+              git add .changeset/pre.json
+              git commit -m "chore: enter alpha pre-release mode"
+              git pull --rebase origin alpha
+              git push
             fi
-          done
-          echo "✅ Alpha publish complete"
+          else
+            echo "Entering alpha pre-release mode..."
+            pnpm changeset pre enter alpha
+            git add .changeset/pre.json
+            git commit -m "chore: enter alpha pre-release mode"
+            git pull --rebase origin alpha
+            git push
+          fi
+
+      - name: Version and publish alpha pre-release
+        if: github.ref == 'refs/heads/alpha'
+        run: |
+          if [ -n "$(find .changeset -name '*.md' ! -name 'README.md' -type f)" ]; then
+            echo "📦 Changesets found, versioning alpha pre-release..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            pnpm changeset version
+            git add .
+            git commit -m "chore: version packages (alpha pre-release)" || echo "No changes to commit"
+            git pull --rebase origin alpha
+            git push
+            # Rebuild with updated internal dependency versions
+            pnpm build
+            # Publish packages in dependency order, skip private packages
+            echo "Publishing packages in dependency order..."
+            PUBLISH_ORDER="types test-utils db core ui"
+            for pkg in $PUBLISH_ORDER; do
+              if [ -d "packages/$pkg" ]; then
+                IS_PRIVATE=$(node -p "require('./packages/$pkg/package.json').private || false")
+                if [ "$IS_PRIVATE" = "false" ]; then
+                  echo "📦 Publishing @stridetime/$pkg@alpha..."
+                  cd "packages/$pkg"
+                  pnpm publish --access restricted --tag alpha --no-git-checks || echo "⚠️ Failed to publish $pkg"
+                  cd ../..
+                else
+                  echo "⏭️  Skipping private package: $pkg"
+                fi
+              fi
+            done
+            echo "✅ Alpha publish complete"
+          else
+            echo "No changesets found, skipping publish"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
