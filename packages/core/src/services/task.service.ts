@@ -15,6 +15,7 @@ export type CreateTaskParams = {
   projectId: string;
   userId: string;
   difficulty?: TaskDifficulty;
+  priority?: TaskPriority;
   estimatedMinutes?: number;
   maxMinutes?: number;
   dueDate?: string;
@@ -30,8 +31,12 @@ export type CreateTaskParams = {
 export type UpdateTaskParams = {
   title?: string;
   description?: string | null;
+  difficulty?: TaskDifficulty;
+  priority?: TaskPriority;
   progress?: number;
   status?: TaskStatus;
+  assigneeUserId?: string | null;
+  projectId?: string;
   estimatedMinutes?: number | null;
   maxMinutes?: number | null;
   plannedForDate?: string | null;
@@ -167,7 +172,7 @@ export class TaskService {
       title: params.title.trim(),
       description: params.description?.trim() || null,
       difficulty: params.difficulty || TaskDifficulty.MEDIUM,
-      priority: TaskPriority.NONE,
+      priority: params.priority || TaskPriority.NONE,
       progress: 0,
       status: TaskStatus.BACKLOG,
       assigneeUserId: null,
@@ -210,6 +215,22 @@ export class TaskService {
 
     if (params.description !== undefined) {
       updates.description = params.description?.trim() || null;
+    }
+
+    if (params.difficulty !== undefined) {
+      updates.difficulty = params.difficulty;
+    }
+
+    if (params.priority !== undefined) {
+      updates.priority = params.priority;
+    }
+
+    if (params.assigneeUserId !== undefined) {
+      updates.assigneeUserId = params.assigneeUserId;
+    }
+
+    if (params.projectId !== undefined) {
+      updates.projectId = params.projectId;
     }
 
     if (params.progress !== undefined) {
@@ -361,19 +382,19 @@ export class TaskService {
   // ==========================================================================
 
   /**
-   * Reactive query: tasks planned for a specific date.
+   * Get tasks planned for a specific date (reactive query).
    * Pass the result to useQuery() from @powersync/react.
    */
-  watchTodayTasks(db: StrideDatabase, userId: string, date: string) {
-    return this.taskRepo.watchByPlannedDate(db, userId, date);
+  getTodayTasks(db: StrideDatabase, userId: string, date: string) {
+    return this.taskRepo.getPlannedForDate(db, userId, date);
   }
 
   /**
-   * Reactive query: all tasks for a user.
+   * Get all tasks for a user (reactive query).
    * Pass the result to useQuery() from @powersync/react.
    */
-  watchAllTasks(db: StrideDatabase, userId: string) {
-    return this.taskRepo.watchByUser(db, userId);
+  getAllTasks(db: StrideDatabase, userId: string) {
+    return this.taskRepo.getAllForUser(db, userId);
   }
 }
 

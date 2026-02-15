@@ -78,6 +78,7 @@ export class AuthService {
     const db = getDatabase();
     const existingUser = await userRepo.findByEmail(db, authUser.email);
 
+    // TODO: Make this fail instead of retrieving the user. If we can't find the user in our table, they shouldn't exist. This allows for orphan users
     if (!existingUser) {
       // Use the Supabase auth UID as the local user record's id.
       // This is critical for RLS policies which check auth.uid()::text = id.

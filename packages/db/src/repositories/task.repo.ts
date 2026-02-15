@@ -298,10 +298,16 @@ export class TaskRepository {
   // ==========================================================================
 
   /**
-   * Reactive query: tasks planned for a specific date.
+   * All queries below return CompilableQuery objects for use with PowerSync's useQuery() hook.
+   * The useQuery hook automatically makes these reactive - they re-run when dependent tables change.
+   * No need for "watch" terminology - ALL PowerSync queries are reactive by design.
+   */
+
+  /**
+   * Get tasks planned for a specific date (reactive query).
    * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
    */
-  watchByPlannedDate(db: StrideDatabase, userId: string, date: string) {
+  getPlannedForDate(db: StrideDatabase, userId: string, date: string) {
     return toCompilableQuery(
       db
         .select()
@@ -318,10 +324,10 @@ export class TaskRepository {
   }
 
   /**
-   * Reactive query: all tasks for a user.
+   * Get all tasks for a user (reactive query).
    * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
    */
-  watchByUser(db: StrideDatabase, userId: string) {
+  getAllForUser(db: StrideDatabase, userId: string) {
     return toCompilableQuery(
       db
         .select()

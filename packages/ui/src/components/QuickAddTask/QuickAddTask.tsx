@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Plus, X } from "lucide-react";
 import type { Task } from "@stridetime/types";
 import { Button } from "../../primitives/Button";
 import { Label } from "../../primitives/Label";
@@ -21,6 +22,17 @@ import {
 import { TaskDetailContent } from "../TaskCard/TaskDetailModal";
 import { TaskListView } from "./TaskListView";
 import type { DraftTask, QuickAddTaskProps } from "./QuickAddTask.types";
+
+const PROJECT_COLORS = [
+  "#3b82f6",
+  "#ef4444",
+  "#22c55e",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+  "#f97316",
+];
 
 const ts = new Date().toISOString();
 
@@ -70,19 +82,45 @@ export function QuickAddTask({
   hoveredGroupId,
   onHoveredGroupChange,
   onCreate,
+  onCreateProject,
 }: QuickAddTaskProps) {
   const selectedDraft = tasks.find((t) => t.id === selectedTaskId);
   const isEditing = selectedTaskId != null && selectedDraft != null;
   const nonEmptyCount = tasks.filter((t) => t.title.trim() && t.indent === 0).length;
+
+  // New project inline form state
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectColor, setNewProjectColor] = useState(PROJECT_COLORS[0]);
 
   const handleCreate = () => {
     const nonEmpty = tasks.filter((t) => t.title.trim());
     onCreate?.(nonEmpty);
   };
 
+  /**
+   * Save edits from the config view into the draft tasks array.
+   * Returns the updated tasks so callers that need them synchronously
+   * (e.g. "Create All") don't read stale state.
+   */
+  const applyDraftUpdates = (updates: Partial<Task>): DraftTask[] => {
+    if (!selectedTaskId) return tasks;
+    const updated = tasks.map((t) => (t.id === selectedTaskId ? { ...t, ...updates } : t));
+    onTasksChange(updated);
+    return updated;
+  };
+
   const handleUpdateDraftFromModal = (updates: Partial<Task>) => {
-    if (!selectedTaskId) return;
-    onTasksChange(tasks.map((t) => (t.id === selectedTaskId ? { ...t, ...updates } : t)));
+    applyDraftUpdates(updates);
+  };
+
+  const handleCreateNewProject = () => {
+    const name = newProjectName.trim();
+    if (!name || !onCreateProject) return;
+    onCreateProject(name, newProjectColor);
+    setNewProjectName("");
+    setNewProjectColor(PROJECT_COLORS[0]);
+    setShowNewProject(false);
   };
 
   const handleBackToList = () => {
@@ -115,12 +153,22 @@ export function QuickAddTask({
             onUpdateTask={handleUpdateDraftFromModal}
             onClose={handleBackToList}
             projects={modalProjects}
+            onCreateProject={onCreateProject}
             quickAddMode={{
               taskCount: nonEmptyCount,
               onBackToList: handleBackToList,
-              onCreateAll: () => {
-                handleBackToList();
-                handleCreate();
+              onCreateAll: (pendingUpdates) => {
+                // Apply pending updates synchronously so onCreate
+                // uses the latest values (avoids stale React state).
+                let latestTasks = tasks;
+                if (pendingUpdates && selectedTaskId) {
+                  latestTasks = tasks.map((t) =>
+                    t.id === selectedTaskId ? { ...t, ...pendingUpdates } : t
+                  );
+                }
+                onSelectedTaskChange?.(null);
+                const nonEmpty = latestTasks.filter((t) => t.title.trim());
+                onCreate?.(nonEmpty);
               },
             }}
           />
@@ -139,24 +187,87 @@ export function QuickAddTask({
                 <div className="flex items-end gap-4">
                   <div className="flex-1 space-y-2">
                     <Label htmlFor="project">Default Project</Label>
-                    <Select value={selectedProjectId} onValueChange={onSelectedProjectChange}>
-                      <SelectTrigger id="project">
-                        <SelectValue placeholder="Select a project" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {projects.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="h-2 w-2 rounded-full"
-                                style={{ backgroundColor: p.color ?? undefined }}
+                    {showNewProject ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 flex items-center border rounded-md bg-background px-3 py-2 gap-2">
+                          <div className="flex items-center gap-1 shrink-0">
+                            {PROJECT_COLORS.map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setNewProjectColor(c)}
+                                className={`h-3.5 w-3.5 rounded-full border-2 transition-colors ${
+                                  newProjectColor === c ? "border-foreground" : "border-transparent"
+                                }`}
+                                style={{ backgroundColor: c }}
                               />
-                              {p.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                            ))}
+                          </div>
+                          <input
+                            type="text"
+                            value={newProjectName}
+                            onChange={(e) => setNewProjectName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleCreateNewProject();
+                              }
+                              if (e.key === "Escape") {
+                                setShowNewProject(false);
+                              }
+                            }}
+                            placeholder="Project name..."
+                            autoFocus
+                            className="flex-1 text-sm bg-transparent focus:outline-none"
+                          />
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={handleCreateNewProject}
+                          disabled={!newProjectName.trim()}
+                        >
+                          Create
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowNewProject(false)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select
+                        value={selectedProjectId}
+                        onValueChange={(val) => {
+                          if (val === "__new_project__") {
+                            if (onCreateProject) setShowNewProject(true);
+                            return;
+                          }
+                          onSelectedProjectChange?.(val);
+                        }}
+                      >
+                        <SelectTrigger id="project">
+                          <SelectValue placeholder="Select a project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-2 w-2 rounded-full"
+                                  style={{ backgroundColor: p.color ?? undefined }}
+                                />
+                                {p.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                          {onCreateProject && (
+                            <SelectItem value="__new_project__">
+                              <div className="flex items-center gap-2 text-primary">
+                                <Plus className="h-3.5 w-3.5" />
+                                New Project
+                              </div>
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                   {nonEmptyCount > 0 && (
                     <Badge variant="secondary" className="mb-2 shrink-0">

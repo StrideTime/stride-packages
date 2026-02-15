@@ -54,6 +54,7 @@ export interface TaskCardProps {
   onStart?: () => void;
   onPause?: () => void;
   onComplete?: () => void;
+  onDelete?: () => void;
   onUpdateProgress?: (progress: number) => void;
   onClick?: () => void;
 }
@@ -69,6 +70,7 @@ export interface TaskDetailContentProps {
   onUpdateSubtasks?: (subtasks: SubtaskItem[]) => void;
   onAssigneeChange?: (userId: string | null) => void;
   onComplete?: () => void;
+  onDelete?: () => void;
   /** Called when the content wants to close (Save / Cancel / Back). */
   onClose?: () => void;
 
@@ -77,6 +79,8 @@ export interface TaskDetailContentProps {
 
   // Projects
   projects?: ProjectOption[];
+  /** Called when user wants to create a new project from the project picker. */
+  onCreateProject?: (name: string, color: string) => void;
 
   // Assignment
   teamMembers?: TeamMember[];
@@ -88,7 +92,11 @@ export interface TaskDetailContentProps {
   quickAddMode?: {
     taskCount: number;
     onBackToList: () => void;
-    onCreateAll: () => void;
+    /**
+     * Called when "Create All" is clicked. Receives the pending updates
+     * from the config view so the caller can apply them before creating.
+     */
+    onCreateAll: (pendingUpdates?: Partial<Task>) => void;
   };
 }
 

@@ -84,6 +84,7 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   workspaceUserPreferences: many(workspaceUserPreferencesTable),
 }));
 
+// TODO: rename this to Plans table and migrate. Now is better than ever since it hasn't been implemented yet
 // ============================================================================
 // ROLES TABLE
 // ============================================================================
@@ -453,6 +454,7 @@ export const taskTypesRelations = relations(taskTypesTable, ({ one, many }) => (
   tasks: many(tasksTable),
 }));
 
+// TODO: remove sort order column, parent task ID, priority,
 // ============================================================================
 // TASKS TABLE
 // ============================================================================
@@ -683,6 +685,7 @@ export const dailySummariesRelations = relations(dailySummariesTable, ({ one }) 
   }),
 }));
 
+// TODO: remove planning mode move work hours to workspace user preferences remove sound effects
 // ============================================================================
 // USER PREFERENCES TABLE
 // ============================================================================
@@ -770,6 +773,7 @@ export const teamsRelations = relations(teamsTable, ({ one, many }) => ({
   projectTeams: many(projectTeamsTable),
 }));
 
+// TODO: make team member roles only ADMIN or MEMBER
 // ============================================================================
 // TEAM MEMBERS TABLE
 // ============================================================================
@@ -938,6 +942,7 @@ export const workSessionsRelations = relations(workSessionsTable, ({ one }) => (
   }),
 }));
 
+// TODO: move the quick add tasks preference to workspace preferences
 // ============================================================================
 // WORKSPACE USER PREFERENCES TABLE
 // ============================================================================

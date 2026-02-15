@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Play,
   Pause,
@@ -9,6 +10,7 @@ import {
   Check,
   Timer,
   Pencil,
+  Trash2,
   ExternalLink,
 } from "lucide-react";
 import { Button } from "../../primitives/Button";
@@ -38,9 +40,23 @@ export function TaskCard({
   onStart,
   onPause,
   onComplete,
+  onDelete,
   onUpdateProgress,
   onClick,
 }: TaskCardProps) {
+  // Local progress state for smooth slider dragging without triggering
+  // a DB write (and sync loop) on every tick. Only commits on pointer-up.
+  const [localProgress, setLocalProgress] = useState(task.progress);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Sync local state when the task prop changes (e.g. from PowerSync update)
+  // but NOT while the user is actively dragging.
+  useEffect(() => {
+    if (!isDragging) {
+      setLocalProgress(task.progress);
+    }
+  }, [task.progress, isDragging]);
+
   const diff = difficultyConfig[task.difficulty];
   const extSource = task.externalSource ? externalSourceConfig[task.externalSource] : null;
   const isCompleted = task.status === "COMPLETED";
@@ -274,19 +290,27 @@ export function TaskCard({
             <div className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-foreground">{task.progress}%</span>
+                <span className="font-medium text-foreground">{localProgress}%</span>
               </div>
               {onUpdateProgress ? (
                 <Slider
-                  value={[task.progress]}
-                  onValueChange={([v]) => onUpdateProgress(v)}
+                  value={[localProgress]}
+                  onValueChange={([v]) => {
+                    setIsDragging(true);
+                    setLocalProgress(v);
+                  }}
+                  onValueCommit={([v]) => {
+                    setIsDragging(false);
+                    onUpdateProgress(v);
+                  }}
+                  onPointerDown={() => setIsDragging(true)}
                   min={0}
                   max={100}
                   step={5}
                   className="py-1"
                 />
               ) : (
-                <Progress value={task.progress} className="h-1.5" />
+                <Progress value={localProgress} className="h-1.5" />
               )}
             </div>
           )}
@@ -400,6 +424,16 @@ export function TaskCard({
                 >
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:bg-destructive/10"
+                  onClick={onDelete}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               )}
               {task.progress >= 80 && (

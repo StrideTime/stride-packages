@@ -1,7 +1,7 @@
+// TODO: Move this in with the rest of the Services
 /**
  * Factory function to create AuthService with Supabase provider
  */
-
 import { SupabaseAuthProvider } from '@stridetime/db';
 import { AuthService } from './AuthService';
 import type { SupabaseClient } from '@supabase/supabase-js';

@@ -134,6 +134,7 @@ export interface SyncDatabaseConfig extends DatabaseConfigBase {
    * Prevents multiple GoTrueClient instances from conflicting on the same
    * localStorage session key.
    */
+  // TODO: identify if this is a good pattern. I'm not sure what the import means
   supabaseClient?: import('@supabase/supabase-js').SupabaseClient;
 }
 
@@ -199,6 +200,8 @@ export async function initDatabase(config: DatabaseConfig): Promise<StrideDataba
     debug,
   });
 
+  // TODO: Figure out what multiple tabs means
+  // TODO: Figure out how this works with pending migrations in drizzle schema reconciling existing local db
   // Create PowerSync database instance
   powerSyncDb = new PowerSyncDatabase({
     schema: powerSyncSchema,
@@ -279,6 +282,7 @@ export function getPowerSyncDatabase(): AbstractPowerSyncDatabase | null {
   return powerSyncDb;
 }
 
+// TODO: Use this more. Right now I think we're passing in the Supabase client in a lot of instances where we could just call this function
 /**
  * Get the Supabase connector (only available when sync is enabled).
  * Useful for accessing the Supabase client for auth operations.
@@ -304,6 +308,7 @@ export async function connectSync(): Promise<void> {
     hasDb: !!powerSyncDb,
     syncEnabled,
     hasConnector: !!connector,
+    currentState: currentSyncStatus.state,
   });
 
   if (!powerSyncDb) {
@@ -313,7 +318,30 @@ export async function connectSync(): Promise<void> {
     throw new Error('Sync is not enabled. Initialize with enableSync: true.');
   }
 
+  // Guard against duplicate connect calls — calling connect() twice
+  // causes PowerSync to disconnect/reconnect, killing the upload loop.
+  if (currentSyncStatus.state === 'connected' || currentSyncStatus.state === 'connecting') {
+    console.log('[Stride DB] connectSync: already', currentSyncStatus.state, '— skipping');
+    return;
+  }
+
+  // TODO: Identify if this is the correct approach. I don't know what edge cases to watch out for
   try {
+    // Clear any stale CRUD entries left over from previous sessions.
+    // These can accumulate when a sync loop occurred (e.g. updated_at bounce)
+    // and prevent the upload loop from starting cleanly.
+    const staleCount = await powerSyncDb.getAll<{ cnt: number }>(
+      'SELECT count(*) as cnt FROM ps_crud'
+    );
+    if (staleCount[0]?.cnt > 0) {
+      console.log(
+        '[Stride DB] connectSync: clearing',
+        staleCount[0].cnt,
+        'stale CRUD entries before connecting'
+      );
+      await powerSyncDb.execute('DELETE FROM ps_crud');
+    }
+
     updateSyncStatus({ state: 'connecting' });
     console.log('[Stride DB] connectSync: calling powerSyncDb.connect()...');
     await powerSyncDb.connect(connector);

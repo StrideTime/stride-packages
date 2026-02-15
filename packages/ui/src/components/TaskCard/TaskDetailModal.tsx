@@ -148,9 +148,11 @@ export function TaskDetailContent({
   onUpdateSubtasks,
   onAssigneeChange,
   onComplete,
+  onDelete,
   onClose,
   externalUrl,
   projects,
+  onCreateProject,
   teamMembers,
   assignmentPolicy = "LEADS_ONLY",
   currentUserIsLead = false,
@@ -170,6 +172,11 @@ export function TaskDetailContent({
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [editAssigneeId, setEditAssigneeId] = useState(task.assigneeUserId);
   const [editProjectId, setEditProjectId] = useState(task.projectId);
+
+  // New project inline form state
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectColor, setNewProjectColor] = useState("#3b82f6");
 
   // Reset edit state when task changes
   useEffect(() => {
@@ -222,7 +229,9 @@ export function TaskDetailContent({
       : null;
 
   // ── Handlers ────────────────────────────────────────────
-  const handleSave = () => {
+
+  /** Compute the diff between local edit state and the original task. */
+  const getPendingUpdates = (): Partial<Task> => {
     const updates: Partial<Task> = {};
     if (editTitle !== task.title) updates.title = editTitle;
     if (editDescription !== (task.description || "")) {
@@ -244,6 +253,14 @@ export function TaskDetailContent({
     }
     if (editAssigneeId !== task.assigneeUserId) {
       updates.assigneeUserId = editAssigneeId;
+    }
+    return updates;
+  };
+
+  const handleSave = () => {
+    const updates = getPendingUpdates();
+
+    if (updates.assigneeUserId !== undefined) {
       onAssigneeChange?.(editAssigneeId);
     }
 
@@ -261,6 +278,15 @@ export function TaskDetailContent({
 
   const handleCancel = () => {
     onClose?.();
+  };
+
+  const handleCreateNewProject = () => {
+    const name = newProjectName.trim();
+    if (!name || !onCreateProject) return;
+    onCreateProject(name, newProjectColor);
+    setNewProjectName("");
+    setNewProjectColor("#3b82f6");
+    setShowNewProject(false);
   };
 
   // ── Subtask helpers ─────────────────────────────────────
@@ -417,6 +443,76 @@ export function TaskDetailContent({
                     </button>
                   );
                 })}
+                {onCreateProject && (
+                  <>
+                    <div className="my-1 border-t" />
+                    {showNewProject ? (
+                      <div className="px-2 py-1.5 space-y-2">
+                        <input
+                          type="text"
+                          value={newProjectName}
+                          onChange={(e) => setNewProjectName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleCreateNewProject();
+                            }
+                          }}
+                          placeholder="Project name..."
+                          autoFocus
+                          className="w-full text-sm bg-transparent border-b border-border focus:border-primary focus:outline-none py-1"
+                        />
+                        <div className="flex items-center gap-1">
+                          {[
+                            "#3b82f6",
+                            "#ef4444",
+                            "#22c55e",
+                            "#f59e0b",
+                            "#8b5cf6",
+                            "#ec4899",
+                            "#06b6d4",
+                            "#f97316",
+                          ].map((c) => (
+                            <button
+                              key={c}
+                              onClick={() => setNewProjectColor(c)}
+                              className={`h-4 w-4 rounded-full border-2 transition-colors ${
+                                newProjectColor === c ? "border-foreground" : "border-transparent"
+                              }`}
+                              style={{ backgroundColor: c }}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => setShowNewProject(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={handleCreateNewProject}
+                            disabled={!newProjectName.trim()}
+                          >
+                            Create
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowNewProject(true)}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-accent text-primary"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>New Project</span>
+                      </button>
+                    )}
+                  </>
+                )}
               </PopoverContent>
             </Popover>
           ) : (
@@ -455,21 +551,23 @@ export function TaskDetailContent({
             />
           </div>
 
-          {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{editProgress}%</span>
+          {/* Progress — hidden during quickAdd since the task doesn't exist yet */}
+          {!quickAddMode && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-medium">{editProgress}%</span>
+              </div>
+              <Slider
+                value={[editProgress]}
+                onValueChange={([v]) => setEditProgress(v)}
+                min={0}
+                max={100}
+                step={5}
+                className="py-1"
+              />
             </div>
-            <Slider
-              value={[editProgress]}
-              onValueChange={([v]) => setEditProgress(v)}
-              min={0}
-              max={100}
-              step={5}
-              className="py-1"
-            />
-          </div>
+          )}
 
           {/* Tracked time (read-only) */}
           {timeInfo && (
@@ -746,8 +844,11 @@ export function TaskDetailContent({
             <Button
               size="sm"
               onClick={() => {
-                handleSave();
-                quickAddMode.onCreateAll();
+                // Pass pending updates so the caller can apply them
+                // synchronously before creating tasks (avoids stale state).
+                const updates = getPendingUpdates();
+                onUpdateTask?.(updates);
+                quickAddMode.onCreateAll(Object.keys(updates).length > 0 ? updates : undefined);
               }}
             >
               <Check className="h-4 w-4 mr-1.5" />
@@ -756,10 +857,26 @@ export function TaskDetailContent({
           </>
         ) : (
           <>
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              <X className="h-4 w-4 mr-1.5" />
-              Cancel
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="h-4 w-4 mr-1.5" />
+                Cancel
+              </Button>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10"
+                  onClick={() => {
+                    onDelete();
+                    onClose?.();
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Delete
+                </Button>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               {!isCompleted && onComplete && editProgress >= 80 && (
                 <Button

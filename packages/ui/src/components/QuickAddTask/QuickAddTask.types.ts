@@ -49,4 +49,6 @@ export interface QuickAddTaskProps {
   hoveredGroupId?: string | null;
   onHoveredGroupChange?: (groupId: string | null) => void;
   onCreate?: (tasks: DraftTask[]) => void;
+  /** Called when user wants to create a new project from the dropdown. */
+  onCreateProject?: (name: string, color: string) => void;
 }

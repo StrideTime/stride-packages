@@ -190,10 +190,10 @@ export class ProjectRepository {
   // ==========================================================================
 
   /**
-   * Reactive query: all projects for a user.
+   * Get all projects for a user (reactive query).
    * Returns a CompilableQuery to pass to useQuery() from @powersync/react.
    */
-  watchByUser(db: StrideDatabase, userId: string) {
+  getAllForUser(db: StrideDatabase, userId: string) {
     return toCompilableQuery(
       db
         .select()

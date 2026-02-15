@@ -205,11 +205,11 @@ export class ProjectService {
   // ==========================================================================
 
   /**
-   * Reactive query: all projects for a user.
+   * Get all projects for a user (reactive query).
    * Pass the result to useQuery() from @powersync/react.
    */
-  watchByUser(db: StrideDatabase, userId: string) {
-    return this.projectRepo.watchByUser(db, userId);
+  getAllForUser(db: StrideDatabase, userId: string) {
+    return this.projectRepo.getAllForUser(db, userId);
   }
 
   /**
