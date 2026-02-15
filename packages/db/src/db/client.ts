@@ -187,10 +187,17 @@ const syncStatusListeners: Set<(status: SyncStatus) => void> = new Set();
  */
 export async function initDatabase(config: DatabaseConfig): Promise<StrideDatabase> {
   if (db) {
+    console.log('[Stride DB] initDatabase: already initialized, returning existing db');
     return db;
   }
 
   const { dbFilename = 'stride.db', debug = false } = config;
+
+  console.log('[Stride DB] initDatabase: starting...', {
+    dbFilename,
+    enableSync: config.enableSync,
+    debug,
+  });
 
   // Create PowerSync database instance
   powerSyncDb = new PowerSyncDatabase({
@@ -205,7 +212,9 @@ export async function initDatabase(config: DatabaseConfig): Promise<StrideDataba
   });
 
   // Wait for PowerSync to initialize
+  console.log('[Stride DB] initDatabase: calling powerSyncDb.init()...');
   await powerSyncDb.init();
+  console.log('[Stride DB] initDatabase: powerSyncDb.init() complete');
 
   // Wrap PowerSync with Drizzle for type-safe queries
   db = wrapPowerSyncWithDrizzle(powerSyncDb, {
@@ -216,6 +225,11 @@ export async function initDatabase(config: DatabaseConfig): Promise<StrideDataba
   // Set up sync if enabled
   if (config.enableSync) {
     syncEnabled = true;
+    console.log('[Stride DB] initDatabase: sync ENABLED, creating connector...', {
+      powersyncUrl: config.powersyncUrl,
+      supabaseUrl: config.supabaseUrl,
+      hasSupabaseClient: !!config.supabaseClient,
+    });
     connector = new SupabaseConnector({
       supabaseUrl: config.supabaseUrl,
       supabaseAnonKey: config.supabaseAnonKey,
@@ -225,9 +239,11 @@ export async function initDatabase(config: DatabaseConfig): Promise<StrideDataba
     updateSyncStatus({ state: 'disconnected' });
   } else {
     syncEnabled = false;
+    console.log('[Stride DB] initDatabase: sync DISABLED (local-only mode)');
     updateSyncStatus({ state: 'disabled' });
   }
 
+  console.log('[Stride DB] initDatabase: complete ✓');
   return db;
 }
 
@@ -284,6 +300,12 @@ export function getConnector(): SupabaseConnector | null {
  * @throws Error if sync is not enabled or database not initialized
  */
 export async function connectSync(): Promise<void> {
+  console.log('[Stride DB] connectSync: called', {
+    hasDb: !!powerSyncDb,
+    syncEnabled,
+    hasConnector: !!connector,
+  });
+
   if (!powerSyncDb) {
     throw new Error('Database not initialized. Call initDatabase() first.');
   }
@@ -293,9 +315,12 @@ export async function connectSync(): Promise<void> {
 
   try {
     updateSyncStatus({ state: 'connecting' });
+    console.log('[Stride DB] connectSync: calling powerSyncDb.connect()...');
     await powerSyncDb.connect(connector);
     updateSyncStatus({ state: 'connected', lastSyncedAt: new Date() });
+    console.log('[Stride DB] connectSync: connected ✓');
   } catch (error) {
+    console.error('[Stride DB] connectSync: FAILED', error);
     updateSyncStatus({
       state: 'error',
       error: error instanceof Error ? error : new Error(String(error)),
@@ -309,12 +334,14 @@ export async function connectSync(): Promise<void> {
  * Local database remains accessible.
  */
 export async function disconnectSync(): Promise<void> {
+  console.log('[Stride DB] disconnectSync: called');
   if (!powerSyncDb) return;
 
   await powerSyncDb.disconnect();
   if (syncEnabled) {
     updateSyncStatus({ state: 'disconnected' });
   }
+  console.log('[Stride DB] disconnectSync: done');
 }
 
 /**
