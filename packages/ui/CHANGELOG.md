@@ -1,5 +1,11 @@
 # @stridetime/ui
 
+## 1.0.5-alpha.3
+
+### Patch Changes
+
+- 2a240e8: updated tasks service and repo to integrate subscription logic
+
 ## 1.0.5-alpha.2
 
 ## 1.0.5-alpha.1

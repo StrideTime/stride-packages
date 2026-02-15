@@ -1,5 +1,12 @@
 # @stridetime/test-utils
 
+## 1.0.5-alpha.3
+
+### Patch Changes
+
+- Updated dependencies [2a240e8]
+  - @stridetime/types@1.0.5-alpha.3
+
 ## 1.0.5-alpha.2
 
 ### Patch Changes
