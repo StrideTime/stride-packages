@@ -1,5 +1,12 @@
 # @stridetime/db
 
+## 1.0.5-alpha.2
+
+### Patch Changes
+
+- 24e2b6d: added logs to sync server
+  - @stridetime/types@1.0.5-alpha.2
+
 ## 1.0.5-alpha.1
 
 ### Patch Changes

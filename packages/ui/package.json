@@ -1,6 +1,6 @@
 {
   "name": "@stridetime/ui",
-  "version": "1.0.5-alpha.1",
+  "version": "1.0.5-alpha.2",
   "description": "UI components, theme, and assets for Stride - shadcn/ui (Radix UI + Tailwind) based design system",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",

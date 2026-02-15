@@ -1,6 +1,6 @@
 {
   "name": "@stridetime/test-utils",
-  "version": "1.0.5-alpha.1",
+  "version": "1.0.5-alpha.2",
   "description": "Shared testing utilities for Stride packages (mock generators, fixtures, helpers)",
   "main": "dist/index.cjs",
   "module": "dist/index.js",

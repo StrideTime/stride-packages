@@ -1,5 +1,7 @@
 # @stridetime/ui
 
+## 1.0.5-alpha.2
+
 ## 1.0.5-alpha.1
 
 ### Patch Changes
