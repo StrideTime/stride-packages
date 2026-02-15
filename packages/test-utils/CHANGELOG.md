@@ -1,5 +1,11 @@
 # @stridetime/test-utils
 
+## 1.0.5-alpha.1
+
+### Patch Changes
+
+- @stridetime/types@1.0.5-alpha.1
+
 ## 1.0.5-alpha.0
 
 ### Patch Changes
