@@ -26,6 +26,7 @@ export * from "./primitives/Button";
 export * from "./primitives/Card";
 export * from "./primitives/Checkbox";
 export * from "./primitives/Command";
+export * from "./primitives/DatePicker";
 export * from "./primitives/Dialog";
 export * from "./primitives/DropdownMenu";
 export * from "./primitives/Input";

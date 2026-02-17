@@ -43,9 +43,17 @@ export interface TaskCardProps {
   /** URL to the linked entity on the external platform (Jira, GitHub, etc.) */
   externalUrl?: string;
 
+  /** Scheduled time info (if task is time-blocked) */
+  scheduledTime?: {
+    startTime: string; // ISO timestamp
+    durationMinutes: number;
+  };
+
   // State
   isActive?: boolean;
   expanded?: boolean;
+  /** Whether another task has an active timer (changes start button label) */
+  hasActiveTimer?: boolean;
 
   // Callbacks
   onToggleSubtask?: (subtaskId: string) => void;
