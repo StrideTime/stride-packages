@@ -129,9 +129,11 @@ const meta: Meta<typeof TaskCard> = {
 export default meta;
 type Story = StoryObj<typeof TaskCard>;
 
-// ─── Static States ───────────────────────────────────────
+// ─── Stories ─────────────────────────────────────────────
 
-/** Default compact card. */
+/**
+ * Default collapsed task card with subtasks
+ */
 export const Default: Story = {
   args: {
     task: mockTask(),
@@ -139,15 +141,9 @@ export const Default: Story = {
   },
 };
 
-/** Active task with ring highlight. */
-export const Active: Story = {
-  args: {
-    task: mockTask(),
-    isActive: true,
-  },
-};
-
-/** Completed task with points earned. */
+/**
+ * Completed task showing points earned
+ */
 export const Completed: Story = {
   args: {
     task: mockTask({
@@ -160,51 +156,10 @@ export const Completed: Story = {
   },
 };
 
-// ─── External Sources ────────────────────────────────────
-
-/** Task linked to a Jira issue. */
-export const LinkedToJira: Story = {
-  args: {
-    task: mockTask({
-      externalSource: "JIRA",
-      externalId: "STRIDE-142",
-    }),
-    externalUrl: "https://myteam.atlassian.net/browse/STRIDE-142",
-    subtasks: mockSubtasks(),
-  },
-};
-
-/** Task linked to a GitHub issue. */
-export const LinkedToGitHub: Story = {
-  args: {
-    task: mockTask({
-      title: "Fix race condition in sync engine",
-      externalSource: "GITHUB",
-      externalId: "287",
-      difficulty: "HARD",
-      priority: "CRITICAL",
-    }),
-    externalUrl: "https://github.com/stridetime/stride/issues/287",
-  },
-};
-
-/** Task linked to a Trello card. */
-export const LinkedToTrello: Story = {
-  args: {
-    task: mockTask({
-      title: "Design onboarding flow",
-      externalSource: "TRELLO",
-      externalId: "abc123",
-      difficulty: "EASY",
-      priority: "MEDIUM",
-    }),
-    externalUrl: "https://trello.com/c/abc123",
-  },
-};
-
-// ─── Interactive: Expand → Edit Modal ────────────────────
-
-/** Full flow: expand card, click Edit to open the edit modal (Jira-linked). */
+/**
+ * Interactive: expand card, toggle subtasks, edit time entries, open modal.
+ * Shows external source (Jira), time tracking, and full CRUD operations.
+ */
 export const Interactive: Story = {
   render: (args) => {
     const [task, setTask] = useState(
@@ -252,53 +207,6 @@ export const Interactive: Story = {
           externalUrl={jiraUrl}
           open={modalOpen}
           onOpenChange={setModalOpen}
-          onUpdateTask={(updates) => setTask((prev) => ({ ...prev, ...updates }))}
-          onUpdateSubtasks={setSubtasks}
-          onAssigneeChange={fn()}
-          projects={mockProjects}
-          teamMembers={mockTeamMembers}
-          assignmentPolicy="LEADS_AND_MEMBERS"
-          currentUserIsLead
-          onComplete={fn()}
-        />
-      </div>
-    );
-  },
-};
-
-// ─── Edit Modal (standalone) ─────────────────────────────
-
-/** Edit modal in isolation — GitHub-linked task. */
-export const EditModal: StoryObj = {
-  render: () => {
-    const [task, setTask] = useState(
-      mockTask({
-        title: "Fix race condition in sync engine",
-        externalSource: "GITHUB",
-        externalId: "287",
-        difficulty: "HARD",
-        priority: "CRITICAL",
-      })
-    );
-    const [subtasks, setSubtasks] = useState(mockSubtasks());
-    const [open, setOpen] = useState(true);
-
-    return (
-      <div>
-        <button
-          onClick={() => setOpen(true)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
-        >
-          Open Task Detail
-        </button>
-        <TaskDetailModal
-          task={task}
-          projectName="Stride App"
-          projectColor="#3b82f6"
-          subtasks={subtasks}
-          externalUrl="https://github.com/stridetime/stride/issues/287"
-          open={open}
-          onOpenChange={setOpen}
           onUpdateTask={(updates) => setTask((prev) => ({ ...prev, ...updates }))}
           onUpdateSubtasks={setSubtasks}
           onAssigneeChange={fn()}

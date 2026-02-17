@@ -11,7 +11,7 @@
     --card-foreground: #0a0a0a;
     --popover: #ffffff;
     --popover-foreground: #0a0a0a;
-    --primary: #030213;
+    --primary: #3b82f6;
     --primary-foreground: #ffffff;
     --secondary: #ededf1;
     --secondary-foreground: #030213;
@@ -25,7 +25,7 @@
     --input: transparent;
     --input-background: #f3f3f5;
     --switch-background: #cbced4;
-    --ring: #717182;
+    --ring: #3b82f6;
     --radius: 0.625rem;
 
     /* Chart colors */
@@ -54,7 +54,7 @@
     --card-foreground: #abb2bf;
     --popover: #2c313a;
     --popover-foreground: #abb2bf;
-    --primary: #61afef;
+    --primary: #3b82f6;
     --primary-foreground: #ffffff;
     --secondary: #3e4451;
     --secondary-foreground: #abb2bf;
@@ -68,7 +68,7 @@
     --input: #3e4451;
     --input-background: #21252b;
     --switch-background: #3e4451;
-    --ring: #61afef;
+    --ring: #3b82f6;
 
     /* Chart colors — One Dark palette */
     --chart-1: #61afef;
