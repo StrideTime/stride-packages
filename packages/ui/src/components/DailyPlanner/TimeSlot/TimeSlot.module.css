@@ -1,0 +1,23 @@
+/* TimeSlot.module.css */
+
+.slot {
+  position: absolute;
+  width: 100%;
+  transition: background-color 150ms ease;
+}
+
+.slotOver {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.slotMuted {
+  opacity: 0.4;
+}
+
+.slotHourMarker {
+  border-top: 2px solid var(--border);
+}
+
+.slotSubMarker {
+  border-top: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+}

@@ -1,0 +1,100 @@
+/* EditEventDialog.module.css */
+
+.form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.externalNote {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Linked task display */
+.linkedTaskDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.projectDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.linkedTaskTitle {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.clearTaskBtn {
+  height: 1.25rem;
+  width: 1.25rem;
+  padding: 0;
+}
+
+.twoColGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.required {
+  color: var(--destructive);
+}
+
+.validationError {
+  font-size: 0.75rem;
+  color: var(--destructive);
+}
+
+/* Task combobox trigger */
+.taskCombobox {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: normal;
+}
+
+.taskComboboxError {
+  border-color: var(--destructive);
+}
+
+/* CommandItem layout */
+.commandItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.commandItemInfo {
+  flex: 1;
+}
+
+.commandItemTitle {
+  font-weight: 500;
+}
+
+.commandItemProject {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Footer */
+.deleteBtn {
+  margin-right: auto;
+}

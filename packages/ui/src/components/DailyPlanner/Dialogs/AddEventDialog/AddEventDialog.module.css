@@ -1,0 +1,28 @@
+/* AddEventDialog.module.css */
+
+.form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.twoColGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.recurringRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recurringLabel {
+  cursor: pointer;
+}

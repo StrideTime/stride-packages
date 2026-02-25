@@ -1,4 +1,5 @@
-import { defineConfig } from "vite";
+import path from "path";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
 import { viteStaticCopy } from "vite-plugin-static-copy";
@@ -20,8 +21,14 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       tsconfigPath: "./tsconfig.json",
-    }),
+    }) as PluginOption,
   ],
+  resolve: {
+    alias: {
+      "@utils": path.resolve(__dirname, "src/utils"),
+      "@primitives": path.resolve(__dirname, "src/primitives"),
+    },
+  },
   build: {
     lib: {
       entry: "src/index.ts",
@@ -33,12 +40,6 @@ export default defineConfig({
       external: [
         "react",
         "react-dom",
-        "@mui/material",
-        "@mui/system",
-        "@mui/styled-engine",
-        "@emotion/react",
-        "@emotion/cache",
-        "@emotion/styled",
       ],
     },
     sourcemap: true,
