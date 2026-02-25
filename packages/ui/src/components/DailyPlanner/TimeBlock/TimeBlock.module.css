@@ -1,0 +1,321 @@
+/* TimeBlock.module.css */
+
+/* ── Color tokens per event type ── */
+.typeTask    { --block-color: #3b82f6; }
+.typeMeeting { --block-color: #a855f7; }
+.typeBreak   { --block-color: #10b981; }
+.typeFocus   { --block-color: #f97316; }
+.typeOther   { --block-color: #6b7280; }
+
+/* ── Color tokens per external source ── */
+.sourceGoogleCalendar { --block-color: #4285f4; }
+.sourceOutlook        { --block-color: #0078d4; }
+.sourceSlack          { --block-color: #e01e5a; }
+.sourceJira           { --block-color: #2684ff; }
+.sourceExternal       { --block-color: #94a3b8; }
+
+.block {
+  position: absolute;
+  border-radius: var(--radius);
+  border: 2px solid var(--block-color, #6b7280);
+  background-color: color-mix(in srgb, var(--block-color, #6b7280) 20%, var(--background));
+  color: var(--block-color, #6b7280);
+  pointer-events: auto;
+  transition: box-shadow 150ms ease;
+  user-select: none;
+}
+
+.blockPadded {
+  padding: 0.75rem;
+}
+
+.blockTiny {
+  padding: 0.25rem 0.5rem;
+}
+
+.isDragging {
+  opacity: 0.5;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: scale(1.05);
+}
+
+.isResizing {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.isHovered {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.isDraggable {
+  cursor: grab;
+}
+
+.isDraggable:active {
+  cursor: grabbing;
+}
+
+/* ── Inner body ── */
+.body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Tiny layout (≤15 min) ── */
+.tinyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 100%;
+}
+
+.titleTiny {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.startTime {
+  font-size: 0.625rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Small layout (<45 min) ── */
+.smallHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.titleSmall {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  font-size: 0.75rem;
+}
+
+.smallFooter {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}
+
+.calendarLabel {
+  font-size: 0.625rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeRange {
+  font-size: 0.6875rem; /* 11px */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Large external layout ── */
+.largeExternalHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.titleLarge {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.375;
+  flex: 1;
+  min-width: 0;
+}
+
+.largeCalendarName {
+  margin-top: 0.25rem;
+  margin-left: 1.5rem;
+  font-size: 0.6875rem;
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.largeTimeRange {
+  margin-top: auto;
+  padding-top: 0.25rem;
+  margin-left: 1.5rem;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* ── Large internal layout ── */
+.largeHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.largeTitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.375;
+  flex: 1;
+  min-width: 0;
+}
+
+.projectRow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+  margin-left: 1.375rem; /* 22px */
+}
+
+.projectDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.projectName {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.largeFooterTime {
+  margin-top: auto;
+  padding-top: 0.25rem;
+  margin-left: 1.375rem;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* ── Remove button (shared) ── */
+.removeBtn {
+  flex-shrink: 0;
+  padding: 0;
+  transition: opacity 150ms ease;
+}
+
+.removeBtnTiny {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.removeBtnSmall {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.removeBtnLarge {
+  height: 1rem;
+  width: 1rem;
+  margin-top: -0.125rem;
+  margin-right: -0.125rem;
+}
+
+.btnVisible {
+  opacity: 1;
+}
+
+.btnHidden {
+  opacity: 0;
+}
+
+/* ── Resize handles ── */
+.resizeHandle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0.75rem;
+  cursor: ns-resize;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  transition: opacity 150ms ease;
+}
+
+.resizeHandleTop {
+  top: 0;
+  align-items: flex-start;
+  padding-top: 0.25rem;
+}
+
+.resizeHandleBottom {
+  bottom: 0;
+  align-items: flex-end;
+  padding-bottom: 0.25rem;
+}
+
+.resizeHandleVisible {
+  opacity: 1;
+}
+
+.resizeHandleHidden {
+  opacity: 0;
+}
+
+.resizeBar {
+  width: 2rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background-color: var(--block-color, #6b7280);
+}
+
+/* ── Icon sizes ── */
+.iconXs {
+  height: 0.75rem;
+  width: 0.75rem;
+  flex-shrink: 0;
+}
+
+.iconXsFaded {
+  height: 0.75rem;
+  width: 0.75rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.iconSm {
+  height: 0.875rem;
+  width: 0.875rem;
+  flex-shrink: 0;
+}
+
+.iconSmFaded {
+  height: 0.875rem;
+  width: 0.875rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+  margin-top: 0.125rem;
+}
+
+.iconMd {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}

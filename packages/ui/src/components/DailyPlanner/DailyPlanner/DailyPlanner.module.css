@@ -1,0 +1,342 @@
+/* DailyPlanner.module.css */
+
+.container {
+  flex: 1;
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Main panel (right of sidebar) ── */
+.mainPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ── Date header ── */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* dateNav fills remaining space so arrows stay pinned at the edges */
+.dateNav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.navBtn {
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+}
+
+/* date content centres itself inside the space between the arrows */
+.dateInfo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0 0.5rem;
+}
+
+.dateTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.todayPill {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+:global(.dark) .todayPill {
+  background-color: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.jumpToToday {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.1875rem 0.5rem;
+  cursor: pointer;
+  line-height: 1.4;
+  flex-shrink: 0;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.jumpToToday:hover {
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+
+/* Thin divider between nav and stats */
+.headerDivider {
+  width: 1px;
+  height: 1.25rem;
+  background-color: var(--border);
+  flex-shrink: 0;
+}
+
+/* Stats chips */
+.headerStats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.statChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5625rem;
+  border-radius: 9999px;
+}
+
+.statChipFocus {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+:global(.dark) .statChipFocus {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.statChipBreak {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+:global(.dark) .statChipBreak {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+/* ── Pomodoro toolbar ── */
+.pomodoroBar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0.375rem 1rem;
+  gap: 0.5rem;
+}
+
+.pomodoroToggle {
+  height: 1.75rem;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+  font-size: 0.75rem;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+/* OFF state */
+.pomodoroToggleOff {
+  color: var(--muted-foreground);
+}
+
+.pomodoroToggleOff:hover {
+  color: var(--foreground);
+}
+
+/* ON state */
+.pomodoroToggleOn {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.pomodoroToggleOn:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #059669;
+}
+
+:global(.dark) .pomodoroToggleOn {
+  background-color: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+:global(.dark) .pomodoroToggleOn:hover {
+  background-color: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+}
+
+/* Visual checkbox inside the button */
+.checkboxIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.2rem;
+  border: 1.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.checkboxIconChecked {
+  opacity: 1;
+}
+
+.pomodoroSelect {
+  height: 1.75rem;
+  font-size: 0.75rem;
+  width: auto;
+  min-width: 110px;
+  max-width: 180px;
+}
+
+/* ── Pomodoro dropdown ── */
+.pomodoroSelectLabel {
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+}
+
+.pomodoroSelectMuted {
+  color: var(--muted-foreground);
+}
+
+.smartDistributeBtn {
+  height: 1.75rem;
+  width: 1.75rem;
+  color: var(--muted-foreground);
+}
+
+.smartDistributeBtn:hover {
+  color: var(--foreground);
+}
+
+/* ── Scroll area ── */
+.content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Add event FAB ── */
+.fab {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+  height: 2.75rem;
+  width: 2.75rem;
+  border-radius: 9999px;
+  background-color: var(--primary);
+  color: var(--background);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+.fab:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.scrollArea {
+  height: 100%;
+  overflow: auto;
+}
+
+/* ── Drag preview overlay ── */
+.dragPreviewWrapper {
+  pointer-events: none;
+  z-index: 9999;
+  width: 256px;
+}
+
+.dragPreviewCard {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--primary);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  opacity: 0.95;
+  background-color: var(--card);
+}
+
+.dragPreviewContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dragPreviewMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.dragPreviewTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dragPreviewProject {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.dragPreviewProjectDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+}
+
+.dragPreviewProjectName {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.navIcon {
+  height: 1rem;
+  width: 1rem;
+}
