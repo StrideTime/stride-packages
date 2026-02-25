@@ -1,16 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
-import { DailyPlanner } from './DailyPlanner';
-import type { ScheduledEvent, Task, Project } from '@stridetime/types';
-import { ScheduledEventType } from '@stridetime/types';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+import { DailyPlanner } from "./DailyPlanner";
+import type { ScheduledEvent, Task, Project } from "@stridetime/types";
+import { ScheduledEventType } from "@stridetime/types";
 const meta = {
-  title: 'Components/DailyPlanner',
+  title: "Components/DailyPlanner",
   component: DailyPlanner,
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   args: {
     date: new Date(),
     scheduledEvents: [],
@@ -26,67 +26,67 @@ type Story = StoryObj<typeof meta>;
 // Mock data
 const mockProjects: Project[] = [
   {
-    id: 'proj-1',
-    workspaceId: 'ws-1',
-    userId: 'user-1',
-    name: 'Website Redesign',
-    description: 'Complete redesign of company website',
-    color: '#3b82f6',
-    icon: '🎨',
-    status: 'ACTIVE',
+    id: "proj-1",
+    workspaceId: "ws-1",
+    userId: "user-1",
+    name: "Website Redesign",
+    description: "Complete redesign of company website",
+    color: "#3b82f6",
+    icon: "🎨",
+    status: "ACTIVE",
     completionPercentage: 45,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'proj-2',
-    workspaceId: 'ws-1',
-    userId: 'user-1',
-    name: 'Mobile App',
-    description: 'iOS and Android app development',
-    color: '#10b981',
-    icon: '📱',
-    status: 'ACTIVE',
+    id: "proj-2",
+    workspaceId: "ws-1",
+    userId: "user-1",
+    name: "Mobile App",
+    description: "iOS and Android app development",
+    color: "#10b981",
+    icon: "📱",
+    status: "ACTIVE",
     completionPercentage: 30,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'proj-3',
-    workspaceId: 'ws-1',
-    userId: 'user-1',
-    name: 'Marketing Campaign',
-    description: 'Q1 marketing initiatives',
-    color: '#f59e0b',
-    icon: '📢',
-    status: 'ACTIVE',
+    id: "proj-3",
+    workspaceId: "ws-1",
+    userId: "user-1",
+    name: "Marketing Campaign",
+    description: "Q1 marketing initiatives",
+    color: "#f59e0b",
+    icon: "📢",
+    status: "ACTIVE",
     completionPercentage: 60,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
 ];
 
 const mockTasks: Task[] = [
   {
-    id: 'task-1',
-    userId: 'user-1',
-    projectId: 'proj-1',
+    id: "task-1",
+    userId: "user-1",
+    projectId: "proj-1",
     parentTaskId: null,
-    title: 'Design homepage mockup',
-    description: 'Create high-fidelity mockup for new homepage',
-    difficulty: 'MEDIUM',
-    priority: 'HIGH',
+    title: "Design homepage mockup",
+    description: "Create high-fidelity mockup for new homepage",
+    difficulty: "MEDIUM",
+    priority: "HIGH",
     progress: 0,
-    status: 'IN_PROGRESS',
+    status: "IN_PROGRESS",
     assigneeUserId: null,
     teamId: null,
     estimatedMinutes: 120,
     maxMinutes: null,
     actualMinutes: 0,
-    plannedForDate: new Date().toISOString().split('T')[0],
+    plannedForDate: new Date().toISOString().split("T")[0],
     dueDate: null,
     taskTypeId: null,
     displayOrder: 0,
@@ -94,27 +94,27 @@ const mockTasks: Task[] = [
     externalId: null,
     externalSource: null,
     completedAt: null,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'task-2',
-    userId: 'user-1',
-    projectId: 'proj-2',
+    id: "task-2",
+    userId: "user-1",
+    projectId: "proj-2",
     parentTaskId: null,
-    title: 'Implement user authentication',
-    description: 'Add OAuth and JWT authentication',
-    difficulty: 'HARD',
-    priority: 'CRITICAL',
+    title: "Implement user authentication",
+    description: "Add OAuth and JWT authentication",
+    difficulty: "HARD",
+    priority: "CRITICAL",
     progress: 0,
-    status: 'IN_PROGRESS',
+    status: "IN_PROGRESS",
     assigneeUserId: null,
     teamId: null,
     estimatedMinutes: 180,
     maxMinutes: null,
     actualMinutes: 0,
-    plannedForDate: new Date().toISOString().split('T')[0],
+    plannedForDate: new Date().toISOString().split("T")[0],
     dueDate: null,
     taskTypeId: null,
     displayOrder: 1,
@@ -122,27 +122,27 @@ const mockTasks: Task[] = [
     externalId: null,
     externalSource: null,
     completedAt: null,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'task-3',
-    userId: 'user-1',
-    projectId: 'proj-1',
+    id: "task-3",
+    userId: "user-1",
+    projectId: "proj-1",
     parentTaskId: null,
-    title: 'Write blog post',
-    description: 'Content for product launch announcement',
-    difficulty: 'EASY',
-    priority: 'MEDIUM',
+    title: "Write blog post",
+    description: "Content for product launch announcement",
+    difficulty: "EASY",
+    priority: "MEDIUM",
     progress: 0,
-    status: 'IN_PROGRESS',
+    status: "IN_PROGRESS",
     assigneeUserId: null,
     teamId: null,
     estimatedMinutes: 90,
     maxMinutes: null,
     actualMinutes: 0,
-    plannedForDate: new Date().toISOString().split('T')[0],
+    plannedForDate: new Date().toISOString().split("T")[0],
     dueDate: null,
     taskTypeId: null,
     displayOrder: 2,
@@ -150,27 +150,27 @@ const mockTasks: Task[] = [
     externalId: null,
     externalSource: null,
     completedAt: null,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'task-4',
-    userId: 'user-1',
-    projectId: 'proj-3',
+    id: "task-4",
+    userId: "user-1",
+    projectId: "proj-3",
     parentTaskId: null,
-    title: 'Review analytics report',
-    description: 'Analyze Q4 performance metrics',
-    difficulty: 'MEDIUM',
-    priority: 'LOW',
+    title: "Review analytics report",
+    description: "Analyze Q4 performance metrics",
+    difficulty: "MEDIUM",
+    priority: "LOW",
     progress: 0,
-    status: 'IN_PROGRESS',
+    status: "IN_PROGRESS",
     assigneeUserId: null,
     teamId: null,
     estimatedMinutes: 60,
     maxMinutes: null,
     actualMinutes: 0,
-    plannedForDate: new Date().toISOString().split('T')[0],
+    plannedForDate: new Date().toISOString().split("T")[0],
     dueDate: null,
     taskTypeId: null,
     displayOrder: 3,
@@ -178,96 +178,97 @@ const mockTasks: Task[] = [
     externalId: null,
     externalSource: null,
     completedAt: null,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
 ];
 
 const mockScheduledEvents: ScheduledEvent[] = [
   {
-    id: 'event-1',
+    id: "event-1",
     taskId: null,
-    userId: 'user-1',
-    startTime: '09:00',
+    userId: "user-1",
+    startTime: "09:00",
     durationMinutes: 30,
-    label: 'Engineering Standup',
+    label: "Engineering Standup",
     type: ScheduledEventType.MEETING,
-    externalId: 'gcal_standup_7x3k',
-    externalSource: 'GOOGLE_CALENDAR',
+    externalId: "gcal_standup_7x3k",
+    externalSource: "GOOGLE_CALENDAR",
     metadata: JSON.stringify({
-      calendarName: 'Work',
-      organizer: { name: 'Sarah Chen', email: 'sarah.chen@stride.com' },
+      calendarName: "Work",
+      organizer: { name: "Sarah Chen", email: "sarah.chen@stride.com" },
       attendees: [
-        { name: 'Jaren Moore',    email: 'jaren@stride.com',       responseStatus: 'accepted' },
-        { name: 'Sarah Chen',     email: 'sarah.chen@stride.com',  responseStatus: 'accepted' },
-        { name: 'Marcus Johnson', email: 'marcus.j@stride.com',    responseStatus: 'accepted' },
-        { name: 'Emily Rodriguez',email: 'emily.r@stride.com',     responseStatus: 'tentative' },
+        { name: "Jaren Moore", email: "jaren@stride.com", responseStatus: "accepted" },
+        { name: "Sarah Chen", email: "sarah.chen@stride.com", responseStatus: "accepted" },
+        { name: "Marcus Johnson", email: "marcus.j@stride.com", responseStatus: "accepted" },
+        { name: "Emily Rodriguez", email: "emily.r@stride.com", responseStatus: "tentative" },
       ],
-      location: 'Google Meet',
-      description: 'Daily standup — what did you do yesterday, what are you doing today, any blockers?\n\nKeep it to 15 minutes.',
-      htmlLink: 'https://calendar.google.com/calendar/event?eid=standup123',
-      hangoutLink: 'https://meet.google.com/xyz-uvwq-rst',
-      status: 'confirmed',
+      location: "Google Meet",
+      description:
+        "Daily standup — what did you do yesterday, what are you doing today, any blockers?\n\nKeep it to 15 minutes.",
+      htmlLink: "https://calendar.google.com/calendar/event?eid=standup123",
+      hangoutLink: "https://meet.google.com/xyz-uvwq-rst",
+      status: "confirmed",
     }),
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'event-2',
+    id: "event-2",
     taskId: null,
-    userId: 'user-1',
-    startTime: '12:00',
+    userId: "user-1",
+    startTime: "12:00",
     durationMinutes: 60,
-    label: 'Lunch Break',
+    label: "Lunch Break",
     type: ScheduledEventType.BREAK,
     externalId: null,
     externalSource: null,
     metadata: null,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
   {
-    id: 'event-3',
+    id: "event-3",
     taskId: null,
-    userId: 'user-1',
-    startTime: '14:00',
+    userId: "user-1",
+    startTime: "14:00",
     durationMinutes: 60,
-    label: 'Q2 Planning Sync',
+    label: "Q2 Planning Sync",
     type: ScheduledEventType.MEETING,
-    externalId: 'gcal_q2plan_9a2z',
-    externalSource: 'GOOGLE_CALENDAR',
+    externalId: "gcal_q2plan_9a2z",
+    externalSource: "GOOGLE_CALENDAR",
     metadata: JSON.stringify({
-      calendarName: 'Work',
-      organizer: { name: 'Jaren Moore', email: 'jaren@stride.com' },
+      calendarName: "Work",
+      organizer: { name: "Jaren Moore", email: "jaren@stride.com" },
       attendees: [
-        { name: 'Jaren Moore',     email: 'jaren@stride.com',        responseStatus: 'accepted'    },
-        { name: 'Sarah Chen',      email: 'sarah.chen@stride.com',   responseStatus: 'accepted'    },
-        { name: 'Marcus Johnson',  email: 'marcus.j@stride.com',     responseStatus: 'accepted'    },
-        { name: 'Emily Rodriguez', email: 'emily.r@stride.com',      responseStatus: 'tentative'   },
-        { name: 'David Park',      email: 'david.park@stride.com',   responseStatus: 'needsAction' },
+        { name: "Jaren Moore", email: "jaren@stride.com", responseStatus: "accepted" },
+        { name: "Sarah Chen", email: "sarah.chen@stride.com", responseStatus: "accepted" },
+        { name: "Marcus Johnson", email: "marcus.j@stride.com", responseStatus: "accepted" },
+        { name: "Emily Rodriguez", email: "emily.r@stride.com", responseStatus: "tentative" },
+        { name: "David Park", email: "david.park@stride.com", responseStatus: "needsAction" },
       ],
-      location: 'Google Meet',
+      location: "Google Meet",
       description: [
-        'Q2 roadmap planning and feature prioritization.',
-        '',
-        'Agenda:',
-        '1. Review Q1 retrospective outcomes (10 min)',
-        '2. Q2 goal setting & OKRs (20 min)',
-        '3. Feature prioritization — dot voting (20 min)',
-        '4. Resource planning & capacity (10 min)',
-        '',
-        'Prep: review the Q2 proposal doc before the meeting.',
-        'Doc: https://docs.stride.com/q2-planning-2024',
-      ].join('\n'),
-      htmlLink: 'https://calendar.google.com/calendar/event?eid=q2plan456',
-      hangoutLink: 'https://meet.google.com/abc-defg-hij',
-      status: 'confirmed',
+        "Q2 roadmap planning and feature prioritization.",
+        "",
+        "Agenda:",
+        "1. Review Q1 retrospective outcomes (10 min)",
+        "2. Q2 goal setting & OKRs (20 min)",
+        "3. Feature prioritization — dot voting (20 min)",
+        "4. Resource planning & capacity (10 min)",
+        "",
+        "Prep: review the Q2 proposal doc before the meeting.",
+        "Doc: https://docs.stride.com/q2-planning-2024",
+      ].join("\n"),
+      htmlLink: "https://calendar.google.com/calendar/event?eid=q2plan456",
+      hangoutLink: "https://meet.google.com/abc-defg-hij",
+      status: "confirmed",
     }),
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
     deleted: false,
   },
 ];
@@ -279,14 +280,14 @@ function InteractiveDailyPlanner() {
   const [plannedTasks] = useState<Task[]>(mockTasks);
 
   const handleScheduleTask = (taskId: string, startTime: string, durationMinutes: number) => {
-    console.log('handleScheduleTask called:', { taskId, startTime, durationMinutes });
+    console.log("handleScheduleTask called:", { taskId, startTime, durationMinutes });
     const newEvent: ScheduledEvent = {
       id: `event-${Date.now()}`,
       taskId,
-      userId: 'user-1',
+      userId: "user-1",
       startTime,
       durationMinutes,
-      label: plannedTasks.find((t) => t.id === taskId)?.title || 'Task',
+      label: plannedTasks.find((t) => t.id === taskId)?.title || "Task",
       type: ScheduledEventType.TASK,
       externalId: null,
       externalSource: null,
@@ -295,30 +296,30 @@ function InteractiveDailyPlanner() {
       updatedAt: new Date().toISOString(),
       deleted: false,
     };
-    console.log('Creating new event:', newEvent);
+    console.log("Creating new event:", newEvent);
     setScheduledEvents((prev) => {
       const updated = [...prev, newEvent];
-      console.log('Updated scheduledEvents:', updated);
+      console.log("Updated scheduledEvents:", updated);
       return updated;
     });
   };
 
   const handleMoveEvent = (eventId: string, newStartTime: string) => {
-    console.log('handleMoveEvent called:', { eventId, newStartTime });
+    console.log("handleMoveEvent called:", { eventId, newStartTime });
     setScheduledEvents((prev) => {
       const updated = prev.map((e) => (e.id === eventId ? { ...e, startTime: newStartTime } : e));
-      console.log('Updated scheduledEvents after move:', updated);
+      console.log("Updated scheduledEvents after move:", updated);
       return updated;
     });
   };
 
   const handleResizeEvent = (eventId: string, newDurationMinutes: number) => {
-    console.log('handleResizeEvent called:', { eventId, newDurationMinutes });
+    console.log("handleResizeEvent called:", { eventId, newDurationMinutes });
     setScheduledEvents((prev) => {
       const updated = prev.map((e) =>
         e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e
       );
-      console.log('Updated scheduledEvents after resize:', updated);
+      console.log("Updated scheduledEvents after resize:", updated);
       return updated;
     });
   };
@@ -327,25 +328,34 @@ function InteractiveDailyPlanner() {
     setScheduledEvents((prev) => prev.filter((e) => e.id !== eventId));
   };
 
-  const handleEditEvent = (eventId: string, updates: {
-    label?: string | undefined;
-    startTime?: string | undefined;
-    durationMinutes?: number | undefined;
-    type?: any;
-  }) => {
-    console.log('handleEditEvent called:', { eventId, updates });
+  const handleEditEvent = (
+    eventId: string,
+    updates: {
+      label?: string | undefined;
+      startTime?: string | undefined;
+      durationMinutes?: number | undefined;
+      type?: any;
+    }
+  ) => {
+    console.log("handleEditEvent called:", { eventId, updates });
     setScheduledEvents((prev) => {
       const updated = prev.map((e) => (e.id === eventId ? { ...e, ...updates } : e));
-      console.log('Updated scheduledEvents after edit:', updated);
+      console.log("Updated scheduledEvents after edit:", updated);
       return updated;
     });
   };
 
-  const handleAddEvent = (event: { label: string; startTime: string; durationMinutes: number; type: any; recurring: boolean }) => {
+  const handleAddEvent = (event: {
+    label: string;
+    startTime: string;
+    durationMinutes: number;
+    type: any;
+    recurring: boolean;
+  }) => {
     const newEvent: ScheduledEvent = {
       id: `event-${Date.now()}`,
       taskId: null,
-      userId: 'user-1',
+      userId: "user-1",
       startTime: event.startTime,
       durationMinutes: event.durationMinutes,
       label: event.label,
@@ -357,7 +367,7 @@ function InteractiveDailyPlanner() {
       updatedAt: new Date().toISOString(),
       deleted: false,
     };
-    setScheduledEvents(prev => [...prev, newEvent]);
+    setScheduledEvents((prev) => [...prev, newEvent]);
   };
 
   return (
@@ -399,10 +409,10 @@ export const EmptyDay: Story = {
             const newEvent: ScheduledEvent = {
               id: `event-${Date.now()}`,
               taskId,
-              userId: 'user-1',
+              userId: "user-1",
               startTime,
               durationMinutes,
-              label: mockTasks.find((t) => t.id === taskId)?.title || 'Task',
+              label: mockTasks.find((t) => t.id === taskId)?.title || "Task",
               type: ScheduledEventType.TASK,
               externalId: null,
               externalSource: null,
@@ -414,30 +424,39 @@ export const EmptyDay: Story = {
             setScheduledEvents([...scheduledEvents, newEvent]);
           }}
           onMoveEvent={(eventId, newStartTime) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, startTime: newStartTime } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) => (e.id === eventId ? { ...e, startTime: newStartTime } : e))
+            );
           }}
           onResizeEvent={(eventId, newDurationMinutes) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) =>
+                e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e
+              )
+            );
           }}
           onRemoveEvent={(eventId) => {
             setScheduledEvents(scheduledEvents.filter((e) => e.id !== eventId));
           }}
           onAddEvent={(event) => {
-            setScheduledEvents(prev => [...prev, {
-              id: `event-${Date.now()}`,
-              taskId: null,
-              userId: 'user-1',
-              startTime: event.startTime,
-              durationMinutes: event.durationMinutes,
-              label: event.label,
-              type: event.type,
-              externalId: null,
-              externalSource: null,
-              metadata: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              deleted: false,
-            }]);
+            setScheduledEvents((prev) => [
+              ...prev,
+              {
+                id: `event-${Date.now()}`,
+                taskId: null,
+                userId: "user-1",
+                startTime: event.startTime,
+                durationMinutes: event.durationMinutes,
+                label: event.label,
+                type: event.type,
+                externalId: null,
+                externalSource: null,
+                metadata: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deleted: false,
+              },
+            ]);
           }}
         />
       </div>
@@ -450,33 +469,33 @@ export const BusyDay: Story = {
     const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvent[]>([
       ...mockScheduledEvents,
       {
-        id: 'event-4',
-        taskId: 'task-1',
-        userId: 'user-1',
-        startTime: '10:30',
+        id: "event-4",
+        taskId: "task-1",
+        userId: "user-1",
+        startTime: "10:30",
         durationMinutes: 120,
-        label: 'Design Work',
+        label: "Design Work",
         type: ScheduledEventType.TASK,
         externalId: null,
         externalSource: null,
         metadata: null,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
         deleted: false,
       },
       {
-        id: 'event-5',
-        taskId: 'task-2',
-        userId: 'user-1',
-        startTime: '15:45',
+        id: "event-5",
+        taskId: "task-2",
+        userId: "user-1",
+        startTime: "15:45",
         durationMinutes: 90,
-        label: 'Development',
+        label: "Development",
         type: ScheduledEventType.TASK,
         externalId: null,
         externalSource: null,
         metadata: null,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
         deleted: false,
       },
     ]);
@@ -492,10 +511,10 @@ export const BusyDay: Story = {
             const newEvent: ScheduledEvent = {
               id: `event-${Date.now()}`,
               taskId,
-              userId: 'user-1',
+              userId: "user-1",
               startTime,
               durationMinutes,
-              label: mockTasks.find((t) => t.id === taskId)?.title || 'Task',
+              label: mockTasks.find((t) => t.id === taskId)?.title || "Task",
               type: ScheduledEventType.TASK,
               externalId: null,
               externalSource: null,
@@ -507,30 +526,39 @@ export const BusyDay: Story = {
             setScheduledEvents([...scheduledEvents, newEvent]);
           }}
           onMoveEvent={(eventId, newStartTime) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, startTime: newStartTime } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) => (e.id === eventId ? { ...e, startTime: newStartTime } : e))
+            );
           }}
           onResizeEvent={(eventId, newDurationMinutes) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) =>
+                e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e
+              )
+            );
           }}
           onRemoveEvent={(eventId) => {
             setScheduledEvents(scheduledEvents.filter((e) => e.id !== eventId));
           }}
           onAddEvent={(event) => {
-            setScheduledEvents(prev => [...prev, {
-              id: `event-${Date.now()}`,
-              taskId: null,
-              userId: 'user-1',
-              startTime: event.startTime,
-              durationMinutes: event.durationMinutes,
-              label: event.label,
-              type: event.type,
-              externalId: null,
-              externalSource: null,
-              metadata: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              deleted: false,
-            }]);
+            setScheduledEvents((prev) => [
+              ...prev,
+              {
+                id: `event-${Date.now()}`,
+                taskId: null,
+                userId: "user-1",
+                startTime: event.startTime,
+                durationMinutes: event.durationMinutes,
+                label: event.label,
+                type: event.type,
+                externalId: null,
+                externalSource: null,
+                metadata: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deleted: false,
+              },
+            ]);
           }}
         />
       </div>
@@ -551,30 +579,39 @@ export const NoPlannedTasks: Story = {
           tasks={mockTasks}
           projects={mockProjects}
           onMoveEvent={(eventId, newStartTime) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, startTime: newStartTime } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) => (e.id === eventId ? { ...e, startTime: newStartTime } : e))
+            );
           }}
           onResizeEvent={(eventId, newDurationMinutes) => {
-            setScheduledEvents(scheduledEvents.map((e) => e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e));
+            setScheduledEvents(
+              scheduledEvents.map((e) =>
+                e.id === eventId ? { ...e, durationMinutes: newDurationMinutes } : e
+              )
+            );
           }}
           onRemoveEvent={(eventId) => {
             setScheduledEvents(scheduledEvents.filter((e) => e.id !== eventId));
           }}
           onAddEvent={(event) => {
-            setScheduledEvents(prev => [...prev, {
-              id: `event-${Date.now()}`,
-              taskId: null,
-              userId: 'user-1',
-              startTime: event.startTime,
-              durationMinutes: event.durationMinutes,
-              label: event.label,
-              type: event.type,
-              externalId: null,
-              externalSource: null,
-              metadata: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              deleted: false,
-            }]);
+            setScheduledEvents((prev) => [
+              ...prev,
+              {
+                id: `event-${Date.now()}`,
+                taskId: null,
+                userId: "user-1",
+                startTime: event.startTime,
+                durationMinutes: event.durationMinutes,
+                label: event.label,
+                type: event.type,
+                externalId: null,
+                externalSource: null,
+                metadata: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deleted: false,
+              },
+            ]);
           }}
         />
       </div>

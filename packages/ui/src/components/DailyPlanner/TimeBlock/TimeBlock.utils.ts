@@ -16,19 +16,19 @@ export function hslToRgb(h: number, sPct: number, lPct: number): [number, number
  */
 function parseCssColor(value: string): [number, number, number] | null {
   const v = value.trim();
-  if (v.startsWith('#')) {
+  if (v.startsWith("#")) {
     if (v.length === 7) {
-      return [parseInt(v.slice(1, 3), 16), parseInt(v.slice(3, 5), 16), parseInt(v.slice(5, 7), 16)];
-    }
-    if (v.length === 4) {
       return [
-        parseInt(v[1] + v[1], 16),
-        parseInt(v[2] + v[2], 16),
-        parseInt(v[3] + v[3], 16),
+        parseInt(v.slice(1, 3), 16),
+        parseInt(v.slice(3, 5), 16),
+        parseInt(v.slice(5, 7), 16),
       ];
     }
+    if (v.length === 4) {
+      return [parseInt(v[1] + v[1], 16), parseInt(v[2] + v[2], 16), parseInt(v[3] + v[3], 16)];
+    }
   }
-  const parts = v.split(/\s+/).map(p => parseFloat(p));
+  const parts = v.split(/\s+/).map((p) => parseFloat(p));
   if (parts.length >= 3 && !parts.some(isNaN)) {
     return hslToRgb(parts[0], parts[1], parts[2]);
   }
@@ -42,12 +42,18 @@ function parseCssColor(value: string): [number, number, number] | null {
  * Supports both hex (#rrggbb) and HSL ("H S% L%") CSS variable formats.
  */
 export function solidTint(hexColor: string, alpha: number): string {
-  let br = 255, bg = 255, bb = 255;
+  let br = 255,
+    bg = 255,
+    bb = 255;
   try {
-    const bgVal = window.getComputedStyle(document.documentElement).getPropertyValue('--background');
+    const bgVal = window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue("--background");
     const parsed = parseCssColor(bgVal);
     if (parsed) [br, bg, bb] = parsed;
-  } catch {}
+  } catch (e) {
+    console.error(e);
+  }
   const cr = parseInt(hexColor.slice(1, 3), 16);
   const cg = parseInt(hexColor.slice(3, 5), 16);
   const cb = parseInt(hexColor.slice(5, 7), 16);
