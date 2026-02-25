@@ -61,6 +61,12 @@
   cursor: grabbing;
 }
 
+.blockExternal {
+  border-style: dashed;
+  cursor: default;
+  background-color: color-mix(in srgb, var(--block-color, #6b7280) 12%, var(--background));
+}
+
 /* ── Inner body ── */
 .body {
   display: flex;
@@ -83,12 +89,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   line-height: 1;
 }
 
 .startTime {
-  font-size: 0.625rem;
+  font-size: var(--text-2xs);
   opacity: 0.6;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -107,7 +113,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .smallFooter {
@@ -119,14 +125,14 @@
 }
 
 .calendarLabel {
-  font-size: 0.625rem;
+  font-size: var(--text-2xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .timeRange {
-  font-size: 0.6875rem; /* 11px */
+  font-size: var(--text-xs); /* 11px */
   font-variant-numeric: tabular-nums;
 }
 
@@ -139,7 +145,7 @@
 
 .titleLarge {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   line-height: 1.375;
   flex: 1;
   min-width: 0;
@@ -148,7 +154,7 @@
 .largeCalendarName {
   margin-top: 0.25rem;
   margin-left: 1.5rem;
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
   opacity: 0.6;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -159,7 +165,7 @@
   margin-top: auto;
   padding-top: 0.25rem;
   margin-left: 1.5rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   opacity: 0.75;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -174,7 +180,7 @@
 
 .largeTitle {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   line-height: 1.375;
   flex: 1;
   min-width: 0;
@@ -196,7 +202,7 @@
 }
 
 .projectName {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   opacity: 0.7;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -207,7 +213,7 @@
   margin-top: auto;
   padding-top: 0.25rem;
   margin-left: 1.375rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   opacity: 0.7;
   font-variant-numeric: tabular-nums;
   line-height: 1;

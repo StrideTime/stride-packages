@@ -9,9 +9,6 @@ export { ThemeProvider, useTheme } from "./theme/ThemeProvider";
 // Branding Assets (SVG/PNG files)
 export * as brandingAssets from "./assets/branding";
 
-// Logo Components
-export * from "./logos";
-
 // Components
 export * from "./components";
 
