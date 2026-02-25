@@ -32,8 +32,10 @@ export function TaskCard({
   onDeleteTimeEntry,
   points,
   externalUrl,
+  scheduledTime,
   isActive = false,
   expanded = false,
+  hasActiveTimer = false,
   onToggleSubtask,
   onToggleExpand,
   onOpenDetail,
@@ -165,8 +167,19 @@ export function TaskCard({
                   </span>
                 ))}
 
+              {/* Scheduled time (shows if time-blocked) */}
+              {scheduledTime && (
+                <span className="shrink-0 flex items-center gap-0.5 text-xs font-medium text-primary">
+                  <Clock className="h-3 w-3" />
+                  {new Date(scheduledTime.startTime).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+
               {/* Estimate */}
-              {task.estimatedMinutes != null && (
+              {!scheduledTime && task.estimatedMinutes != null && (
                 <span className="shrink-0 flex items-center gap-0.5 text-xs text-muted-foreground">
                   <Timer className="h-3 w-3" />~{task.estimatedMinutes}m
                 </span>
@@ -185,11 +198,23 @@ export function TaskCard({
           {!isCompleted && (
             <div onClick={(e) => e.stopPropagation()}>
               {isActive ? (
-                <Button size="sm" variant="ghost" onClick={onPause} className="h-7 w-7 p-0">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onPause}
+                  className="h-7 w-7 p-0"
+                  title="Pause timer"
+                >
                   <Pause className="h-3.5 w-3.5" />
                 </Button>
               ) : (
-                <Button size="sm" variant="ghost" onClick={onStart} className="h-7 w-7 p-0">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onStart}
+                  className="h-7 w-7 p-0"
+                  title={hasActiveTimer ? "Switch to this task" : "Start timer"}
+                >
                   <Play className="h-3.5 w-3.5" />
                 </Button>
               )}
@@ -410,7 +435,7 @@ export function TaskCard({
               ) : (
                 <Button size="sm" onClick={onStart}>
                   <Play className="h-3.5 w-3.5 mr-1.5" />
-                  Start
+                  {hasActiveTimer ? "Switch to This" : "Start"}
                 </Button>
               )}
               {onOpenDetail && (
