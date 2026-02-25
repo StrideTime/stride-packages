@@ -51,7 +51,7 @@ export function HabitCard({
 
   // Dynamically get the icon component from lucide-react
   const IconComponent: typeof Icons.Star =
-    (Icons as Record<string, typeof Icons.Star>)[icon] || Icons.Star;
+    (Icons as unknown as Record<string, typeof Icons.Star>)[icon] || Icons.Star;
 
   const handleIncrement = (amount = 1) => {
     const newValue = tempValue + amount;

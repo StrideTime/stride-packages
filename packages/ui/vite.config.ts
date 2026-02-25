@@ -16,7 +16,6 @@ export default defineConfig({
           dest: ".",
         },
       ],
-      structured: true,
     }),
     dts({
       insertTypesEntry: true,
@@ -37,10 +36,7 @@ export default defineConfig({
       formats: ["es", "umd"],
     },
     rollupOptions: {
-      external: [
-        "react",
-        "react-dom",
-      ],
+      external: ["react", "react-dom"],
     },
     sourcemap: true,
     minify: "esbuild",
