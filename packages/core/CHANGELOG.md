@@ -1,5 +1,12 @@
 # @stridetime/core
 
+## 1.0.5-alpha.4
+
+### Patch Changes
+
+- @stridetime/db@1.0.5-alpha.4
+- @stridetime/types@1.0.5-alpha.4
+
 ## 1.0.5-alpha.3
 
 ### Patch Changes
