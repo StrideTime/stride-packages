@@ -8,5 +8,11 @@
     "@stridetime/types": "1.0.4",
     "@stridetime/ui": "1.0.4"
   },
-  "changesets": ["dull-ties-hear", "full-humans-train", "open-pants-film", "sweet-bees-rush"]
+  "changesets": [
+    "dull-ties-hear",
+    "full-humans-train",
+    "open-pants-film",
+    "sweet-bees-rush",
+    "tall-eggs-argue"
+  ]
 }

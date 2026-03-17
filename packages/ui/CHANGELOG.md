@@ -1,5 +1,12 @@
 # @stridetime/ui
 
+## 1.0.5-alpha.4
+
+### Patch Changes
+
+- a53df8e: Added DailyPlanner components along with rest of important components relating to that
+  - @stridetime/types@1.0.5-alpha.4
+
 ## 1.0.5-alpha.3
 
 ### Patch Changes
