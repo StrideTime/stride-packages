@@ -45,11 +45,10 @@ describe('WorkspaceUserPreferencesRepository', () => {
 
   describe('create', () => {
     it('creates workspace user preferences with generated ID', async () => {
-      const { id, createdAt, updatedAt, deleted, ...prefsInput } =
-        createMockWorkspaceUserPreferences({
-          userId: testUser.id,
-          workspaceId: testWorkspace.id,
-        });
+      const { id, createdAt, updatedAt, ...prefsInput } = createMockWorkspaceUserPreferences({
+        userId: testUser.id,
+        workspaceId: testWorkspace.id,
+      });
 
       const created = await workspaceUserPreferencesRepo.create(db, prefsInput);
 
@@ -62,11 +61,10 @@ describe('WorkspaceUserPreferencesRepository', () => {
 
   describe('findById', () => {
     it('returns preferences when found', async () => {
-      const { id, createdAt, updatedAt, deleted, ...prefsInput } =
-        createMockWorkspaceUserPreferences({
-          userId: testUser.id,
-          workspaceId: testWorkspace.id,
-        });
+      const { id, createdAt, updatedAt, ...prefsInput } = createMockWorkspaceUserPreferences({
+        userId: testUser.id,
+        workspaceId: testWorkspace.id,
+      });
 
       const created = await workspaceUserPreferencesRepo.create(db, prefsInput);
       const found = await workspaceUserPreferencesRepo.findById(db, created.id);
@@ -83,11 +81,10 @@ describe('WorkspaceUserPreferencesRepository', () => {
 
   describe('findByUserAndWorkspace', () => {
     it('returns preferences for user and workspace', async () => {
-      const { id, createdAt, updatedAt, deleted, ...prefsInput } =
-        createMockWorkspaceUserPreferences({
-          userId: testUser.id,
-          workspaceId: testWorkspace.id,
-        });
+      const { id, createdAt, updatedAt, ...prefsInput } = createMockWorkspaceUserPreferences({
+        userId: testUser.id,
+        workspaceId: testWorkspace.id,
+      });
 
       await workspaceUserPreferencesRepo.create(db, prefsInput);
 
@@ -105,11 +102,10 @@ describe('WorkspaceUserPreferencesRepository', () => {
 
   describe('update', () => {
     it('updates preferences', async () => {
-      const { id, createdAt, updatedAt, deleted, ...prefsInput } =
-        createMockWorkspaceUserPreferences({
-          userId: testUser.id,
-          workspaceId: testWorkspace.id,
-        });
+      const { id, createdAt, updatedAt, ...prefsInput } = createMockWorkspaceUserPreferences({
+        userId: testUser.id,
+        workspaceId: testWorkspace.id,
+      });
 
       const created = await workspaceUserPreferencesRepo.create(db, prefsInput);
       const updated = await workspaceUserPreferencesRepo.update(db, created.id, {
@@ -124,11 +120,10 @@ describe('WorkspaceUserPreferencesRepository', () => {
 
   describe('delete', () => {
     it('deletes preferences', async () => {
-      const { id, createdAt, updatedAt, deleted, ...prefsInput } =
-        createMockWorkspaceUserPreferences({
-          userId: testUser.id,
-          workspaceId: testWorkspace.id,
-        });
+      const { id, createdAt, updatedAt, ...prefsInput } = createMockWorkspaceUserPreferences({
+        userId: testUser.id,
+        workspaceId: testWorkspace.id,
+      });
 
       const created = await workspaceUserPreferencesRepo.create(db, prefsInput);
       await workspaceUserPreferencesRepo.delete(db, created.id);

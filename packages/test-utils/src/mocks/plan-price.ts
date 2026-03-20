@@ -10,7 +10,7 @@ import type { PlanPrice, BillingPeriod } from '@stridetime/types';
 export function createMockPlanPrice(overrides: Partial<PlanPrice> = {}): PlanPrice {
   return {
     id: 'price-123',
-    roleId: 'plan-123',
+    planId: 'plan-123',
     billingPeriod: 'MONTHLY' as BillingPeriod,
     priceCents: 999,
     currency: 'USD',

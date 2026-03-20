@@ -94,7 +94,7 @@ describe('PlanRepository', () => {
       const planFeatures = await planRepo.getPlanFeatures(db, plan.id);
 
       expect(planFeatures.length).toBe(2);
-      expect(planFeatures.every(pf => pf.roleId === plan.id)).toBe(true);
+      expect(planFeatures.every(pf => pf.planId === plan.id)).toBe(true);
     });
   });
 

@@ -4,7 +4,7 @@ import type { BillingPeriod } from '../enums/BillingPeriod';
 export type UserSubscription = {
   id: string;
   userId: string;
-  roleId: string;
+  planId: string;
 
   status: SubscriptionStatus;
 

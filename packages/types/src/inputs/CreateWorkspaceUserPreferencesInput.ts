@@ -2,5 +2,5 @@ import type { WorkspaceUserPreferences } from '../entities/WorkspaceUserPreferen
 
 export type CreateWorkspaceUserPreferencesInput = Omit<
   WorkspaceUserPreferences,
-  'id' | 'createdAt' | 'updatedAt' | 'deleted'
+  'id' | 'createdAt' | 'updatedAt'
 >;

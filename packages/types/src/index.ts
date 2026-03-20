@@ -9,7 +9,6 @@ export {
   TaskStatus,
   ScheduledEventType,
   Theme,
-  PlanningMode,
   PointsReason,
   TaskPriority,
   BreakType,
@@ -59,6 +58,7 @@ export type {
   PlanPrice,
   AdminAuditEntry,
   WorkspaceUserPreferences,
+  WorkspaceUserStatus,
   WorkspaceStatus,
   ProjectTeam,
 } from './entities';

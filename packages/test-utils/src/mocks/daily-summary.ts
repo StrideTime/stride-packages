@@ -8,6 +8,7 @@ import type { DailySummary } from '@stridetime/types';
  * Create a mock daily summary with optional overrides
  */
 export function createMockDailySummary(overrides: Partial<DailySummary> = {}): DailySummary {
+  const ts = new Date().toISOString();
   return {
     id: 'summary-123',
     userId: 'user-123',
@@ -22,7 +23,8 @@ export function createMockDailySummary(overrides: Partial<DailySummary> = {}): D
     standoutMoment: null,
     clockInTime: null,
     clockOutTime: null,
-    createdAt: new Date().toISOString(),
+    createdAt: ts,
+    updatedAt: ts,
     ...overrides,
   };
 }

@@ -18,7 +18,7 @@ describe('SubscriptionRepository', () => {
     it('creates a subscription', async () => {
       const { id, ...input } = createMockSubscription({
         userId: 'user-1',
-        roleId: 'role-pro',
+        planId: 'plan-pro',
         status: 'ACTIVE',
         priceCents: 1999,
         billingPeriod: 'MONTHLY',
@@ -28,7 +28,7 @@ describe('SubscriptionRepository', () => {
 
       expect(created.id).toBeTruthy();
       expect(created.userId).toBe('user-1');
-      expect(created.roleId).toBe('role-pro');
+      expect(created.planId).toBe('plan-pro');
       expect(created.status).toBe('ACTIVE');
       expect(created.priceCents).toBe(1999);
       expect(created.billingPeriod).toBe('MONTHLY');
@@ -113,23 +113,23 @@ describe('SubscriptionRepository', () => {
     });
   });
 
-  describe('findByRole', () => {
-    it('returns subscriptions for a role', async () => {
+  describe('findByPlan', () => {
+    it('returns subscriptions for a plan', async () => {
       const { id: _1, ...sub1 } = createMockSubscription({
         userId: 'user-1',
-        roleId: 'role-pro',
+        planId: 'plan-pro',
       });
       const { id: _2, ...sub2 } = createMockSubscription({
         userId: 'user-2',
-        roleId: 'role-team',
+        planId: 'plan-team',
       });
 
       await subscriptionRepo.create(db, sub1);
       await subscriptionRepo.create(db, sub2);
 
-      const results = await subscriptionRepo.findByRole(db, 'role-pro');
+      const results = await subscriptionRepo.findByPlan(db, 'plan-pro');
       expect(results).toHaveLength(1);
-      expect(results[0].roleId).toBe('role-pro');
+      expect(results[0].planId).toBe('plan-pro');
     });
   });
 

@@ -91,7 +91,7 @@ export class PricingService {
       throw new ValidationError('userId', 'User has no subscription');
     }
 
-    const plan = await this.planRepo.findById(db, subscription.roleId);
+    const plan = await this.planRepo.findById(db, subscription.planId);
     if (!plan) {
       throw new ValidationError('subscription', 'Plan not found');
     }
@@ -116,7 +116,7 @@ export class PricingService {
       return false;
     }
 
-    const planFeatures = await this.planRepo.getPlanFeatures(db, subscription.roleId);
+    const planFeatures = await this.planRepo.getPlanFeatures(db, subscription.planId);
     const planFeature = planFeatures.find(pf => pf.featureId === feature.id);
 
     return planFeature?.enabled ?? false;
@@ -140,7 +140,7 @@ export class PricingService {
       return null;
     }
 
-    const planFeatures = await this.planRepo.getPlanFeatures(db, subscription.roleId);
+    const planFeatures = await this.planRepo.getPlanFeatures(db, subscription.planId);
     const planFeature = planFeatures.find(pf => pf.featureId === feature.id);
 
     if (!planFeature || !planFeature.enabled) {
@@ -233,7 +233,7 @@ export class PricingService {
     const currentTime = new Date().toISOString();
     const subscription: Omit<UserSubscription, 'id'> = {
       userId: sanitized.userId,
-      roleId: sanitized.planId,
+      planId: sanitized.planId,
       status: trialDays ? 'TRIAL' : 'ACTIVE',
       priceCents: price.priceCents,
       currency: price.currency,
@@ -285,7 +285,7 @@ export class PricingService {
 
     // Update subscription
     await this.subscriptionRepo.update(db, subscription.id, {
-      roleId: sanitized.newPlanId,
+      planId: sanitized.newPlanId,
       priceCents: newPrice.priceCents,
       billingPeriod,
       stripePriceId: newPrice.stripePriceId,

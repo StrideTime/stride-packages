@@ -6,7 +6,7 @@
 
 import {
   usersTable,
-  rolesTable,
+  plansTable,
   userSubscriptionsTable,
   subscriptionHistoryTable,
   workspacesTable,
@@ -27,15 +27,16 @@ import {
   workSessionsTable,
   workspaceUserPreferencesTable,
   workspaceStatusesTable,
+  workspaceUserStatusTable,
 } from './schema';
 
 // User types
 export type UserRow = typeof usersTable.$inferSelect;
 export type NewUserRow = typeof usersTable.$inferInsert;
 
-// Role types
-export type RoleRow = typeof rolesTable.$inferSelect;
-export type NewRoleRow = typeof rolesTable.$inferInsert;
+// Plan types (subscription plans — SQL table `plans`)
+export type PlanRow = typeof plansTable.$inferSelect;
+export type NewPlanRow = typeof plansTable.$inferInsert;
 
 // UserSubscription types
 export type UserSubscriptionRow = typeof userSubscriptionsTable.$inferSelect;
@@ -115,3 +116,7 @@ export type NewWorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTabl
 // WorkspaceStatus types
 export type WorkspaceStatusRow = typeof workspaceStatusesTable.$inferSelect;
 export type NewWorkspaceStatusRow = typeof workspaceStatusesTable.$inferInsert;
+
+// WorkspaceUserStatus types
+export type WorkspaceUserStatusRow = typeof workspaceUserStatusTable.$inferSelect;
+export type NewWorkspaceUserStatusRow = typeof workspaceUserStatusTable.$inferInsert;

@@ -93,11 +93,11 @@ describe('UserPreferencesRepository', () => {
 
       await userPreferencesRepo.create(db, prefs);
       const updated = await userPreferencesRepo.update(db, testUser.id, {
-        enableSoundEffects: false,
+        soundEnabled: false,
         enableHapticFeedback: true,
       });
 
-      expect(updated.enableSoundEffects).toBe(false);
+      expect(updated.soundEnabled).toBe(false);
       expect(updated.enableHapticFeedback).toBe(true);
     });
 

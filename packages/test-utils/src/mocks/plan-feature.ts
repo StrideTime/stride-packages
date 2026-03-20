@@ -10,7 +10,7 @@ import type { PlanFeature } from '@stridetime/types';
 export function createMockPlanFeature(overrides: Partial<PlanFeature> = {}): PlanFeature {
   return {
     id: 'plan-feature-123',
-    roleId: 'plan-123',
+    planId: 'plan-123',
     featureId: 'feature-123',
     enabled: true,
     limitValue: null,

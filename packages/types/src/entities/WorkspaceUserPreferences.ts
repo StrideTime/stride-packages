@@ -23,7 +23,9 @@ export type WorkspaceUserPreferences = {
   breakReminders: boolean;
   dailySummary: boolean;
   weeklySchedule: string | null;
+  workingHoursStart: string;
+  workingHoursEnd: string;
+  workingDays: string;
   createdAt: string;
   updatedAt: string;
-  deleted: boolean;
 };

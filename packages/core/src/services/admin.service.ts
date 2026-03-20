@@ -1,10 +1,3 @@
-/**
- * Admin Service
- *
- * Handles admin operations: plan/feature CRUD, user/subscription management, audit logging.
- * All mutations create audit log entries.
- */
-
 import {
   featureRepo as defaultFeatureRepo,
   type FeatureRepository,
@@ -213,7 +206,7 @@ export class AdminService {
       await this.planPriceRepo.update(db, existing.id, { priceCents, stripePriceId });
     } else {
       await this.planPriceRepo.create(db, {
-        roleId: planId,
+        planId,
         billingPeriod,
         priceCents,
         currency: 'USD',
@@ -317,7 +310,7 @@ export class AdminService {
     const allSubscriptions = filters.status
       ? await this.subscriptionRepo.findByStatus(db, filters.status)
       : filters.planId
-        ? await this.subscriptionRepo.findByRole(db, filters.planId)
+        ? await this.subscriptionRepo.findByPlan(db, filters.planId)
         : [];
 
     const results: UserWithSubscription[] = [];
@@ -326,7 +319,7 @@ export class AdminService {
       const user = await this.userRepo.findById(db, subscription.userId);
       if (!user) continue;
 
-      const plan = await this.planRepo.findById(db, subscription.roleId);
+      const plan = await this.planRepo.findById(db, subscription.planId);
 
       // Apply search filter
       if (filters.search) {
@@ -357,7 +350,7 @@ export class AdminService {
     }
 
     const subscription = await this.subscriptionRepo.findByUser(db, userId);
-    const plan = subscription ? await this.planRepo.findById(db, subscription.roleId) : null;
+    const plan = subscription ? await this.planRepo.findById(db, subscription.planId) : null;
 
     const features = plan ? await this.planRepo.getPlanFeatures(db, plan.id) : [];
 
@@ -391,10 +384,10 @@ export class AdminService {
       throw new ValidationError('newPlanId', 'Plan not found');
     }
 
-    const oldPlanId = subscription.roleId;
+    const oldPlanId = subscription.planId;
 
     await this.subscriptionRepo.update(db, subscription.id, {
-      roleId: sanitized.newPlanId,
+      planId: sanitized.newPlanId,
     });
 
     await this.logAudit(db, {
@@ -429,7 +422,7 @@ export class AdminService {
 
     await this.subscriptionRepo.create(db, {
       userId: sanitized.userId,
-      roleId: sanitized.planId,
+      planId: sanitized.planId,
       status: 'TRIAL',
       priceCents: 0,
       currency: 'USD',
@@ -524,7 +517,7 @@ export class AdminService {
     let totalUsers = 0;
 
     for (const plan of plans) {
-      const subs = await this.subscriptionRepo.findByRole(db, plan.id);
+      const subs = await this.subscriptionRepo.findByPlan(db, plan.id);
       const count = subs.length;
       totalUsers += count;
       const revenue = subs

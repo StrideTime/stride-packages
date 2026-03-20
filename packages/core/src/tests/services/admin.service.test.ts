@@ -65,7 +65,7 @@ const {
     findById: vi.fn(),
     findByUser: vi.fn(),
     findByStatus: vi.fn(),
-    findByRole: vi.fn(),
+    findByPlan: vi.fn(),
     findExpiredTrials: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -355,7 +355,7 @@ describe('AdminService', () => {
       await service.setPlanPrice(mockDb, 'admin-1', 'plan-1', 'YEARLY', 9999);
 
       expect(mockPlanPriceRepo.create).toHaveBeenCalledWith(mockDb, {
-        roleId: 'plan-1',
+        planId: 'plan-1',
         billingPeriod: 'YEARLY',
         priceCents: 9999,
         currency: 'USD',
@@ -534,7 +534,7 @@ describe('AdminService', () => {
       const sub = createMockSubscription({
         id: 'sub-1',
         userId: 'user-1',
-        roleId: 'plan-1',
+        planId: 'plan-1',
         status: 'ACTIVE',
       });
       const user = createMockUser({ id: 'user-1', email: 'test@test.com' });
@@ -554,8 +554,8 @@ describe('AdminService', () => {
     });
 
     it('should filter users by search term', async () => {
-      const sub1 = createMockSubscription({ userId: 'user-1', roleId: 'plan-1' });
-      const sub2 = createMockSubscription({ userId: 'user-2', roleId: 'plan-1' });
+      const sub1 = createMockSubscription({ userId: 'user-1', planId: 'plan-1' });
+      const sub2 = createMockSubscription({ userId: 'user-2', planId: 'plan-1' });
       const user1 = createMockUser({ id: 'user-1', email: 'alice@test.com', firstName: 'Alice' });
       const user2 = createMockUser({ id: 'user-2', email: 'bob@test.com', firstName: 'Bob' });
 
@@ -577,20 +577,20 @@ describe('AdminService', () => {
     });
 
     it('should filter users by planId', async () => {
-      const sub = createMockSubscription({ userId: 'user-1', roleId: 'plan-pro' });
-      mockSubscriptionRepo.findByRole.mockResolvedValue([sub]);
+      const sub = createMockSubscription({ userId: 'user-1', planId: 'plan-pro' });
+      mockSubscriptionRepo.findByPlan.mockResolvedValue([sub]);
       mockUserRepo.findById.mockResolvedValue(createMockUser({ id: 'user-1' }));
       mockPlanRepo.findById.mockResolvedValue(createMockPlan({ id: 'plan-pro' }));
 
       const result = await service.listUsers(mockDb, { planId: 'plan-pro' });
 
-      expect(mockSubscriptionRepo.findByRole).toHaveBeenCalledWith(mockDb, 'plan-pro');
+      expect(mockSubscriptionRepo.findByPlan).toHaveBeenCalledWith(mockDb, 'plan-pro');
       expect(result.data).toHaveLength(1);
     });
 
     it('should paginate results', async () => {
       const subs = Array.from({ length: 5 }, (_, i) =>
-        createMockSubscription({ userId: `user-${i}`, roleId: 'plan-1' })
+        createMockSubscription({ userId: `user-${i}`, planId: 'plan-1' })
       );
       mockSubscriptionRepo.findByStatus.mockResolvedValue(subs);
       mockUserRepo.findById.mockImplementation((_db: any, id: string) =>
@@ -621,7 +621,7 @@ describe('AdminService', () => {
     });
 
     it('should skip users that no longer exist', async () => {
-      const sub = createMockSubscription({ userId: 'user-deleted', roleId: 'plan-1' });
+      const sub = createMockSubscription({ userId: 'user-deleted', planId: 'plan-1' });
       mockSubscriptionRepo.findByStatus.mockResolvedValue([sub]);
       mockUserRepo.findById.mockResolvedValue(null);
 
@@ -634,7 +634,7 @@ describe('AdminService', () => {
   describe('getUserDetails', () => {
     it('should return user with subscription details', async () => {
       const user = createMockUser({ id: 'user-1' });
-      const sub = createMockSubscription({ userId: 'user-1', roleId: 'plan-1' });
+      const sub = createMockSubscription({ userId: 'user-1', planId: 'plan-1' });
       const plan = createMockPlan({ id: 'plan-1' });
       const features = [createMockPlanFeature()];
       const auditEntries = [createMockAdminAuditEntry()];
@@ -679,7 +679,7 @@ describe('AdminService', () => {
       const sub = createMockSubscription({
         id: 'sub-1',
         userId: 'user-1',
-        roleId: 'plan-old',
+        planId: 'plan-old',
       });
       const newPlan = createMockPlan({ id: 'plan-new' });
 
@@ -691,7 +691,7 @@ describe('AdminService', () => {
       await service.changeUserPlan(mockDb, 'admin-1', 'user-1', 'plan-new', 'Upgrade request');
 
       expect(mockSubscriptionRepo.update).toHaveBeenCalledWith(mockDb, 'sub-1', {
-        roleId: 'plan-new',
+        planId: 'plan-new',
       });
     });
 
@@ -717,7 +717,7 @@ describe('AdminService', () => {
       const sub = createMockSubscription({
         id: 'sub-1',
         userId: 'user-1',
-        roleId: 'plan-old',
+        planId: 'plan-old',
       });
       mockSubscriptionRepo.findByUser.mockResolvedValue(sub);
       mockPlanRepo.findById.mockResolvedValue(createMockPlan({ id: 'plan-new' }));
@@ -752,7 +752,7 @@ describe('AdminService', () => {
         mockDb,
         expect.objectContaining({
           userId: 'user-1',
-          roleId: 'plan-pro',
+          planId: 'plan-pro',
           status: 'TRIAL',
           priceCents: 0,
         })
@@ -873,7 +873,7 @@ describe('AdminService', () => {
 
       const plan = createMockPlan({ id: 'plan-1' });
       mockPlanRepo.findAll.mockResolvedValue([plan]);
-      mockSubscriptionRepo.findByRole.mockResolvedValue([
+      mockSubscriptionRepo.findByPlan.mockResolvedValue([
         createMockSubscription({ status: 'ACTIVE', priceCents: 999, billingPeriod: 'MONTHLY' }),
         createMockSubscription({ status: 'ACTIVE', priceCents: 1999, billingPeriod: 'MONTHLY' }),
       ]);
