@@ -200,7 +200,6 @@ import {
   TaskStatus, // BACKLOG, PLANNED, IN_PROGRESS, COMPLETED, ARCHIVED
   ScheduledEventType, // TASK, MEETING, BREAK, OTHER
   Theme, // LIGHT, DARK, SYSTEM
-  PlanningMode, // WEEKLY, DAILY, TIME_BLOCKER, MINIMAL
   PointsReason, // WORK_SESSION, TASK_COMPLETED, EFFICIENCY_BONUS, ...
 } from '@stridetime/db';
 
