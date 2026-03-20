@@ -1,15 +1,3 @@
-/**
- * Stride Database Schema (Drizzle ORM)
- *
- * Single source of truth for all database tables and relations.
- * This schema is used for:
- * - Migrations (drizzle-kit generates migrations from this)
- * - Query building (drizzle-orm uses this for type-safe queries)
- *
- * NOTE: All enums are imported from @stridetime/types to maintain decoupling.
- * The schema consumes domain types, never defines them.
- */
-
 import { sqliteTable, text, integer, real, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 import type {
@@ -22,7 +10,7 @@ import type {
   TaskStatus,
   ScheduledEventType,
   Theme,
-  PlanningMode,
+  UserStatus,
   PointsReason,
   TeamMemberRole,
   GoalType,
@@ -84,15 +72,11 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   workspaceUserPreferences: many(workspaceUserPreferencesTable),
 }));
 
-// TODO: rename this to Plans table and migrate. Now is better than ever since it hasn't been implemented yet
 // ============================================================================
-// ROLES TABLE
+// PLANS TABLE
 // ============================================================================
 
-// NOTE: This table serves as the "plans" table but keeps the SQL name "roles" to avoid migration complexity.
-// Hardcoded feature flags and limit columns have been removed — they are now managed dynamically via
-// the features + plan_features tables below (T104).
-export const rolesTable = sqliteTable('roles', {
+export const plansTable = sqliteTable('plans', {
   id: text('id').primaryKey(),
   displayName: text('display_name').notNull(),
   description: text('description'),
@@ -101,26 +85,25 @@ export const rolesTable = sqliteTable('roles', {
   updatedAt: text('updated_at').notNull(),
 });
 
-export const rolesRelations = relations(rolesTable, ({ many }) => ({
+export const plansRelations = relations(plansTable, ({ many }) => ({
   subscriptions: many(userSubscriptionsTable),
   features: many(planFeaturesTable),
   prices: many(planPricesTable),
 }));
 
 // ============================================================================
-// FEATURES TABLE (Dynamic Feature Registry — T104)
+// FEATURES TABLE
 // ============================================================================
 
-// NOTE: Uses isActive instead of deleted — features are deactivated, not soft-deleted.
 export const featuresTable = sqliteTable(
   'features',
   {
     id: text('id').primaryKey(),
-    key: text('key').notNull().unique(), // e.g. 'cloud_sync', 'max_workspaces'
+    key: text('key').notNull().unique(),
     displayName: text('display_name').notNull(),
     description: text('description'),
     valueType: text('value_type').notNull().$type<FeatureValueType>(), // BOOLEAN or LIMIT
-    category: text('category').notNull(), // e.g. 'sync', 'collaboration', 'limits'
+    category: text('category').notNull(),
     isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -133,31 +116,30 @@ export const featuresRelations = relations(featuresTable, ({ many }) => ({
 }));
 
 // ============================================================================
-// PLAN FEATURES TABLE (Join: What Each Plan Includes — T104)
+// PLAN FEATURES TABLE
 // ============================================================================
 
-// NOTE: Join table — no soft delete, uses createdAt/updatedAt only.
 export const planFeaturesTable = sqliteTable(
   'plan_features',
   {
     id: text('id').primaryKey(),
-    roleId: text('role_id').notNull(), // references roles (plans)
-    featureId: text('feature_id').notNull(), // references features
+    planId: text('plan_id').notNull(),
+    featureId: text('feature_id').notNull(),
     enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
-    limitValue: integer('limit_value'), // for LIMIT-type features (null = unlimited)
+    limitValue: integer('limit_value'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
   table => [
-    uniqueIndex('idx_plan_features_role_feature').on(table.roleId, table.featureId),
+    uniqueIndex('idx_plan_features_plan_feature').on(table.planId, table.featureId),
     index('idx_plan_features_feature_id').on(table.featureId),
   ]
 );
 
 export const planFeaturesRelations = relations(planFeaturesTable, ({ one }) => ({
-  plan: one(rolesTable, {
-    fields: [planFeaturesTable.roleId],
-    references: [rolesTable.id],
+  plan: one(plansTable, {
+    fields: [planFeaturesTable.planId],
+    references: [plansTable.id],
   }),
   feature: one(featuresTable, {
     fields: [planFeaturesTable.featureId],
@@ -166,14 +148,14 @@ export const planFeaturesRelations = relations(planFeaturesTable, ({ one }) => (
 }));
 
 // ============================================================================
-// PLAN PRICES TABLE (Pricing Per Billing Period Per Plan — T104)
+// PLAN PRICES TABLE
 // ============================================================================
 
 export const planPricesTable = sqliteTable(
   'plan_prices',
   {
     id: text('id').primaryKey(),
-    roleId: text('role_id').notNull(), // references roles (plans)
+    planId: text('plan_id').notNull(),
     billingPeriod: text('billing_period').notNull().$type<BillingPeriod>(),
     priceCents: integer('price_cents').notNull(),
     currency: text('currency').notNull().default('USD'),
@@ -183,34 +165,32 @@ export const planPricesTable = sqliteTable(
     updatedAt: text('updated_at').notNull(),
   },
   table => [
-    index('idx_plan_prices_role_id').on(table.roleId),
-    uniqueIndex('idx_plan_prices_role_period').on(table.roleId, table.billingPeriod),
+    index('idx_plan_prices_plan_id').on(table.planId),
+    uniqueIndex('idx_plan_prices_plan_period').on(table.planId, table.billingPeriod),
   ]
 );
 
 export const planPricesRelations = relations(planPricesTable, ({ one }) => ({
-  plan: one(rolesTable, {
-    fields: [planPricesTable.roleId],
-    references: [rolesTable.id],
+  plan: one(plansTable, {
+    fields: [planPricesTable.planId],
+    references: [plansTable.id],
   }),
 }));
 
 // ============================================================================
-// ADMIN AUDIT LOG TABLE (Append-Only — T104)
+// ADMIN AUDIT LOG TABLE
 // ============================================================================
 
-// NOTE: EXCEPTION — append-only table with no updatedAt, no soft delete.
-// Audit entries are never modified or deleted.
 export const adminAuditLogTable = sqliteTable(
   'admin_audit_log',
   {
     id: text('id').primaryKey(),
     adminUserId: text('admin_user_id').notNull(),
-    action: text('action').notNull(), // e.g. 'create_plan', 'retire_plan', 'change_user_plan'
-    entityType: text('entity_type').notNull(), // e.g. 'plan', 'feature', 'subscription', 'user'
+    action: text('action').notNull(),
+    entityType: text('entity_type').notNull(),
     entityId: text('entity_id').notNull(),
-    details: text('details'), // JSON of change details
-    performedAt: text('performed_at').notNull(), // serves as createdAt
+    details: text('details'),
+    performedAt: text('performed_at').notNull(),
   },
   table => [
     index('idx_admin_audit_log_admin').on(table.adminUserId),
@@ -235,38 +215,27 @@ export const userSubscriptionsTable = sqliteTable(
   {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull().unique(),
-    roleId: text('role_id').notNull(),
-
-    // Subscription status
+    planId: text('plan_id').notNull(),
     status: text('status').notNull().$type<SubscriptionStatus>(),
-
-    // Pricing
     priceCents: integer('price_cents').notNull(),
     currency: text('currency').notNull().default('USD'),
     billingPeriod: text('billing_period').notNull().$type<BillingPeriod>(),
-
-    // Stripe integration
     stripeCustomerId: text('stripe_customer_id'),
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripePriceId: text('stripe_price_id'),
-
-    // Dates
     startedAt: text('started_at').notNull(),
     currentPeriodStart: text('current_period_start'),
     currentPeriodEnd: text('current_period_end'),
     canceledAt: text('canceled_at'),
     trialEndsAt: text('trial_ends_at'),
-
-    // Grandfathering
     isGrandfathered: integer('is_grandfathered', { mode: 'boolean' }).notNull().default(false),
     grandfatheredReason: text('grandfathered_reason'),
-
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
   table => [
     index('idx_user_subscriptions_user_id').on(table.userId),
-    index('idx_user_subscriptions_role_id').on(table.roleId),
+    index('idx_user_subscriptions_plan_id').on(table.planId),
     index('idx_user_subscriptions_status').on(table.status),
   ]
 );
@@ -276,9 +245,9 @@ export const userSubscriptionsRelations = relations(userSubscriptionsTable, ({ o
     fields: [userSubscriptionsTable.userId],
     references: [usersTable.id],
   }),
-  role: one(rolesTable, {
-    fields: [userSubscriptionsTable.roleId],
-    references: [rolesTable.id],
+  plan: one(plansTable, {
+    fields: [userSubscriptionsTable.planId],
+    references: [plansTable.id],
   }),
 }));
 
@@ -291,8 +260,8 @@ export const subscriptionHistoryTable = sqliteTable(
   {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
-    oldRoleId: text('old_role_id'),
-    newRoleId: text('new_role_id').notNull(),
+    oldPlanId: text('old_plan_id'),
+    newPlanId: text('new_plan_id').notNull(),
     oldPriceCents: integer('old_price_cents'),
     newPriceCents: integer('new_price_cents').notNull(),
     reason: text('reason').notNull().$type<SubscriptionChangeReason>(),
@@ -454,7 +423,6 @@ export const taskTypesRelations = relations(taskTypesTable, ({ one, many }) => (
   tasks: many(tasksTable),
 }));
 
-// TODO: remove sort order column, parent task ID, priority,
 // ============================================================================
 // TASKS TABLE
 // ============================================================================
@@ -473,28 +441,18 @@ export const tasksTable = sqliteTable(
     priority: text('priority').notNull().default('NONE').$type<TaskPriority>(),
     progress: integer('progress').notNull().default(0),
     status: text('status').notNull().default('BACKLOG').$type<TaskStatus>(),
-
-    // Assignment
     assigneeUserId: text('assignee_user_id'),
     teamId: text('team_id'),
-
-    // Time tracking
     estimatedMinutes: integer('estimated_minutes'),
     maxMinutes: integer('max_minutes'),
     actualMinutes: integer('actual_minutes').notNull().default(0),
-
-    // Planning
     plannedForDate: text('planned_for_date'),
     dueDate: text('due_date'),
     taskTypeId: text('task_type_id'),
     displayOrder: integer('display_order').notNull().default(0),
-
-    // External integration
     tags: text('tags'),
     externalId: text('external_id'),
     externalSource: text('external_source').$type<ExternalSource>(),
-
-    // Timestamps
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
     completedAt: text('completed_at'),
@@ -671,6 +629,7 @@ export const dailySummariesTable = sqliteTable(
     efficiencyRating: real('efficiency_rating').notNull().default(0.0),
     standoutMoment: text('standout_moment'),
     createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
   },
   table => [
     uniqueIndex('idx_daily_summaries_user_date').on(table.userId, table.date),
@@ -685,7 +644,6 @@ export const dailySummariesRelations = relations(dailySummariesTable, ({ one }) 
   }),
 }));
 
-// TODO: remove planning mode move work hours to workspace user preferences remove sound effects
 // ============================================================================
 // USER PREFERENCES TABLE
 // ============================================================================
@@ -694,7 +652,6 @@ export const userPreferencesTable = sqliteTable('user_preferences', {
   userId: text('user_id').primaryKey(),
 
   theme: text('theme').notNull().default('SYSTEM').$type<Theme>(),
-  planningMode: text('planning_mode').notNull().default('WEEKLY').$type<PlanningMode>(),
 
   checkInFrequency: integer('check_in_frequency').notNull().default(30),
   checkInEnabled: integer('check_in_enabled', { mode: 'boolean' }).notNull().default(true),
@@ -712,19 +669,18 @@ export const userPreferencesTable = sqliteTable('user_preferences', {
     .default(true),
   breakReminderMinutes: integer('break_reminder_minutes').notNull().default(90),
 
-  workingHoursStart: text('working_hours_start').notNull().default('09:00'),
-  workingHoursEnd: text('working_hours_end').notNull().default('17:00'),
-  workingDays: text('working_days').notNull().default('[1,2,3,4,5]'),
   accentColor: text('accent_color'),
   fontSize: text('font_size').notNull().default('MEDIUM').$type<FontSize>(),
   density: text('density').notNull().default('COMFORTABLE').$type<Density>(),
   keyboardShortcuts: text('keyboard_shortcuts'),
-  enableSoundEffects: integer('enable_sound_effects', { mode: 'boolean' }).notNull().default(true),
+  soundEnabled: integer('sound_enabled', { mode: 'boolean' }).notNull().default(true),
+  soundVolume: integer('sound_volume').notNull().default(80),
   enableHapticFeedback: integer('enable_haptic_feedback', { mode: 'boolean' })
     .notNull()
     .default(false),
   autoStartTimer: integer('auto_start_timer', { mode: 'boolean' }).notNull().default(false),
 
+  createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
 
@@ -773,7 +729,6 @@ export const teamsRelations = relations(teamsTable, ({ one, many }) => ({
   projectTeams: many(projectTeamsTable),
 }));
 
-// TODO: make team member roles only ADMIN or MEMBER
 // ============================================================================
 // TEAM MEMBERS TABLE
 // ============================================================================
@@ -942,7 +897,6 @@ export const workSessionsRelations = relations(workSessionsTable, ({ one }) => (
   }),
 }));
 
-// TODO: move the quick add tasks preference to workspace preferences
 // ============================================================================
 // WORKSPACE USER PREFERENCES TABLE
 // ============================================================================
@@ -953,16 +907,12 @@ export const workspaceUserPreferencesTable = sqliteTable(
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     workspaceId: text('workspace_id').notNull(),
-
-    // Task views
     defaultView: text('default_view').notNull().default('TODAY'),
     groupTasksBy: text('group_tasks_by').notNull().default('PROJECT'),
     sortTasksBy: text('sort_tasks_by').notNull().default('PRIORITY'),
     showCompletedTasks: integer('show_completed_tasks', { mode: 'boolean' })
       .notNull()
       .default(false),
-
-    // UI preferences
     showQuickAddButton: integer('show_quick_add_button', { mode: 'boolean' })
       .notNull()
       .default(true),
@@ -972,8 +922,6 @@ export const workspaceUserPreferencesTable = sqliteTable(
     autoStartTimerOnTask: integer('auto_start_timer_on_task', { mode: 'boolean' })
       .notNull()
       .default(false),
-
-    // Tracking toggles
     trackTime: integer('track_time', { mode: 'boolean' }).notNull().default(true),
     trackBreaks: integer('track_breaks', { mode: 'boolean' }).notNull().default(true),
     trackCompletionTimes: integer('track_completion_times', { mode: 'boolean' })
@@ -983,29 +931,22 @@ export const workspaceUserPreferencesTable = sqliteTable(
     trackProjectSwitching: integer('track_project_switching', { mode: 'boolean' })
       .notNull()
       .default(false),
-
-    // Stats visibility
     statsVisibility: text('stats_visibility').notNull().default('ONLY_ME'),
     showOnLeaderboard: integer('show_on_leaderboard', { mode: 'boolean' }).notNull().default(false),
     shareAchievements: integer('share_achievements', { mode: 'boolean' }).notNull().default(false),
-
-    // Data retention
     dataRetention: text('data_retention').notNull().default('FOREVER'),
-
-    // Per-workspace notification overrides
     taskReminders: integer('task_reminders', { mode: 'boolean' }).notNull().default(true),
     goalProgressNotifications: integer('goal_progress_notifications', { mode: 'boolean' })
       .notNull()
       .default(true),
     breakReminders: integer('break_reminders', { mode: 'boolean' }).notNull().default(true),
     dailySummary: integer('daily_summary', { mode: 'boolean' }).notNull().default(true),
-
-    // Weekly schedule (JSON: { mon: { enabled, startTime, endTime, breakTime, breakDuration }, ... })
     weeklySchedule: text('weekly_schedule'),
-
+    workingHoursStart: text('working_hours_start').notNull().default('09:00'),
+    workingHoursEnd: text('working_hours_end').notNull().default('17:00'),
+    workingDays: text('working_days').notNull().default('[1,2,3,4,5]'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
-    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
   },
   table => [
     uniqueIndex('idx_workspace_user_prefs_user_workspace').on(table.userId, table.workspaceId),
@@ -1052,6 +993,39 @@ export const workspaceStatusesTable = sqliteTable(
 export const workspaceStatusesRelations = relations(workspaceStatusesTable, ({ one }) => ({
   workspace: one(workspacesTable, {
     fields: [workspaceStatusesTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+}));
+
+// ============================================================================
+// WORKSPACE USER STATUS TABLE
+// ============================================================================
+
+export const workspaceUserStatusTable = sqliteTable(
+  'workspace_user_status',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    workspaceId: text('workspace_id').notNull(),
+    status: text('status').notNull().$type<UserStatus>(),
+    statusText: text('status_text'),
+    activeTaskId: text('active_task_id'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  table => [
+    uniqueIndex('idx_workspace_user_status_user_workspace').on(table.userId, table.workspaceId),
+    index('idx_workspace_user_status_workspace_id').on(table.workspaceId),
+  ]
+);
+
+export const workspaceUserStatusRelations = relations(workspaceUserStatusTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [workspaceUserStatusTable.userId],
+    references: [usersTable.id],
+  }),
+  workspace: one(workspacesTable, {
+    fields: [workspaceUserStatusTable.workspaceId],
     references: [workspacesTable.id],
   }),
 }));
