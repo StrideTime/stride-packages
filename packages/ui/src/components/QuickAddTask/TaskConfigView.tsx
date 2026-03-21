@@ -1,15 +1,5 @@
 import { useRef } from "react";
-import {
-  Users,
-  Flag,
-  Clock,
-  Zap,
-  Plus,
-  X,
-  Calendar as CalendarIcon,
-  ChevronDown,
-} from "lucide-react";
-import type { TaskPriority } from "@stridetime/types";
+import { Users, Clock, Zap, Plus, X, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
 import { Button } from "../../primitives/Button";
 import { Label } from "../../primitives/Label";
 import {
@@ -22,26 +12,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../../primitives/Popover";
 import { getDifficultyClasses } from "../shared";
 import type { DraftTask, TaskConfigViewProps } from "./QuickAddTask.types";
-
-// ─── Priority helpers ──────────────────────────────────────
-
-const PRIORITY_CONFIG: Record<TaskPriority, { label: string; colorClass: string; fill?: boolean }> =
-  {
-    NONE: { label: "None", colorClass: "text-muted-foreground" },
-    LOW: { label: "Low", colorClass: "text-blue-500" },
-    MEDIUM: { label: "Medium", colorClass: "text-yellow-500" },
-    HIGH: { label: "High", colorClass: "text-orange-500" },
-    CRITICAL: { label: "Critical", colorClass: "text-red-500", fill: true },
-  };
-
-const ALL_PRIORITIES: TaskPriority[] = ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
-
-function PriorityIcon({ priority }: { priority?: TaskPriority }) {
-  const cfg = PRIORITY_CONFIG[priority ?? "NONE"];
-  return (
-    <Flag className={`h-3 w-3 ${cfg.colorClass}`} {...(cfg.fill ? { fill: "currentColor" } : {})} />
-  );
-}
 
 // ─── Time helpers ──────────────────────────────────────────
 
@@ -120,34 +90,6 @@ export function TaskConfigView({
 
         {/* Chips Row */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Priority */}
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground text-center block">Priority</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs rounded-full border bg-background hover:bg-accent transition-colors">
-                  <PriorityIcon priority={task.priority} />
-                  <span className="truncate">{PRIORITY_CONFIG[task.priority ?? "NONE"].label}</span>
-                  <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="start">
-                <div className="space-y-1">
-                  {ALL_PRIORITIES.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => onUpdateTask(task.id, { priority: p })}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-accent"
-                    >
-                      <PriorityIcon priority={p} />
-                      <span>{PRIORITY_CONFIG[p].label}</span>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-
           {/* Type */}
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground text-center block">Type</Label>

@@ -1,19 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DndContext } from '@dnd-kit/core';
-import { PlannedTaskCard } from './PlannedTaskCard';
-import type { Task, Project } from '@stridetime/types';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { DndContext } from "@dnd-kit/core";
+import { PlannedTaskCard } from "./PlannedTaskCard";
+import type { Task, Project } from "@stridetime/types";
 
 const mockTask: Task = {
-  id: 'task-1',
-  userId: 'user-1',
-  projectId: 'proj-1',
-  parentTaskId: null,
-  title: 'Design homepage mockup',
+  id: "task-1",
+  userId: "user-1",
+  projectId: "proj-1",
+  title: "Design homepage mockup",
   description: null,
-  difficulty: 'MEDIUM',
-  priority: 'HIGH',
+  difficulty: "MEDIUM",
   progress: 0,
-  status: 'IN_PROGRESS',
+  status: "IN_PROGRESS",
   assigneeUserId: null,
   teamId: null,
   estimatedMinutes: 90,
@@ -22,37 +20,37 @@ const mockTask: Task = {
   plannedForDate: null,
   dueDate: null,
   taskTypeId: null,
-  displayOrder: 0,
+  checklistItems: null,
   tags: null,
   externalId: null,
   externalSource: null,
   completedAt: null,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const mockProject: Project = {
-  id: 'proj-1',
-  workspaceId: 'ws-1',
-  userId: 'user-1',
-  name: 'Website Redesign',
+  id: "proj-1",
+  workspaceId: "ws-1",
+  createdByUserId: "user-1",
+  name: "Website Redesign",
   description: null,
-  color: '#3b82f6',
-  icon: '🎨',
-  status: 'ACTIVE',
+  color: "#3b82f6",
+  icon: "🎨",
+  status: "ACTIVE",
   completionPercentage: 45,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const meta = {
-  title: 'Components/DailyPlanner/PlannedTaskCard',
+  title: "Components/DailyPlanner/PlannedTaskCard",
   component: PlannedTaskCard,
-  parameters: { layout: 'centered' },
+  parameters: { layout: "centered" },
   decorators: [
-    Story => (
+    (Story) => (
       <DndContext>
         <div className="w-72">
           <Story />
@@ -63,7 +61,7 @@ const meta = {
   args: {
     task: mockTask,
     project: mockProject,
-    draggableId: 'planned-task-1',
+    draggableId: "planned-task-1",
   },
 } satisfies Meta<typeof PlannedTaskCard>;
 
@@ -74,8 +72,14 @@ export const Default: Story = {};
 
 export const ShortTask: Story = {
   args: {
-    task: { ...mockTask, title: 'Quick fix', estimatedMinutes: 15, difficulty: 'EASY', priority: 'LOW', dueDate: new Date(new Date().setDate(29)).toISOString()  },
-    draggableId: 'planned-task-short',
+    task: {
+      ...mockTask,
+      title: "Quick fix",
+      estimatedMinutes: 15,
+      difficulty: "EASY",
+      dueDate: new Date(new Date().setDate(29)).toISOString(),
+    },
+    draggableId: "planned-task-short",
   },
 };
 
@@ -83,24 +87,24 @@ export const LongTitle: Story = {
   args: {
     task: {
       ...mockTask,
-      title: 'Refactor the entire authentication system and update all related tests',
+      title: "Refactor the entire authentication system and update all related tests",
       estimatedMinutes: 240,
     },
-    draggableId: 'planned-task-long',
+    draggableId: "planned-task-long",
   },
 };
 
 export const DueToday: Story = {
   args: {
-    task: { ...mockTask, dueDate: new Date().toISOString().split('T')[0] },
-    draggableId: 'planned-task-due-today',
+    task: { ...mockTask, dueDate: new Date().toISOString().split("T")[0] },
+    draggableId: "planned-task-due-today",
   },
 };
 
 export const Overdue: Story = {
   args: {
-    task: { ...mockTask, dueDate: '2024-01-01' },
-    draggableId: 'planned-task-overdue',
+    task: { ...mockTask, dueDate: "2024-01-01" },
+    draggableId: "planned-task-overdue",
   },
 };
 
@@ -108,29 +112,29 @@ export const DueSoon: Story = {
   args: {
     task: {
       ...mockTask,
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     },
-    draggableId: 'planned-task-due-soon',
+    draggableId: "planned-task-due-soon",
   },
 };
 
 export const OverCap: Story = {
   args: {
     task: { ...mockTask, maxMinutes: 60, actualMinutes: 75 },
-    draggableId: 'planned-task-over-cap',
+    draggableId: "planned-task-over-cap",
   },
 };
 
 export const NearCap: Story = {
   args: {
     task: { ...mockTask, maxMinutes: 60, actualMinutes: 50 },
-    draggableId: 'planned-task-near-cap',
+    draggableId: "planned-task-near-cap",
   },
 };
 
 export const AllWarnings: Story = {
   args: {
-    task: { ...mockTask, dueDate: '2024-01-01', maxMinutes: 60, actualMinutes: 75 },
-    draggableId: 'planned-task-all-warnings',
+    task: { ...mockTask, dueDate: "2024-01-01", maxMinutes: 60, actualMinutes: 75 },
+    draggableId: "planned-task-all-warnings",
   },
 };

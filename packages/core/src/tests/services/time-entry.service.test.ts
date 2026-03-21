@@ -37,7 +37,6 @@ const { mockTimeEntryRepo, mockTaskRepo } = vi.hoisted(() => {
     findByStatus: vi.fn(),
     findCompleted: vi.fn(),
     findByPlannedDate: vi.fn(),
-    findByParentId: vi.fn(),
   };
 
   return { mockTimeEntryRepo: timeEntryRepo, mockTaskRepo: taskRepo };

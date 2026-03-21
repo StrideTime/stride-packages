@@ -91,7 +91,6 @@ export type {
   StartBreakInput,
   UpdateProjectInput,
   CreateScheduledEventInput,
-  UpdateTaskPriorityInput,
   ClockInInput,
   AssignTaskInput,
   CreateHabitInput,

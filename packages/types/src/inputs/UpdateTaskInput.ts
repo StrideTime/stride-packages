@@ -12,5 +12,5 @@ export interface UpdateTaskInput {
   plannedForDate?: string | null;
   dueDate?: string | null;
   taskTypeId?: string | null;
-  parentTaskId?: string | null;
+  checklistItems?: string | null;
 }

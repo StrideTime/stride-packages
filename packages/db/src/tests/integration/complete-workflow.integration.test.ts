@@ -117,7 +117,7 @@ describe('Complete Workflow Integration Tests', () => {
         ...projectData
       } = createMockProject({
         workspaceId: workspace.id,
-        userId: user.id,
+        createdByUserId: user.id,
         name: 'Getting Started',
         description: 'Initial project to learn the system',
         color: '#3B82F6',
@@ -180,7 +180,7 @@ describe('Complete Workflow Integration Tests', () => {
         ...projectInput
       } = createMockProject({
         workspaceId: workspace.id,
-        userId: user.id,
+        createdByUserId: user.id,
         name: 'Q1 Goals',
         icon: '',
         status: 'ACTIVE',
@@ -207,8 +207,6 @@ describe('Complete Workflow Integration Tests', () => {
         actualMinutes: 0,
         plannedForDate: '2024-01-15',
         dueDate: '2024-01-20',
-        displayOrder: 1,
-        priority: 'CRITICAL',
         assigneeUserId: null,
         teamId: null,
         tags: null,
@@ -279,8 +277,7 @@ describe('Complete Workflow Integration Tests', () => {
       expect(taskTimeEntries[0].id).toBe(timeEntry.id);
     });
 
-    it('should handle parent-child task relationships', async () => {
-      // Setup
+    it('should persist checklist items and allow progress updates', async () => {
       const user = await userRepo.create(db, {
         email: 'parent@example.com',
         firstName: 'Parent',
@@ -304,7 +301,7 @@ describe('Complete Workflow Integration Tests', () => {
 
       const project = await projectRepo.create(db, {
         workspaceId: workspace.id,
-        userId: user.id,
+        createdByUserId: user.id,
         name: 'Big Project',
         description: null,
         color: null,
@@ -313,15 +310,12 @@ describe('Complete Workflow Integration Tests', () => {
         completionPercentage: 0,
       });
 
-      // Create parent task
-      const parentTask = await taskRepo.create(db, {
+      const task = await taskRepo.create(db, {
         userId: user.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Build New Feature',
         description: 'Large epic task',
         difficulty: 'HARD',
-        priority: 'HIGH',
         progress: 0,
         status: 'IN_PROGRESS',
         assigneeUserId: null,
@@ -332,108 +326,25 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 0,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
         completedAt: null,
       });
 
-      // Create child tasks
-      const childTask1 = await taskRepo.create(db, {
-        userId: user.id,
-        projectId: project.id,
-        parentTaskId: parentTask.id,
-        title: 'Design UI mockups',
-        description: null,
-        difficulty: 'EASY',
-        priority: 'MEDIUM',
-        progress: 100,
-        status: 'COMPLETED',
-        assigneeUserId: null,
-        teamId: null,
-        estimatedMinutes: 60,
-        maxMinutes: 90,
-        actualMinutes: 75,
-        plannedForDate: null,
-        dueDate: null,
-        taskTypeId: null,
-        displayOrder: 0,
-        tags: null,
-        externalId: null,
-        externalSource: null,
-        completedAt: new Date().toISOString(),
-      });
+      const checklist = JSON.stringify([
+        { id: 'c1', title: 'Design UI mockups', completed: true },
+        { id: 'c2', title: 'Implement backend API', completed: false },
+        { id: 'c3', title: 'Write tests', completed: false },
+      ]);
 
-      const childTask2 = await taskRepo.create(db, {
-        userId: user.id,
-        projectId: project.id,
-        parentTaskId: parentTask.id,
-        title: 'Implement backend API',
-        description: null,
-        difficulty: 'MEDIUM',
-        priority: 'HIGH',
-        progress: 50,
-        status: 'IN_PROGRESS',
-        assigneeUserId: null,
-        teamId: null,
-        estimatedMinutes: 180,
-        maxMinutes: 240,
-        actualMinutes: 120,
-        plannedForDate: null,
-        dueDate: null,
-        taskTypeId: null,
-        displayOrder: 1,
-        tags: null,
-        externalId: null,
-        externalSource: null,
-        completedAt: null,
-      });
+      const withChecklist = await taskRepo.update(db, task.id, { checklistItems: checklist });
+      expect(withChecklist.checklistItems).toBe(checklist);
 
-      const childTask3 = await taskRepo.create(db, {
-        userId: user.id,
-        projectId: project.id,
-        parentTaskId: parentTask.id,
-        title: 'Write tests',
-        description: null,
-        difficulty: 'MEDIUM',
-        priority: 'MEDIUM',
-        progress: 0,
-        status: 'BACKLOG',
-        assigneeUserId: null,
-        teamId: null,
-        estimatedMinutes: 120,
-        maxMinutes: 150,
-        actualMinutes: 0,
-        plannedForDate: null,
-        dueDate: null,
-        taskTypeId: null,
-        displayOrder: 2,
-        tags: null,
-        externalId: null,
-        externalSource: null,
-        completedAt: null,
-      });
-
-      // Verify parent-child relationships
-      const childTasks = await taskRepo.findSubtasks(db, parentTask.id);
-      expect(childTasks).toHaveLength(3);
-      expect(childTasks.map(t => t.id)).toContain(childTask1.id);
-      expect(childTasks.map(t => t.id)).toContain(childTask2.id);
-      expect(childTasks.map(t => t.id)).toContain(childTask3.id);
-
-      // Calculate aggregate progress
-      const totalProgress = childTasks.reduce((sum, t) => sum + t.progress, 0);
-      const avgProgress = Math.round(totalProgress / childTasks.length);
-      expect(avgProgress).toBe(50); // (100 + 50 + 0) / 3 = 50
-
-      // Update parent task with calculated progress
-      await taskRepo.update(db, parentTask.id, {
-        progress: avgProgress,
-      });
-
-      const updatedParent = await taskRepo.findById(db, parentTask.id);
-      expect(updatedParent?.progress).toBe(50);
+      const avgProgress = 50;
+      const updated = await taskRepo.update(db, task.id, { progress: avgProgress });
+      expect(updated.progress).toBe(50);
     });
   });
 
@@ -463,7 +374,7 @@ describe('Complete Workflow Integration Tests', () => {
 
       const project = await projectRepo.create(db, {
         workspaceId: workspace.id,
-        userId: user.id,
+        createdByUserId: user.id,
         name: 'Daily Work',
         description: null,
         color: null,
@@ -478,11 +389,9 @@ describe('Complete Workflow Integration Tests', () => {
       const task1 = await taskRepo.create(db, {
         userId: user.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Morning task',
         description: null,
         difficulty: 'EASY',
-        priority: 'MEDIUM',
         progress: 100,
         status: 'COMPLETED',
         assigneeUserId: null,
@@ -493,7 +402,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: today,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 0,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
@@ -503,11 +412,9 @@ describe('Complete Workflow Integration Tests', () => {
       const task2 = await taskRepo.create(db, {
         userId: user.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Afternoon task',
         description: null,
         difficulty: 'MEDIUM',
-        priority: 'HIGH',
         progress: 100,
         status: 'COMPLETED',
         assigneeUserId: null,
@@ -518,7 +425,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: today,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 1,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
@@ -528,11 +435,9 @@ describe('Complete Workflow Integration Tests', () => {
       const task3 = await taskRepo.create(db, {
         userId: user.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Work in progress',
         description: null,
         difficulty: 'HARD',
-        priority: 'CRITICAL',
         progress: 60,
         status: 'IN_PROGRESS',
         assigneeUserId: null,
@@ -543,7 +448,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: today,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 2,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
@@ -727,7 +632,7 @@ describe('Complete Workflow Integration Tests', () => {
       // Create project in shared workspace
       const project = await projectRepo.create(db, {
         workspaceId: workspace.id,
-        userId: owner.id,
+        createdByUserId: owner.id,
         name: 'Team Project',
         description: 'Collaborative project',
         color: '#3B82F6',
@@ -740,11 +645,9 @@ describe('Complete Workflow Integration Tests', () => {
       const ownerTask = await taskRepo.create(db, {
         userId: owner.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Setup project structure',
         description: null,
         difficulty: 'MEDIUM',
-        priority: 'HIGH',
         progress: 100,
         status: 'COMPLETED',
         assigneeUserId: null,
@@ -755,7 +658,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 0,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
@@ -766,11 +669,9 @@ describe('Complete Workflow Integration Tests', () => {
       const memberTask = await taskRepo.create(db, {
         userId: member.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Implement feature',
         description: null,
         difficulty: 'HARD',
-        priority: 'CRITICAL',
         progress: 50,
         status: 'IN_PROGRESS',
         assigneeUserId: null,
@@ -781,7 +682,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 1,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,
@@ -831,7 +732,7 @@ describe('Complete Workflow Integration Tests', () => {
 
       const project = await projectRepo.create(db, {
         workspaceId: workspace.id,
-        userId: user.id,
+        createdByUserId: user.id,
         name: 'Test Project',
         description: null,
         color: null,
@@ -843,11 +744,9 @@ describe('Complete Workflow Integration Tests', () => {
       const task = await taskRepo.create(db, {
         userId: user.id,
         projectId: project.id,
-        parentTaskId: null,
         title: 'Test Task',
         description: null,
         difficulty: 'EASY',
-        priority: 'MEDIUM',
         progress: 0,
         status: 'BACKLOG',
         assigneeUserId: null,
@@ -858,7 +757,7 @@ describe('Complete Workflow Integration Tests', () => {
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
-        displayOrder: 0,
+        checklistItems: null,
         tags: null,
         externalId: null,
         externalSource: null,

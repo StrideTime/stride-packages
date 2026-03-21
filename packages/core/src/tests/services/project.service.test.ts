@@ -60,7 +60,7 @@ describe('ProjectService', () => {
         id: 'project-123',
         name: 'My Project',
         workspaceId: 'workspace-123',
-        userId: 'user-123',
+        createdByUserId: 'user-123',
         description: 'A test project',
         color: '#3B82F6',
         icon: '📁',
@@ -79,7 +79,7 @@ describe('ProjectService', () => {
         expect.objectContaining({
           name: 'My Project',
           workspaceId: 'workspace-123',
-          userId: 'user-123',
+          createdByUserId: 'user-123',
           description: 'A test project',
           color: '#3B82F6',
           icon: '📁',

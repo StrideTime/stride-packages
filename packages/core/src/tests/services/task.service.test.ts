@@ -20,9 +20,6 @@ const { mockTaskRepo, mockProjectRepo } = vi.hoisted(() => {
     findByStatus: vi.fn(),
     findCompleted: vi.fn(),
     findByPlannedDate: vi.fn(),
-    findByParentId: vi.fn(),
-    findSubtasks: vi.fn(),
-    findRootTasks: vi.fn(),
     count: vi.fn(),
     countByProject: vi.fn(),
   };
@@ -276,21 +273,6 @@ describe('TaskService', () => {
       await expect(taskService.create(mockDb, params)).rejects.toThrow('Project not found');
     });
 
-    it('should throw error when parent task does not exist', async () => {
-      const params: CreateTaskParams = {
-        title: 'Sub Task',
-        projectId: 'project-123',
-        userId: 'user-123',
-        parentTaskId: 'nonexistent-parent',
-      };
-
-      const mockProject = createMockProject({ id: 'project-123' });
-      mockProjectRepo.findById.mockResolvedValue(mockProject);
-      mockTaskRepo.findById.mockResolvedValue(null);
-
-      await expect(taskService.create(mockDb, params)).rejects.toThrow('Parent task not found');
-    });
-
     it('should trim title and description when creating', async () => {
       const params: CreateTaskParams = {
         title: '  Task with spaces  ',
@@ -412,79 +394,11 @@ describe('TaskService', () => {
         })
       );
     });
-
-    it('should update parent progress when updating a sub-task', async () => {
-      const mockSubTask = createMockTask({ id: 'sub-task', parentTaskId: 'parent-task' });
-      const updatedSubTask = createMockTask({
-        id: 'sub-task',
-        parentTaskId: 'parent-task',
-        progress: 80,
-      });
-
-      mockTaskRepo.findById.mockResolvedValue(mockSubTask);
-      mockTaskRepo.update.mockResolvedValue(updatedSubTask);
-
-      // Mock updateParentProgress to avoid circular calls
-      const updateParentSpy = vi
-        .spyOn(taskService, 'updateParentProgress')
-        .mockResolvedValue(undefined);
-
-      await taskService.update(mockDb, 'sub-task', { progress: 80 });
-
-      expect(updateParentSpy).toHaveBeenCalledWith(mockDb, 'parent-task');
-
-      // Restore the original method
-      updateParentSpy.mockRestore();
-    });
-  });
-
-  describe('updateParentProgress', () => {
-    it('should calculate and update parent progress based on sub-tasks', async () => {
-      const subTasks = [
-        createMockTask({ progress: 50 }),
-        createMockTask({ progress: 100 }),
-        createMockTask({ progress: 0 }),
-      ];
-
-      mockTaskRepo.findByParentId.mockResolvedValue(subTasks);
-      mockTaskRepo.findById.mockResolvedValue(createMockTask({ id: 'parent-task' }));
-      mockTaskRepo.update.mockResolvedValue(createMockTask({ progress: 50 }));
-
-      await taskService.updateParentProgress(mockDb, 'parent-task');
-
-      // Average: (50 + 100 + 0) / 3 = 50
-      expect(mockTaskRepo.update).toHaveBeenCalledWith(mockDb, 'parent-task', { progress: 50 });
-    });
-
-    it('should do nothing when parent has no sub-tasks', async () => {
-      mockTaskRepo.findByParentId.mockResolvedValue([]);
-
-      await taskService.updateParentProgress(mockDb, 'parent-task');
-
-      expect(mockTaskRepo.update).not.toHaveBeenCalled();
-    });
-
-    it('should round average progress to nearest integer', async () => {
-      const subTasks = [
-        createMockTask({ progress: 33 }),
-        createMockTask({ progress: 33 }),
-        createMockTask({ progress: 34 }),
-      ];
-
-      mockTaskRepo.findByParentId.mockResolvedValue(subTasks);
-      mockTaskRepo.findById.mockResolvedValue(createMockTask({ id: 'parent-task' }));
-      mockTaskRepo.update.mockResolvedValue(createMockTask({ progress: 33 }));
-
-      await taskService.updateParentProgress(mockDb, 'parent-task');
-
-      // Average: (33 + 33 + 34) / 3 = 33.33 → rounds to 33
-      expect(mockTaskRepo.update).toHaveBeenCalledWith(mockDb, 'parent-task', { progress: 33 });
-    });
   });
 
   describe('delete', () => {
     it('should delete a task', async () => {
-      const mockTask = createMockTask({ id: 'task-123', parentTaskId: null });
+      const mockTask = createMockTask({ id: 'task-123' });
 
       mockTaskRepo.findById.mockResolvedValue(mockTask);
       mockTaskRepo.delete.mockResolvedValue(undefined);
@@ -498,19 +412,6 @@ describe('TaskService', () => {
       mockTaskRepo.findById.mockResolvedValue(null);
 
       await expect(taskService.delete(mockDb, 'nonexistent')).rejects.toThrow('Task not found');
-    });
-
-    it('should update parent progress when deleting a sub-task', async () => {
-      const mockSubTask = createMockTask({ id: 'sub-task', parentTaskId: 'parent-task' });
-
-      mockTaskRepo.findById.mockResolvedValue(mockSubTask);
-      mockTaskRepo.delete.mockResolvedValue(undefined);
-
-      const updateParentSpy = vi.spyOn(taskService, 'updateParentProgress');
-
-      await taskService.delete(mockDb, 'sub-task');
-
-      expect(updateParentSpy).toHaveBeenCalledWith(mockDb, 'parent-task');
     });
   });
 
@@ -586,20 +487,6 @@ describe('TaskService', () => {
 
       expect(mockTaskRepo.findByPlannedDate).toHaveBeenCalledWith(mockDb, 'user-123', '2026-02-03');
       expect(result).toEqual(mockTasks);
-    });
-
-    it('should find sub-tasks', async () => {
-      const mockSubTasks = [
-        createMockTask({ parentTaskId: 'parent-123' }),
-        createMockTask({ parentTaskId: 'parent-123' }),
-      ];
-
-      mockTaskRepo.findByParentId.mockResolvedValue(mockSubTasks);
-
-      const result = await taskService.findSubTasks(mockDb, 'parent-123');
-
-      expect(mockTaskRepo.findByParentId).toHaveBeenCalledWith(mockDb, 'parent-123');
-      expect(result).toEqual(mockSubTasks);
     });
   });
 });

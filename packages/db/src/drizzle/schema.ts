@@ -17,8 +17,10 @@ import type {
   GoalPeriod,
   BreakType,
   WorkSessionStatus,
-  TaskPriority,
   ExternalSource,
+  ScheduleType,
+  TrackingType,
+  FocusSessionType,
   ProjectStatus,
   FontSize,
   Density,
@@ -70,6 +72,10 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   breaks: many(breaksTable),
   workSessions: many(workSessionsTable),
   workspaceUserPreferences: many(workspaceUserPreferencesTable),
+  habits: many(habitsTable),
+  habitCompletions: many(habitCompletionsTable),
+  focusSettings: many(focusSettingsTable),
+  focusSessions: many(focusSessionsTable),
 }));
 
 // ============================================================================
@@ -314,6 +320,7 @@ export const workspacesRelations = relations(workspacesTable, ({ one, many }) =>
   workSessions: many(workSessionsTable),
   workspaceUserPreferences: many(workspaceUserPreferencesTable),
   workspaceStatuses: many(workspaceStatusesTable),
+  focusSessions: many(focusSessionsTable),
 }));
 
 // ============================================================================
@@ -359,7 +366,7 @@ export const projectsTable = sqliteTable(
   {
     id: text('id').primaryKey(),
     workspaceId: text('workspace_id').notNull(),
-    userId: text('user_id').notNull(),
+    createdByUserId: text('created_by_user_id'),
     name: text('name').notNull(),
     description: text('description'),
     color: text('color'),
@@ -372,7 +379,7 @@ export const projectsTable = sqliteTable(
   },
   table => [
     index('idx_projects_workspace_id').on(table.workspaceId),
-    index('idx_projects_user_id').on(table.userId),
+    index('idx_projects_created_by_user_id').on(table.createdByUserId),
     index('idx_projects_deleted').on(table.deleted),
   ]
 );
@@ -382,8 +389,8 @@ export const projectsRelations = relations(projectsTable, ({ one, many }) => ({
     fields: [projectsTable.workspaceId],
     references: [workspacesTable.id],
   }),
-  user: one(usersTable, {
-    fields: [projectsTable.userId],
+  createdBy: one(usersTable, {
+    fields: [projectsTable.createdByUserId],
     references: [usersTable.id],
   }),
   tasks: many(tasksTable),
@@ -433,12 +440,10 @@ export const tasksTable = sqliteTable(
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     projectId: text('project_id').notNull(),
-    parentTaskId: text('parent_task_id'),
 
     title: text('title').notNull(),
     description: text('description'),
     difficulty: text('difficulty').notNull().$type<TaskDifficulty>(),
-    priority: text('priority').notNull().default('NONE').$type<TaskPriority>(),
     progress: integer('progress').notNull().default(0),
     status: text('status').notNull().default('BACKLOG').$type<TaskStatus>(),
     assigneeUserId: text('assignee_user_id'),
@@ -449,7 +454,7 @@ export const tasksTable = sqliteTable(
     plannedForDate: text('planned_for_date'),
     dueDate: text('due_date'),
     taskTypeId: text('task_type_id'),
-    displayOrder: integer('display_order').notNull().default(0),
+    checklistItems: text('checklist_items'),
     tags: text('tags'),
     externalId: text('external_id'),
     externalSource: text('external_source').$type<ExternalSource>(),
@@ -461,7 +466,6 @@ export const tasksTable = sqliteTable(
   table => [
     index('idx_tasks_user_id').on(table.userId),
     index('idx_tasks_project_id').on(table.projectId),
-    index('idx_tasks_parent_task_id').on(table.parentTaskId),
     index('idx_tasks_status').on(table.status),
     index('idx_tasks_planned_for_date').on(table.plannedForDate),
     index('idx_tasks_deleted').on(table.deleted),
@@ -481,14 +485,7 @@ export const tasksRelations = relations(tasksTable, ({ one, many }) => ({
     fields: [tasksTable.taskTypeId],
     references: [taskTypesTable.id],
   }),
-  parentTask: one(tasksTable, {
-    fields: [tasksTable.parentTaskId],
-    references: [tasksTable.id],
-    relationName: 'subTasks',
-  }),
-  subTasks: many(tasksTable, {
-    relationName: 'subTasks',
-  }),
+  focusSessions: many(focusSessionsTable),
   timeEntries: many(timeEntriesTable),
   scheduledEvents: many(scheduledEventsTable),
   pointsLedger: many(pointsLedgerTable),
@@ -831,6 +828,90 @@ export const goalsRelations = relations(goalsTable, ({ one }) => ({
 }));
 
 // ============================================================================
+// HABITS TABLE
+// ============================================================================
+
+export const habitsTable = sqliteTable(
+  'habits',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    icon: text('icon').notNull(),
+    scheduleType: text('schedule_type').notNull().$type<ScheduleType>(),
+    scheduleDaysOfWeek: text('schedule_days_of_week'),
+    scheduleStartDate: text('schedule_start_date').notNull(),
+    scheduleEndDate: text('schedule_end_date'),
+    targetCount: integer('target_count'),
+    trackingType: text('tracking_type').notNull().$type<TrackingType>(),
+    unit: text('unit'),
+    reminderEnabled: integer('reminder_enabled', { mode: 'boolean' }).notNull().default(false),
+    reminderTime: text('reminder_time'),
+    reminderMessage: text('reminder_message'),
+    displayOrder: integer('display_order').notNull().default(0),
+    archivedAt: text('archived_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_habits_user_id').on(table.userId),
+    index('idx_habits_deleted').on(table.deleted),
+  ]
+);
+
+export const habitsRelations = relations(habitsTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [habitsTable.userId],
+    references: [usersTable.id],
+  }),
+  completions: many(habitCompletionsTable),
+}));
+
+// ============================================================================
+// HABIT COMPLETIONS TABLE
+// ============================================================================
+
+export const habitCompletionsTable = sqliteTable(
+  'habit_completions',
+  {
+    id: text('id').primaryKey(),
+    habitId: text('habit_id').notNull(),
+    userId: text('user_id').notNull(),
+    date: text('date').notNull(),
+    completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+    value: integer('value'),
+    completedAt: text('completed_at'),
+    notes: text('notes'),
+    mood: integer('mood'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_habit_completions_habit_id').on(table.habitId),
+    index('idx_habit_completions_user_id').on(table.userId),
+    uniqueIndex('idx_habit_completions_habit_user_date').on(
+      table.habitId,
+      table.userId,
+      table.date
+    ),
+  ]
+);
+
+export const habitCompletionsRelations = relations(habitCompletionsTable, ({ one }) => ({
+  habit: one(habitsTable, {
+    fields: [habitCompletionsTable.habitId],
+    references: [habitsTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [habitCompletionsTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+
+// ============================================================================
 // BREAKS TABLE
 // ============================================================================
 
@@ -894,6 +975,92 @@ export const workSessionsRelations = relations(workSessionsTable, ({ one }) => (
   workspace: one(workspacesTable, {
     fields: [workSessionsTable.workspaceId],
     references: [workspacesTable.id],
+  }),
+}));
+
+// ============================================================================
+// FOCUS SETTINGS TABLE
+// ============================================================================
+
+export const focusSettingsTable = sqliteTable(
+  'focus_settings',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    pomodoroModeEnabled: integer('pomodoro_mode_enabled', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+    focusDuration: integer('focus_duration').notNull().default(25),
+    shortBreakDuration: integer('short_break_duration').notNull().default(5),
+    longBreakDuration: integer('long_break_duration').notNull().default(15),
+    sessionsBeforeLongBreak: integer('sessions_before_long_break').notNull().default(4),
+    autoStartBreaks: integer('auto_start_breaks', { mode: 'boolean' }).notNull().default(false),
+    autoStartFocus: integer('auto_start_focus', { mode: 'boolean' }).notNull().default(false),
+    soundEnabled: integer('sound_enabled', { mode: 'boolean' }).notNull().default(true),
+    soundVolume: integer('sound_volume').notNull().default(80),
+    notificationsEnabled: integer('notifications_enabled', { mode: 'boolean' })
+      .notNull()
+      .default(true),
+    tickingSoundEnabled: integer('ticking_sound_enabled', { mode: 'boolean' })
+      .notNull()
+      .default(false),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [uniqueIndex('idx_focus_settings_user_id').on(table.userId)]
+);
+
+export const focusSettingsRelations = relations(focusSettingsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [focusSettingsTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+
+// ============================================================================
+// FOCUS SESSIONS TABLE
+// ============================================================================
+
+export const focusSessionsTable = sqliteTable(
+  'focus_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    workspaceId: text('workspace_id'),
+    taskId: text('task_id'),
+    taskName: text('task_name'),
+    type: text('type').notNull().$type<FocusSessionType>(),
+    durationMinutes: integer('duration_minutes').notNull(),
+    startedAt: text('started_at').notNull(),
+    endedAt: text('ended_at'),
+    completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+    interrupted: integer('interrupted', { mode: 'boolean' }).notNull().default(false),
+    interruptions: integer('interruptions').notNull().default(0),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+  },
+  table => [
+    index('idx_focus_sessions_user_id').on(table.userId),
+    index('idx_focus_sessions_workspace_id').on(table.workspaceId),
+    index('idx_focus_sessions_task_id').on(table.taskId),
+    index('idx_focus_sessions_started_at').on(table.startedAt),
+  ]
+);
+
+export const focusSessionsRelations = relations(focusSessionsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [focusSessionsTable.userId],
+    references: [usersTable.id],
+  }),
+  workspace: one(workspacesTable, {
+    fields: [focusSessionsTable.workspaceId],
+    references: [workspacesTable.id],
+  }),
+  task: one(tasksTable, {
+    fields: [focusSessionsTable.taskId],
+    references: [tasksTable.id],
   }),
 }));
 

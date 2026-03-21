@@ -5,7 +5,7 @@ import {
   type TaskRepository,
   type ProjectRepository,
 } from '@stridetime/db';
-import { Task, TaskDifficulty, TaskPriority, TaskStatus } from '@stridetime/types';
+import { Task, TaskDifficulty, TaskStatus } from '@stridetime/types';
 
 /**
  * Parameters for creating a new task
@@ -15,11 +15,9 @@ export type CreateTaskParams = {
   projectId: string;
   userId: string;
   difficulty?: TaskDifficulty;
-  priority?: TaskPriority;
   estimatedMinutes?: number;
   maxMinutes?: number;
   dueDate?: string;
-  parentTaskId?: string | null;
   taskTypeId?: string | null;
   description?: string | null;
   plannedForDate?: string | null;
@@ -32,7 +30,6 @@ export type UpdateTaskParams = {
   title?: string;
   description?: string | null;
   difficulty?: TaskDifficulty;
-  priority?: TaskPriority;
   progress?: number;
   status?: TaskStatus;
   assigneeUserId?: string | null;
@@ -42,6 +39,7 @@ export type UpdateTaskParams = {
   plannedForDate?: string | null;
   dueDate?: string | null;
   taskTypeId?: string | null;
+  checklistItems?: string | null;
 };
 
 /**
@@ -156,23 +154,13 @@ export class TaskService {
       throw new TaskValidationError('projectId', 'Project not found');
     }
 
-    // Verify parent task exists if provided
-    if (params.parentTaskId) {
-      const parentTask = await this.taskRepo.findById(db, params.parentTaskId);
-      if (!parentTask) {
-        throw new TaskValidationError('parentTaskId', 'Parent task not found');
-      }
-    }
-
     // Create task
     const task = await this.taskRepo.create(db, {
       userId: params.userId,
       projectId: params.projectId,
-      parentTaskId: params.parentTaskId || null,
       title: params.title.trim(),
       description: params.description?.trim() || null,
       difficulty: params.difficulty || TaskDifficulty.MEDIUM,
-      priority: params.priority || TaskPriority.NONE,
       progress: 0,
       status: TaskStatus.BACKLOG,
       assigneeUserId: null,
@@ -183,7 +171,7 @@ export class TaskService {
       plannedForDate: params.plannedForDate || null,
       dueDate: params.dueDate || null,
       taskTypeId: params.taskTypeId || null,
-      displayOrder: 0,
+      checklistItems: null,
       tags: null,
       externalId: null,
       externalSource: null,
@@ -219,10 +207,6 @@ export class TaskService {
 
     if (params.difficulty !== undefined) {
       updates.difficulty = params.difficulty;
-    }
-
-    if (params.priority !== undefined) {
-      updates.priority = params.priority;
     }
 
     if (params.assigneeUserId !== undefined) {
@@ -274,15 +258,12 @@ export class TaskService {
       updates.taskTypeId = params.taskTypeId;
     }
 
-    // Update task
-    const updatedTask = await this.taskRepo.update(db, taskId, updates);
-
-    // If this is a sub-task, update parent progress
-    if (updatedTask.parentTaskId) {
-      await this.updateParentProgress(db, updatedTask.parentTaskId);
+    if (params.checklistItems !== undefined) {
+      updates.checklistItems = params.checklistItems;
     }
 
-    return updatedTask;
+    // Update task
+    return this.taskRepo.update(db, taskId, updates);
   }
 
   /**
@@ -290,25 +271,6 @@ export class TaskService {
    */
   async updateProgress(db: StrideDatabase, taskId: string, progress: number): Promise<Task> {
     return this.update(db, taskId, { progress });
-  }
-
-  /**
-   * Calculate and update parent task progress based on sub-tasks
-   */
-  async updateParentProgress(db: StrideDatabase, parentTaskId: string): Promise<void> {
-    // Get all sub-tasks
-    const subTasks = await this.taskRepo.findByParentId(db, parentTaskId);
-
-    if (subTasks.length === 0) {
-      return;
-    }
-
-    // Calculate average progress
-    const totalProgress = subTasks.reduce((sum, task) => sum + task.progress, 0);
-    const averageProgress = Math.round(totalProgress / subTasks.length);
-
-    // Update parent task
-    await this.update(db, parentTaskId, { progress: averageProgress });
   }
 
   /**
@@ -321,11 +283,6 @@ export class TaskService {
     }
 
     await this.taskRepo.delete(db, taskId);
-
-    // Update parent progress if this was a sub-task
-    if (task.parentTaskId) {
-      await this.updateParentProgress(db, task.parentTaskId);
-    }
   }
 
   /**
@@ -368,13 +325,6 @@ export class TaskService {
    */
   async findCompleted(db: StrideDatabase, userId: string): Promise<Task[]> {
     return this.taskRepo.findCompleted(db, userId);
-  }
-
-  /**
-   * Get sub-tasks for a parent task
-   */
-  async findSubTasks(db: StrideDatabase, parentTaskId: string): Promise<Task[]> {
-    return this.taskRepo.findByParentId(db, parentTaskId);
   }
 
   // ==========================================================================
