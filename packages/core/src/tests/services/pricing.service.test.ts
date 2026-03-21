@@ -54,7 +54,7 @@ const { mockFeatureRepo, mockPlanRepo, mockPlanPriceRepo, mockSubscriptionRepo }
       findById: vi.fn(),
       findByUser: vi.fn(),
       findByStatus: vi.fn(),
-      findByRole: vi.fn(),
+      findByPlan: vi.fn(),
       findExpiredTrials: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -134,7 +134,7 @@ describe('PricingService', () => {
       mockPlanRepo.findActive.mockResolvedValue(plans);
       mockPlanPriceRepo.findByPlan.mockImplementation((_db: any, planId: string) => {
         if (planId === 'plan-1') return Promise.resolve([]);
-        return Promise.resolve([createMockPlanPrice({ roleId: 'plan-2' })]);
+        return Promise.resolve([createMockPlanPrice({ planId: 'plan-2' })]);
       });
       mockPlanRepo.getPlanFeatures.mockResolvedValue([createMockPlanFeature()]);
 
@@ -158,10 +158,10 @@ describe('PricingService', () => {
 
   describe('getUserPlan', () => {
     it('should return user plan details', async () => {
-      const sub = createMockSubscription({ userId: 'user-1', roleId: 'plan-pro' });
+      const sub = createMockSubscription({ userId: 'user-1', planId: 'plan-pro' });
       const plan = createMockPlan({ id: 'plan-pro', displayName: 'Pro' });
       const features = [createMockPlanFeature()];
-      const prices = [createMockPlanPrice({ roleId: 'plan-pro' })];
+      const prices = [createMockPlanPrice({ planId: 'plan-pro' })];
 
       mockSubscriptionRepo.findByUser.mockResolvedValue(sub);
       mockPlanRepo.findById.mockResolvedValue(plan);
@@ -184,7 +184,7 @@ describe('PricingService', () => {
 
     it('should throw when subscription references nonexistent plan', async () => {
       mockSubscriptionRepo.findByUser.mockResolvedValue(
-        createMockSubscription({ roleId: 'deleted-plan' })
+        createMockSubscription({ planId: 'deleted-plan' })
       );
       mockPlanRepo.findById.mockResolvedValue(null);
 
@@ -198,7 +198,7 @@ describe('PricingService', () => {
 
   describe('hasFeature', () => {
     it('should return true when user has enabled feature', async () => {
-      const sub = createMockSubscription({ roleId: 'plan-pro' });
+      const sub = createMockSubscription({ planId: 'plan-pro' });
       const feature = createMockFeature({ id: 'feat-1', key: 'cloud_sync' });
       const planFeature = createMockPlanFeature({
         featureId: 'feat-1',
@@ -232,7 +232,7 @@ describe('PricingService', () => {
     });
 
     it('should return false when feature is not enabled for plan', async () => {
-      const sub = createMockSubscription({ roleId: 'plan-free' });
+      const sub = createMockSubscription({ planId: 'plan-free' });
       const feature = createMockFeature({ id: 'feat-1', key: 'cloud_sync' });
       const planFeature = createMockPlanFeature({
         featureId: 'feat-1',
@@ -263,7 +263,7 @@ describe('PricingService', () => {
 
   describe('getFeatureLimit', () => {
     it('should return limit value for enabled LIMIT feature', async () => {
-      const sub = createMockSubscription({ roleId: 'plan-pro' });
+      const sub = createMockSubscription({ planId: 'plan-pro' });
       const feature = createMockLimitFeature({ id: 'feat-1', key: 'max_workspaces' });
       const planFeature = createMockLimitPlanFeature(5, {
         featureId: 'feat-1',
@@ -297,7 +297,7 @@ describe('PricingService', () => {
     });
 
     it('should return null when feature is disabled', async () => {
-      const sub = createMockSubscription({ roleId: 'plan-free' });
+      const sub = createMockSubscription({ planId: 'plan-free' });
       const feature = createMockLimitFeature({ id: 'feat-1' });
       const planFeature = createMockPlanFeature({
         featureId: 'feat-1',
@@ -410,7 +410,7 @@ describe('PricingService', () => {
       });
       const createdSub = createMockSubscription({
         userId: 'user-1',
-        roleId: 'plan-pro',
+        planId: 'plan-pro',
         status: 'ACTIVE',
       });
 
@@ -426,7 +426,7 @@ describe('PricingService', () => {
         mockDb,
         expect.objectContaining({
           userId: 'user-1',
-          roleId: 'plan-pro',
+          planId: 'plan-pro',
           status: 'ACTIVE',
           priceCents: 999,
         })
@@ -492,12 +492,12 @@ describe('PricingService', () => {
 
   describe('upgradePlan', () => {
     it('should upgrade user plan', async () => {
-      const sub = createMockSubscription({ id: 'sub-1', userId: 'user-1', roleId: 'plan-free' });
+      const sub = createMockSubscription({ id: 'sub-1', userId: 'user-1', planId: 'plan-free' });
       const newPlan = createMockPlan({ id: 'plan-pro', isActive: true });
       const newPrice = createMockPlanPrice({ priceCents: 1999, stripePriceId: 'sp_pro' });
       const updatedSub = createMockSubscription({
         id: 'sub-1',
-        roleId: 'plan-pro',
+        planId: 'plan-pro',
         priceCents: 1999,
       });
 
@@ -509,12 +509,12 @@ describe('PricingService', () => {
 
       const result = await service.upgradePlan(mockDb, 'user-1', 'plan-pro', 'MONTHLY');
 
-      expect(result.roleId).toBe('plan-pro');
+      expect(result.planId).toBe('plan-pro');
       expect(mockSubscriptionRepo.update).toHaveBeenCalledWith(
         mockDb,
         'sub-1',
         expect.objectContaining({
-          roleId: 'plan-pro',
+          planId: 'plan-pro',
           priceCents: 1999,
         })
       );
@@ -550,10 +550,10 @@ describe('PricingService', () => {
 
   describe('downgradePlan', () => {
     it('should delegate to upgradePlan (same logic for now)', async () => {
-      const sub = createMockSubscription({ id: 'sub-1', roleId: 'plan-pro' });
+      const sub = createMockSubscription({ id: 'sub-1', planId: 'plan-pro' });
       const newPlan = createMockPlan({ id: 'plan-free', isActive: true });
       const newPrice = createMockPlanPrice({ priceCents: 0 });
-      const updatedSub = createMockSubscription({ id: 'sub-1', roleId: 'plan-free' });
+      const updatedSub = createMockSubscription({ id: 'sub-1', planId: 'plan-free' });
 
       mockSubscriptionRepo.findByUser.mockResolvedValue(sub);
       mockPlanRepo.findById.mockResolvedValue(newPlan);
@@ -563,7 +563,7 @@ describe('PricingService', () => {
 
       const result = await service.downgradePlan(mockDb, 'user-1', 'plan-free', 'MONTHLY');
 
-      expect(result.roleId).toBe('plan-free');
+      expect(result.planId).toBe('plan-free');
     });
   });
 

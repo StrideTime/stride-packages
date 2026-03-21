@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DndContext } from '@dnd-kit/core';
-import { TimeBlock } from './TimeBlock';
-import type { ScheduledEvent, Task, Project } from '@stridetime/types';
-import { ScheduledEventType } from '@stridetime/types';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { DndContext } from "@dnd-kit/core";
+import { TimeBlock } from "./TimeBlock";
+import type { ScheduledEvent, Task, Project } from "@stridetime/types";
+import { ScheduledEventType } from "@stridetime/types";
 
 const meta = {
-  title: 'Components/DailyPlanner/TimeBlock',
+  title: "Components/DailyPlanner/TimeBlock",
   component: TimeBlock,
-  parameters: { layout: 'padded' },
+  parameters: { layout: "padded" },
   decorators: [
-    Story => (
+    (Story) => (
       <DndContext>
         <div className="relative h-64 w-80">
           <Story />
@@ -23,31 +23,29 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const mockProject: Project = {
-  id: 'proj-1',
-  workspaceId: 'ws-1',
-  userId: 'user-1',
-  name: 'Website Redesign',
+  id: "proj-1",
+  workspaceId: "ws-1",
+  createdByUserId: "user-1",
+  name: "Website Redesign",
   description: null,
-  color: '#3b82f6',
-  icon: '🎨',
-  status: 'ACTIVE',
+  color: "#3b82f6",
+  icon: "🎨",
+  status: "ACTIVE",
   completionPercentage: 45,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const mockTask: Task = {
-  id: 'task-1',
-  userId: 'user-1',
-  projectId: 'proj-1',
-  parentTaskId: null,
-  title: 'Design homepage mockup',
+  id: "task-1",
+  userId: "user-1",
+  projectId: "proj-1",
+  title: "Design homepage mockup",
   description: null,
-  difficulty: 'MEDIUM',
-  priority: 'HIGH',
+  difficulty: "MEDIUM",
   progress: 0,
-  status: 'IN_PROGRESS',
+  status: "IN_PROGRESS",
   assigneeUserId: null,
   teamId: null,
   estimatedMinutes: 120,
@@ -56,29 +54,29 @@ const mockTask: Task = {
   plannedForDate: null,
   dueDate: null,
   taskTypeId: null,
-  displayOrder: 0,
+  checklistItems: null,
   tags: null,
   externalId: null,
   externalSource: null,
   completedAt: null,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const baseEvent: ScheduledEvent = {
-  id: 'event-1',
-  taskId: 'task-1',
-  userId: 'user-1',
-  startTime: '09:00',
+  id: "event-1",
+  taskId: "task-1",
+  userId: "user-1",
+  startTime: "09:00",
   durationMinutes: 90,
-  label: 'Design homepage mockup',
+  label: "Design homepage mockup",
   type: ScheduledEventType.TASK,
   externalId: null,
   externalSource: null,
   metadata: null,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
@@ -90,13 +88,13 @@ const commonProps = {
   projects: [mockProject],
   top: 0,
   height: 192,
-  width: '100%',
-  left: '0%',
+  width: "100%",
+  left: "0%",
   slotHeightPx: 32,
   slotIncrementMinutes: 15,
-  onRemove: (id: string) => console.log('remove', id),
-  onResize: (id: string, mins: number) => console.log('resize', id, mins),
-  onMoveStart: (id: string, time: string) => console.log('move', id, time),
+  onRemove: (id: string) => console.log("remove", id),
+  onResize: (id: string, mins: number) => console.log("resize", id, mins),
+  onMoveStart: (id: string, time: string) => console.log("move", id, time),
 };
 
 export const TaskEvent: Story = { args: { ...commonProps } };
@@ -112,7 +110,7 @@ export const TinyEvent: Story = {
 export const Meeting: Story = {
   args: {
     ...commonProps,
-    event: { ...baseEvent, taskId: null, type: ScheduledEventType.MEETING, label: 'Team Standup' },
+    event: { ...baseEvent, taskId: null, type: ScheduledEventType.MEETING, label: "Team Standup" },
     task: undefined,
   },
 };

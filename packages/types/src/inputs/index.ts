@@ -12,7 +12,6 @@ export type { UpdateGoalInput } from './UpdateGoalInput';
 export type { StartBreakInput } from './StartBreakInput';
 export type { UpdateProjectInput } from './UpdateProjectInput';
 export type { CreateScheduledEventInput } from './CreateScheduledEventInput';
-export type { UpdateTaskPriorityInput } from './UpdateTaskPriorityInput';
 export type { ClockInInput } from './ClockInInput';
 export type { AssignTaskInput } from './AssignTaskInput';
 export type { CreateHabitInput } from './CreateHabitInput';

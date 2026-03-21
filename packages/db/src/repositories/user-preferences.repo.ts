@@ -20,7 +20,6 @@ function toDomain(row: UserPreferencesRow): UserPreferences {
   return {
     userId: row.userId,
     theme: row.theme,
-    planningMode: row.planningMode,
     checkInFrequency: row.checkInFrequency,
     checkInEnabled: row.checkInEnabled,
     endOfDaySummaryTime: row.endOfDaySummaryTime,
@@ -29,24 +28,24 @@ function toDomain(row: UserPreferencesRow): UserPreferences {
     autoPauseEnabled: row.autoPauseEnabled,
     breakReminderEnabled: row.breakReminderEnabled,
     breakReminderMinutes: row.breakReminderMinutes,
-    workingHoursStart: row.workingHoursStart,
-    workingHoursEnd: row.workingHoursEnd,
-    workingDays: row.workingDays,
     accentColor: row.accentColor,
     fontSize: row.fontSize,
     density: row.density,
     keyboardShortcuts: row.keyboardShortcuts,
-    enableSoundEffects: row.enableSoundEffects,
+    soundEnabled: row.soundEnabled,
+    soundVolume: row.soundVolume,
     enableHapticFeedback: row.enableHapticFeedback,
     autoStartTimer: row.autoStartTimer,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 function toDbInsert(prefs: UserPreferences): NewUserPreferencesRow {
+  const timestamp = now();
   return {
     userId: prefs.userId,
     theme: prefs.theme,
-    planningMode: prefs.planningMode,
     checkInFrequency: prefs.checkInFrequency,
     checkInEnabled: prefs.checkInEnabled,
     endOfDaySummaryTime: prefs.endOfDaySummaryTime,
@@ -55,17 +54,16 @@ function toDbInsert(prefs: UserPreferences): NewUserPreferencesRow {
     autoPauseEnabled: prefs.autoPauseEnabled,
     breakReminderEnabled: prefs.breakReminderEnabled,
     breakReminderMinutes: prefs.breakReminderMinutes,
-    workingHoursStart: prefs.workingHoursStart,
-    workingHoursEnd: prefs.workingHoursEnd,
-    workingDays: prefs.workingDays,
     accentColor: prefs.accentColor,
     fontSize: prefs.fontSize,
     density: prefs.density,
     keyboardShortcuts: prefs.keyboardShortcuts,
-    enableSoundEffects: prefs.enableSoundEffects,
+    soundEnabled: prefs.soundEnabled,
+    soundVolume: prefs.soundVolume,
     enableHapticFeedback: prefs.enableHapticFeedback,
     autoStartTimer: prefs.autoStartTimer,
-    updatedAt: now(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
   };
 }
 

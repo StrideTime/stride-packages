@@ -2,7 +2,7 @@ import type { BillingPeriod } from '../enums/BillingPeriod';
 
 export type PlanPrice = {
   id: string;
-  roleId: string;
+  planId: string;
   billingPeriod: BillingPeriod;
   priceCents: number;
   currency: string;

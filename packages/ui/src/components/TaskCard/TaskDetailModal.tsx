@@ -5,7 +5,6 @@ import {
   Calendar,
   Check,
   Timer,
-  Flag,
   Zap,
   X,
   ChevronDown,
@@ -18,7 +17,7 @@ import {
   ExternalLink,
   ArrowLeft,
 } from "lucide-react";
-import type { Task, TaskDifficulty, TaskPriority } from "@stridetime/types";
+import type { Task, TaskDifficulty } from "@stridetime/types";
 import { Button } from "../../primitives/Button";
 import { Label } from "../../primitives/Label";
 import { Slider } from "../../primitives/Slider";
@@ -34,34 +33,26 @@ import { Separator } from "../../primitives/Separator";
 import { difficultyConfig, formatDuration, externalSourceConfig } from "../shared";
 import type { TaskDetailModalProps, TaskDetailContentProps, SubtaskItem } from "./TaskCard.types";
 
-// ─── Priority helpers ──────────────────────────────────────
-
-const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string; fill?: boolean }> = {
-  NONE: { label: "None", color: "#6b7280" },
-  LOW: { label: "Low", color: "#3b82f6" },
-  MEDIUM: { label: "Medium", color: "#eab308" },
-  HIGH: { label: "High", color: "#f97316" },
-  CRITICAL: { label: "Critical", color: "#ef4444", fill: true },
-};
-
-const ALL_PRIORITIES: TaskPriority[] = ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const ALL_DIFFICULTIES: TaskDifficulty[] = ["TRIVIAL", "EASY", "MEDIUM", "HARD", "EXTREME"];
 
-function PriorityIcon({
-  priority,
-  className = "h-3.5 w-3.5",
-}: {
-  priority?: TaskPriority;
-  className?: string;
-}) {
-  const cfg = PRIORITY_CONFIG[priority ?? "NONE"];
-  return (
-    <Flag
-      className={className}
-      style={{ color: cfg.color }}
-      {...(cfg.fill ? { fill: "currentColor" } : {})}
-    />
-  );
+function parseChecklistItems(json: string | null | undefined): SubtaskItem[] {
+  if (!json) return [];
+  try {
+    const v = JSON.parse(json) as unknown;
+    if (!Array.isArray(v)) return [];
+    return v
+      .filter(
+        (x): x is { id: string; title: string; completed?: boolean } =>
+          x != null && typeof x === "object" && "id" in x && "title" in x
+      )
+      .map((x) => ({
+        id: String(x.id),
+        title: String(x.title),
+        completed: Boolean(x.completed),
+      }));
+  } catch {
+    return [];
+  }
 }
 
 // ─── Time helpers ──────────────────────────────────────────
@@ -164,11 +155,12 @@ export function TaskDetailContent({
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(task.description || "");
   const [editDifficulty, setEditDifficulty] = useState(task.difficulty);
-  const [editPriority, setEditPriority] = useState<TaskPriority>(task.priority);
   const [editProgress, setEditProgress] = useState(task.progress);
   const [editEstMinutes, setEditEstMinutes] = useState(task.estimatedMinutes);
   const [editMaxMinutes, setEditMaxMinutes] = useState(task.maxMinutes);
-  const [editSubtasks, setEditSubtasks] = useState<SubtaskItem[]>(initialSubtasks ?? []);
+  const [editSubtasks, setEditSubtasks] = useState<SubtaskItem[]>(
+    initialSubtasks ?? parseChecklistItems(task.checklistItems)
+  );
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [editAssigneeId, setEditAssigneeId] = useState(task.assigneeUserId);
   const [editProjectId, setEditProjectId] = useState(task.projectId);
@@ -183,11 +175,10 @@ export function TaskDetailContent({
     setEditTitle(task.title);
     setEditDescription(task.description || "");
     setEditDifficulty(task.difficulty);
-    setEditPriority(task.priority);
     setEditProgress(task.progress);
     setEditEstMinutes(task.estimatedMinutes);
     setEditMaxMinutes(task.maxMinutes);
-    setEditSubtasks(initialSubtasks ?? []);
+    setEditSubtasks(initialSubtasks ?? parseChecklistItems(task.checklistItems));
     setEditAssigneeId(task.assigneeUserId);
     setEditProjectId(task.projectId);
     setNewSubtaskText("");
@@ -196,8 +187,6 @@ export function TaskDetailContent({
   // ── Derived ─────────────────────────────────────────────
   const diff = difficultyConfig[editDifficulty];
   const isCompleted = task.status === "COMPLETED";
-  const priorityCfg = PRIORITY_CONFIG[editPriority ?? "NONE"];
-
   const hasSubtasks = editSubtasks.length > 0;
   const completedSubtasks = editSubtasks.filter((s) => s.completed).length;
 
@@ -240,7 +229,6 @@ export function TaskDetailContent({
     if (editDifficulty !== task.difficulty) {
       updates.difficulty = editDifficulty;
     }
-    if (editPriority !== task.priority) updates.priority = editPriority;
     if (editProgress !== task.progress) updates.progress = editProgress;
     if (editEstMinutes !== task.estimatedMinutes) {
       updates.estimatedMinutes = editEstMinutes;
@@ -253,6 +241,10 @@ export function TaskDetailContent({
     }
     if (editAssigneeId !== task.assigneeUserId) {
       updates.assigneeUserId = editAssigneeId;
+    }
+    const baselineSubtasks = initialSubtasks ?? parseChecklistItems(task.checklistItems);
+    if (JSON.stringify(editSubtasks) !== JSON.stringify(baselineSubtasks)) {
+      updates.checklistItems = JSON.stringify(editSubtasks);
     }
     return updates;
   };
@@ -374,35 +366,6 @@ export function TaskDetailContent({
                   >
                     <Zap className="h-3.5 w-3.5" style={{ color: dc.color }} />
                     <span style={{ color: dc.color }}>{dc.label}</span>
-                    {selected && <Check className="h-3 w-3 ml-auto text-primary" />}
-                  </button>
-                );
-              })}
-            </PopoverContent>
-          </Popover>
-
-          {/* Priority picker */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <DropdownChip>
-                <PriorityIcon priority={editPriority} className="h-3 w-3" />
-                <span>{priorityCfg.label}</span>
-              </DropdownChip>
-            </PopoverTrigger>
-            <PopoverContent className="w-40 p-1" align="start">
-              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Priority</div>
-              {ALL_PRIORITIES.map((p) => {
-                const selected = p === editPriority;
-                return (
-                  <button
-                    key={p}
-                    onClick={() => setEditPriority(p)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded hover:bg-accent ${
-                      selected ? "bg-accent" : ""
-                    }`}
-                  >
-                    <PriorityIcon priority={p} className="h-3.5 w-3.5" />
-                    <span>{PRIORITY_CONFIG[p].label}</span>
                     {selected && <Check className="h-3 w-3 ml-auto text-primary" />}
                   </button>
                 );

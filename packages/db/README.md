@@ -52,24 +52,13 @@ const db = getDatabase();
 ### Querying Data
 
 ```typescript
-import {
-  getDatabase,
-  users,
-  tasks,
-  projects,
-  eq,
-  and,
-  desc,
-} from '@stridetime/db';
+import { getDatabase, users, tasks, projects, eq, and, desc } from '@stridetime/db';
 
 const db = getDatabase();
 
 // Find many with filters using relational queries
 const userTasks = await db.query.tasks.findMany({
-  where: and(
-    eq(tasks.userId, 'user_123'),
-    eq(tasks.deleted, false)
-  ),
+  where: and(eq(tasks.userId, 'user_123'), eq(tasks.deleted, false)),
   orderBy: desc(tasks.createdAt),
   with: {
     project: true,
@@ -139,10 +128,7 @@ await db
   .where(eq(tasks.id, 'task_456'));
 
 // Soft delete
-await db
-  .update(tasks)
-  .set({ deleted: true, updatedAt: now() })
-  .where(eq(tasks.id, 'task_456'));
+await db.update(tasks).set({ deleted: true, updatedAt: now() }).where(eq(tasks.id, 'task_456'));
 ```
 
 ### Deleting Data
@@ -167,10 +153,7 @@ const db = getDatabase();
 const [{ count: taskCount }] = await db
   .select({ count: count() })
   .from(tasks)
-  .where(and(
-    eq(tasks.userId, 'user_123'),
-    eq(tasks.deleted, false)
-  ));
+  .where(and(eq(tasks.userId, 'user_123'), eq(tasks.deleted, false)));
 
 // Sum values
 const [{ total }] = await db
@@ -183,20 +166,23 @@ const [{ total }] = await db
 
 ```typescript
 import {
-  users,              // User accounts
-  roles,              // Subscription roles with feature flags
-  userSubscriptions,  // User subscription details
-  subscriptionHistory,// Subscription change history
-  workspaces,         // Workspaces (Personal, Work, Team)
-  workspaceMembers,   // Team collaboration
-  projects,           // Projects within workspaces
-  taskTypes,          // User-defined task categories
-  tasks,              // Tasks with sub-task support
-  timeEntries,        // Time tracking entries
-  scheduledEvents,    // Calendar time blocks
-  pointsLedger,       // Points history
-  dailySummaries,     // Pre-computed daily stats
-  userPreferences,    // User settings
+  users, // User accounts
+  plans, // Subscription plans (tiers)
+  features, // Feature catalog (boolean + limit keys)
+  planFeatures, // Plan entitlements
+  planPrices, // List / Stripe-linked prices
+  userSubscriptions, // User subscription details
+  subscriptionHistory, // Subscription change history
+  workspaces, // Workspaces (Personal, Work, Team)
+  workspaceMembers, // Team collaboration
+  projects, // Projects within workspaces
+  taskTypes, // User-defined task categories
+  tasks, // Tasks with sub-task support
+  timeEntries, // Time tracking entries
+  scheduledEvents, // Calendar time blocks
+  pointsLedger, // Points history
+  dailySummaries, // Pre-computed daily stats
+  userPreferences, // User settings
 } from '@stridetime/db';
 ```
 
@@ -206,16 +192,15 @@ All enums are exported as const objects with TypeScript types:
 
 ```typescript
 import {
-  SubscriptionStatus,  // ACTIVE, CANCELED, PAST_DUE, TRIAL
-  BillingPeriod,       // MONTHLY, YEARLY, LIFETIME
-  WorkspaceType,       // PERSONAL, WORK, TEAM
+  SubscriptionStatus, // ACTIVE, CANCELED, PAST_DUE, TRIAL
+  BillingPeriod, // MONTHLY, YEARLY, LIFETIME
+  WorkspaceType, // PERSONAL, WORK, TEAM
   WorkspaceMemberRole, // OWNER, ADMIN, MEMBER, VIEWER
-  TaskDifficulty,      // TRIVIAL, EASY, MEDIUM, HARD, EXTREME
-  TaskStatus,          // BACKLOG, PLANNED, IN_PROGRESS, COMPLETED, ARCHIVED
-  ScheduledEventType,  // TASK, MEETING, BREAK, OTHER
-  Theme,               // LIGHT, DARK, SYSTEM
-  PlanningMode,        // WEEKLY, DAILY, TIME_BLOCKER, MINIMAL
-  PointsReason,        // WORK_SESSION, TASK_COMPLETED, EFFICIENCY_BONUS, ...
+  TaskDifficulty, // TRIVIAL, EASY, MEDIUM, HARD, EXTREME
+  TaskStatus, // BACKLOG, PLANNED, IN_PROGRESS, COMPLETED, ARCHIVED
+  ScheduledEventType, // TASK, MEETING, BREAK, OTHER
+  Theme, // LIGHT, DARK, SYSTEM
+  PointsReason, // WORK_SESSION, TASK_COMPLETED, EFFICIENCY_BONUS, ...
 } from '@stridetime/db';
 
 // Usage
@@ -256,21 +241,37 @@ All Drizzle operators are re-exported for convenience:
 ```typescript
 import {
   // Comparison
-  eq, ne, gt, gte, lt, lte,
+  eq,
+  ne,
+  gt,
+  gte,
+  lt,
+  lte,
   // Logical
-  and, or, not,
+  and,
+  or,
+  not,
   // Arrays
-  inArray, notInArray,
+  inArray,
+  notInArray,
   // Null checks
-  isNull, isNotNull,
+  isNull,
+  isNotNull,
   // Other
-  between, like, ilike,
+  between,
+  like,
+  ilike,
   // Raw SQL (escape hatch)
   sql,
   // Ordering
-  asc, desc,
+  asc,
+  desc,
   // Aggregations
-  count, sum, avg, min, max,
+  count,
+  sum,
+  avg,
+  min,
+  max,
 } from '@stridetime/db';
 ```
 

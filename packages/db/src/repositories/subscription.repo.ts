@@ -25,7 +25,7 @@ function toDomain(row: SubscriptionRow): UserSubscription {
   return {
     id: row.id,
     userId: row.userId,
-    roleId: row.roleId,
+    planId: row.planId,
     status: row.status,
     priceCents: row.priceCents,
     currency: row.currency,
@@ -47,7 +47,7 @@ function toDbInsert(sub: Omit<UserSubscription, 'id'>): Omit<NewSubscriptionRow,
   const timestamp = now();
   return {
     userId: sub.userId,
-    roleId: sub.roleId,
+    planId: sub.planId,
     status: sub.status,
     priceCents: sub.priceCents,
     currency: sub.currency,
@@ -100,9 +100,9 @@ export class SubscriptionRepository {
     return rows.map(toDomain);
   }
 
-  async findByRole(db: StrideDatabase, roleId: string): Promise<UserSubscription[]> {
+  async findByPlan(db: StrideDatabase, planId: string): Promise<UserSubscription[]> {
     const rows = await db.query.userSubscriptionsTable.findMany({
-      where: eq(userSubscriptionsTable.roleId, roleId),
+      where: eq(userSubscriptionsTable.planId, planId),
     });
     return rows.map(toDomain);
   }

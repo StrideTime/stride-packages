@@ -29,10 +29,12 @@ class SyncProjectRepo {
     const projectData = {
       id,
       workspaceId: project.workspaceId,
-      userId: project.userId,
+      createdByUserId: project.createdByUserId,
       name: project.name,
       description: project.description,
       color: project.color,
+      icon: project.icon,
+      status: project.status,
       completionPercentage: project.completionPercentage,
       createdAt: now,
       updatedAt: now,
@@ -66,7 +68,11 @@ class SyncProjectRepo {
   }
 
   findByUserIdSync(db: any, userId: string): Project[] {
-    const results = db.select().from(projectsTable).where(eq(projectsTable.userId, userId)).all();
+    const results = db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.createdByUserId, userId))
+      .all();
 
     return results as Project[];
   }
@@ -84,18 +90,23 @@ class SyncTaskRepo {
       id,
       userId: task.userId,
       projectId: task.projectId,
-      parentTaskId: task.parentTaskId,
       title: task.title,
       description: task.description,
       difficulty: task.difficulty,
       progress: task.progress,
       status: task.status,
+      assigneeUserId: task.assigneeUserId,
+      teamId: task.teamId,
       estimatedMinutes: task.estimatedMinutes,
       maxMinutes: task.maxMinutes,
       actualMinutes: task.actualMinutes,
       plannedForDate: task.plannedForDate,
       dueDate: task.dueDate,
       taskTypeId: task.taskTypeId,
+      checklistItems: task.checklistItems,
+      tags: task.tags,
+      externalId: task.externalId,
+      externalSource: task.externalSource,
       completedAt: task.completedAt,
       createdAt: now,
       updatedAt: now,
@@ -135,7 +146,9 @@ describe('Transactions', () => {
 
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -147,18 +160,23 @@ describe('Transactions', () => {
       const task: Omit<Task, 'id'> = {
         userId: 'user_1',
         projectId: createdProject.id,
-        parentTaskId: null,
         title: 'Test Task',
         description: null,
         difficulty: 'MEDIUM',
         progress: 0,
         status: 'BACKLOG',
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
@@ -179,7 +197,9 @@ describe('Transactions', () => {
       // Create project first
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -192,18 +212,23 @@ describe('Transactions', () => {
       const task: Omit<Task, 'id'> = {
         userId: 'user_1',
         projectId: createdProject.id,
-        parentTaskId: null,
         title: 'Test Task',
         description: null,
         difficulty: 'MEDIUM',
         progress: 0,
         status: 'BACKLOG',
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
@@ -218,7 +243,9 @@ describe('Transactions', () => {
     it('can query across repositories', async () => {
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -230,18 +257,23 @@ describe('Transactions', () => {
       const task: Omit<Task, 'id'> = {
         userId: 'user_1',
         projectId: createdProject.id,
-        parentTaskId: null,
         title: 'Test Task',
         description: null,
         difficulty: 'MEDIUM',
         progress: 0,
         status: 'BACKLOG',
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
@@ -262,7 +294,9 @@ describe('Transactions', () => {
       // This ensures consistent API across all repo methods
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -292,7 +326,9 @@ describe('Transactions', () => {
       // Using sync repositories to mimic the async behavior in a testable way
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Production Sim Project',
         description: null,
         color: null,
@@ -302,7 +338,6 @@ describe('Transactions', () => {
       const task: Omit<Task, 'id'> = {
         userId: 'user_1',
         projectId: '', // Will be set after project creation
-        parentTaskId: null,
         title: 'Production Sim Task',
         description: null,
         difficulty: 'MEDIUM',
@@ -314,6 +349,12 @@ describe('Transactions', () => {
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        assigneeUserId: null,
+        teamId: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
@@ -337,7 +378,9 @@ describe('Transactions', () => {
       // Test rollback simulation with sync operations
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Rollback Sim Project',
         description: null,
         color: null,
@@ -363,96 +406,87 @@ describe('Transactions', () => {
     });
 
     it('simulates complex nested operations in transaction', () => {
-      // Test complex operations that mirror production scenarios
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Complex Sim Project',
         description: null,
         color: null,
         completionPercentage: 0,
       };
 
-      const parentTask: Omit<Task, 'id'> = {
+      const taskA: Omit<Task, 'id'> = {
         userId: 'user_1',
-        projectId: '', // Will be set after project creation
-        parentTaskId: null,
-        title: 'Parent Task',
+        projectId: '',
+        title: 'Task A',
         description: null,
         difficulty: 'MEDIUM',
         progress: 50,
         status: 'IN_PROGRESS',
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
-      const subTask: Omit<Task, 'id'> = {
+      const taskB: Omit<Task, 'id'> = {
         userId: 'user_1',
-        projectId: '', // Will be set after project creation
-        parentTaskId: '', // Will be set after parent task creation
-        title: 'Sub Task',
+        projectId: '',
+        title: 'Task B',
         description: null,
         difficulty: 'EASY',
         progress: 25,
         status: 'BACKLOG',
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
       };
 
-      // Simulate production transaction with nested operations
       db.transaction(tx => {
         const createdProject = syncProjectRepo.createSync(tx, project);
-
-        // Create parent task
-        const createdParentTask = syncTaskRepo.createSync(tx, {
-          ...parentTask,
-          projectId: createdProject.id,
-        });
-
-        // Create sub-task referencing parent
-        syncTaskRepo.createSync(tx, {
-          ...subTask,
-          projectId: createdProject.id,
-          parentTaskId: createdParentTask.id,
-        });
-
-        // Update project completion based on tasks
+        syncTaskRepo.createSync(tx, { ...taskA, projectId: createdProject.id });
+        syncTaskRepo.createSync(tx, { ...taskB, projectId: createdProject.id });
         syncProjectRepo.updateSync(tx, createdProject.id, {
-          completionPercentage: 37.5, // Average of 50 and 25
+          completionPercentage: 37,
         });
       });
 
-      // Verify all operations were committed
       const projects = syncProjectRepo.findByUserIdSync(db, 'user_1');
       const tasks = syncTaskRepo.findByUserIdSync(db, 'user_1');
 
       expect(projects).toHaveLength(1);
       expect(tasks).toHaveLength(2);
-      expect(projects[0].completionPercentage).toBe(37.5);
-
-      const parentTaskResult = tasks.find(t => t.title === 'Parent Task');
-      const subTaskResult = tasks.find(t => t.title === 'Sub Task');
-
-      expect(parentTaskResult).toBeDefined();
-      expect(subTaskResult).toBeDefined();
-      expect(subTaskResult?.parentTaskId).toBe(parentTaskResult?.id);
+      expect(projects[0].completionPercentage).toBe(37);
     });
 
     it('demonstrates production transaction pattern', () => {
       // This shows the exact pattern that would be used in production
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Production Pattern Project',
         description: null,
         color: null,
@@ -490,7 +524,9 @@ describe('Transactions', () => {
 
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -519,7 +555,9 @@ describe('Transactions', () => {
       const projectData = {
         id: 'test-project-id',
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -544,7 +582,9 @@ describe('Transactions', () => {
       const projectData = {
         id: 'test-rollback-project',
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Rollback Test Project',
         description: null,
         color: null,
@@ -575,7 +615,9 @@ describe('Transactions', () => {
       const projectData = {
         id: 'test-multi-project',
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Multi-Op Project',
         description: null,
         color: null,
@@ -589,18 +631,23 @@ describe('Transactions', () => {
         id: 'test-multi-task',
         userId: 'user_1',
         projectId: projectData.id,
-        parentTaskId: null,
         title: 'Multi-Op Task',
         description: null,
         difficulty: 'MEDIUM' as const,
         progress: 75,
         status: 'IN_PROGRESS' as const,
+        assigneeUserId: null,
+        teamId: null,
         estimatedMinutes: null,
         maxMinutes: null,
         actualMinutes: 0,
         plannedForDate: null,
         dueDate: null,
         taskTypeId: null,
+        checklistItems: null,
+        tags: null,
+        externalId: null,
+        externalSource: null,
         completedAt: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -637,7 +684,9 @@ describe('Transactions', () => {
       const projectData = {
         id: 'test-project-id',
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Test Project',
         description: null,
         color: null,
@@ -672,7 +721,9 @@ describe('Transactions', () => {
 
       const project: Omit<Project, 'id'> = {
         workspaceId: 'workspace_1',
-        userId: 'user_1',
+        createdByUserId: 'user_1',
+        icon: null,
+        status: 'ACTIVE',
         name: 'Production vs Test',
         description: null,
         color: null,

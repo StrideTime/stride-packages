@@ -207,7 +207,6 @@ describe('TaskRepository', () => {
       const { id, createdAt, updatedAt, deleted, ...taskInput } = createMockTask({
         userId: 'user_1',
         projectId: 'project_1',
-        parentTaskId: 'parent_1',
         title: 'Mapper Test',
         description: 'Testing mapper',
         difficulty: 'HARD',
@@ -219,6 +218,7 @@ describe('TaskRepository', () => {
         plannedForDate: '2024-01-15',
         dueDate: '2024-01-20',
         taskTypeId: 'type_1',
+        checklistItems: JSON.stringify([{ id: 'c1', title: 'Step', completed: false }]),
         completedAt: null,
       });
 
@@ -227,7 +227,7 @@ describe('TaskRepository', () => {
       // All domain fields should match
       expect(created.userId).toBe(taskInput.userId);
       expect(created.projectId).toBe(taskInput.projectId);
-      expect(created.parentTaskId).toBe(taskInput.parentTaskId);
+      expect(created.checklistItems).toBe(taskInput.checklistItems);
       expect(created.title).toBe(taskInput.title);
       expect(created.description).toBe(taskInput.description);
       expect(created.difficulty).toBe(taskInput.difficulty);

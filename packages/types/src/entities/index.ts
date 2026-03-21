@@ -26,5 +26,6 @@ export type { PlanFeature } from './PlanFeature';
 export type { PlanPrice } from './PlanPrice';
 export type { AdminAuditEntry } from './AdminAuditEntry';
 export type { WorkspaceUserPreferences } from './WorkspaceUserPreferences';
+export type { WorkspaceUserStatus } from './WorkspaceUserStatus';
 export type { WorkspaceStatus } from './WorkspaceStatus';
 export type { ProjectTeam } from './ProjectTeam';

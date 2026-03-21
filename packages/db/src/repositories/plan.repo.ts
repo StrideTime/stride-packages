@@ -1,13 +1,12 @@
 /**
  * Plan Repository
  *
- * Provides CRUD operations for plans (using the refactored roles table) and plan_features.
- * NOTE: The roles table is refactored to serve as the plans table (SQL table name stays 'roles').
+ * Provides CRUD operations for plans and plan_features.
  */
 
 import { eq, and, inArray } from 'drizzle-orm';
 import type { Plan, PlanFeature } from '@stridetime/types';
-import { rolesTable, planFeaturesTable, featuresTable } from '../drizzle/schema';
+import { plansTable, planFeaturesTable, featuresTable } from '../drizzle/schema';
 import type { StrideDatabase } from '../db/client';
 import { generateId, now } from '../db/utils';
 
@@ -15,8 +14,8 @@ import { generateId, now } from '../db/utils';
 // DB ROW TYPES
 // ============================================================================
 
-type PlanRow = typeof rolesTable.$inferSelect;
-type NewPlanRow = typeof rolesTable.$inferInsert;
+type PlanRow = typeof plansTable.$inferSelect;
+type NewPlanRow = typeof plansTable.$inferInsert;
 type PlanFeatureRow = typeof planFeaturesTable.$inferSelect;
 type NewPlanFeatureRow = typeof planFeaturesTable.$inferInsert;
 
@@ -58,7 +57,7 @@ function toDbUpdate(plan: Partial<Plan>): Partial<PlanRow> {
 function planFeatureToDomain(row: PlanFeatureRow): PlanFeature {
   return {
     id: row.id,
-    roleId: row.roleId,
+    planId: row.planId,
     featureId: row.featureId,
     enabled: row.enabled,
     limitValue: row.limitValue,
@@ -68,7 +67,7 @@ function planFeatureToDomain(row: PlanFeatureRow): PlanFeature {
 function planFeatureToDbInsert(pf: Omit<PlanFeature, 'id'>): Omit<NewPlanFeatureRow, 'id'> {
   const timestamp = now();
   return {
-    roleId: pf.roleId,
+    planId: pf.planId,
     featureId: pf.featureId,
     enabled: pf.enabled,
     limitValue: pf.limitValue,
@@ -94,15 +93,15 @@ export class PlanRepository {
   // ============================================================================
 
   async findById(db: StrideDatabase, id: string): Promise<Plan | null> {
-    const row = await db.query.rolesTable.findFirst({
-      where: eq(rolesTable.id, id),
+    const row = await db.query.plansTable.findFirst({
+      where: eq(plansTable.id, id),
     });
     return row ? toDomain(row) : null;
   }
 
   async findAll(db: StrideDatabase, includeInactive = false): Promise<Plan[]> {
-    const rows = await db.query.rolesTable.findMany({
-      where: includeInactive ? undefined : eq(rolesTable.isActive, true),
+    const rows = await db.query.plansTable.findMany({
+      where: includeInactive ? undefined : eq(plansTable.isActive, true),
     });
     return rows.map(toDomain);
   }
@@ -115,7 +114,7 @@ export class PlanRepository {
     const id = generateId();
     const dbPlan = toDbInsert(plan);
 
-    await db.insert(rolesTable).values({
+    await db.insert(plansTable).values({
       id,
       ...dbPlan,
     });
@@ -130,14 +129,14 @@ export class PlanRepository {
   async update(db: StrideDatabase, id: string, updates: Partial<Plan>): Promise<void> {
     const dbUpdates = toDbUpdate(updates);
 
-    await db.update(rolesTable).set(dbUpdates).where(eq(rolesTable.id, id));
+    await db.update(plansTable).set(dbUpdates).where(eq(plansTable.id, id));
   }
 
   async deactivate(db: StrideDatabase, id: string): Promise<void> {
     await db
-      .update(rolesTable)
+      .update(plansTable)
       .set({ isActive: false, updatedAt: now() })
-      .where(eq(rolesTable.id, id));
+      .where(eq(plansTable.id, id));
   }
 
   // ============================================================================
@@ -146,7 +145,7 @@ export class PlanRepository {
 
   async getPlanFeatures(db: StrideDatabase, planId: string): Promise<PlanFeature[]> {
     const rows = await db.query.planFeaturesTable.findMany({
-      where: eq(planFeaturesTable.roleId, planId),
+      where: eq(planFeaturesTable.planId, planId),
     });
     return rows.map(planFeatureToDomain);
   }
@@ -160,7 +159,7 @@ export class PlanRepository {
   ): Promise<void> {
     // Check if the plan-feature entry already exists
     const existing = await db.query.planFeaturesTable.findFirst({
-      where: and(eq(planFeaturesTable.roleId, planId), eq(planFeaturesTable.featureId, featureId)),
+      where: and(eq(planFeaturesTable.planId, planId), eq(planFeaturesTable.featureId, featureId)),
     });
 
     if (existing) {
@@ -174,7 +173,7 @@ export class PlanRepository {
       // Insert new entry
       const id = generateId();
       const dbPlanFeature = planFeatureToDbInsert({
-        roleId: planId,
+        planId,
         featureId,
         enabled,
         limitValue: limitValue !== undefined ? limitValue : null,
@@ -189,7 +188,7 @@ export class PlanRepository {
   async removePlanFeature(db: StrideDatabase, planId: string, featureId: string): Promise<void> {
     await db
       .delete(planFeaturesTable)
-      .where(and(eq(planFeaturesTable.roleId, planId), eq(planFeaturesTable.featureId, featureId)));
+      .where(and(eq(planFeaturesTable.planId, planId), eq(planFeaturesTable.featureId, featureId)));
   }
 
   async getPlansWithFeature(db: StrideDatabase, featureKey: string): Promise<Plan[]> {
@@ -212,9 +211,9 @@ export class PlanRepository {
     }
 
     // Fetch the plans
-    const planIds = planFeatures.map(pf => pf.roleId);
-    const rows = await db.query.rolesTable.findMany({
-      where: inArray(rolesTable.id, planIds),
+    const planIds = planFeatures.map(pf => pf.planId);
+    const rows = await db.query.plansTable.findMany({
+      where: inArray(plansTable.id, planIds),
     });
 
     return rows.map(toDomain);

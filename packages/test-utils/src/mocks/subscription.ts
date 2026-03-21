@@ -13,7 +13,7 @@ export function createMockSubscription(
   return {
     id: 'sub-123',
     userId: 'user-123',
-    roleId: 'role-123',
+    planId: 'plan-123',
     status: 'ACTIVE',
     priceCents: 999,
     currency: 'USD',

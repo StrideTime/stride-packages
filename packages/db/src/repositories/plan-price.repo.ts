@@ -24,7 +24,7 @@ type NewPlanPriceRow = typeof planPricesTable.$inferInsert;
 function toDomain(row: PlanPriceRow): PlanPrice {
   return {
     id: row.id,
-    roleId: row.roleId,
+    planId: row.planId,
     billingPeriod: row.billingPeriod,
     priceCents: row.priceCents,
     currency: row.currency,
@@ -36,7 +36,7 @@ function toDomain(row: PlanPriceRow): PlanPrice {
 function toDbInsert(price: Omit<PlanPrice, 'id'>): Omit<NewPlanPriceRow, 'id'> {
   const timestamp = now();
   return {
-    roleId: price.roleId,
+    planId: price.planId,
     billingPeriod: price.billingPeriod,
     priceCents: price.priceCents,
     currency: price.currency,
@@ -66,21 +66,21 @@ export class PlanPriceRepository {
     return row ? toDomain(row) : null;
   }
 
-  async findByPlan(db: StrideDatabase, roleId: string): Promise<PlanPrice[]> {
+  async findByPlan(db: StrideDatabase, planId: string): Promise<PlanPrice[]> {
     const rows = await db.query.planPricesTable.findMany({
-      where: eq(planPricesTable.roleId, roleId),
+      where: eq(planPricesTable.planId, planId),
     });
     return rows.map(toDomain);
   }
 
   async findByPlanAndPeriod(
     db: StrideDatabase,
-    roleId: string,
+    planId: string,
     billingPeriod: string
   ): Promise<PlanPrice | null> {
     const row = await db.query.planPricesTable.findFirst({
       where: and(
-        eq(planPricesTable.roleId, roleId),
+        eq(planPricesTable.planId, planId),
         eq(planPricesTable.billingPeriod, billingPeriod as any)
       ),
     });

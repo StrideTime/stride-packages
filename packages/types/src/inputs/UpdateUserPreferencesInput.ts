@@ -1,9 +1,9 @@
 import type { Theme } from '../enums/Theme';
-import type { PlanningMode } from '../enums/PlanningMode';
+import type { FontSize } from '../enums/FontSize';
+import type { Density } from '../enums/Density';
 
 export interface UpdateUserPreferencesInput {
   theme?: Theme;
-  planningMode?: PlanningMode;
   checkInFrequency?: number;
   checkInEnabled?: boolean;
   endOfDaySummaryTime?: string;
@@ -12,4 +12,12 @@ export interface UpdateUserPreferencesInput {
   autoPauseEnabled?: boolean;
   breakReminderEnabled?: boolean;
   breakReminderMinutes?: number;
+  accentColor?: string | null;
+  fontSize?: FontSize;
+  density?: Density;
+  keyboardShortcuts?: string | null;
+  soundEnabled?: boolean;
+  soundVolume?: number;
+  enableHapticFeedback?: boolean;
+  autoStartTimer?: boolean;
 }

@@ -5,7 +5,7 @@
  * All methods accept a DB instance to support transactions.
  */
 
-import { eq, and, isNull, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc } from 'drizzle-orm';
 import { toCompilableQuery } from '@powersync/drizzle-driver';
 import type { Task, TaskStatus } from '@stridetime/types';
 import { tasksTable } from '../drizzle/schema';
@@ -25,11 +25,9 @@ function toDomain(row: TaskRow): Task {
     id: row.id,
     userId: row.userId,
     projectId: row.projectId,
-    parentTaskId: row.parentTaskId,
     title: row.title,
     description: row.description,
     difficulty: row.difficulty,
-    priority: row.priority,
     progress: row.progress,
     status: row.status,
     assigneeUserId: row.assigneeUserId,
@@ -40,7 +38,7 @@ function toDomain(row: TaskRow): Task {
     plannedForDate: row.plannedForDate,
     dueDate: row.dueDate,
     taskTypeId: row.taskTypeId,
-    displayOrder: row.displayOrder,
+    checklistItems: row.checklistItems,
     tags: row.tags,
     externalId: row.externalId,
     externalSource: row.externalSource,
@@ -62,11 +60,9 @@ function toDbInsert(
   return {
     userId: task.userId,
     projectId: task.projectId,
-    parentTaskId: task.parentTaskId,
     title: task.title,
     description: task.description,
     difficulty: task.difficulty,
-    priority: task.priority,
     progress: task.progress,
     status: task.status,
     assigneeUserId: task.assigneeUserId,
@@ -77,7 +73,7 @@ function toDbInsert(
     plannedForDate: task.plannedForDate,
     dueDate: task.dueDate,
     taskTypeId: task.taskTypeId,
-    displayOrder: task.displayOrder,
+    checklistItems: task.checklistItems,
     tags: task.tags,
     externalId: task.externalId,
     externalSource: task.externalSource,
@@ -139,33 +135,6 @@ export class TaskRepository {
   }
 
   /**
-   * Find all subtasks of a parent task.
-   * Excludes deleted tasksTable.
-   */
-  async findSubtasks(db: StrideDatabase, parentTaskId: string): Promise<Task[]> {
-    const rows = await db.query.tasksTable.findMany({
-      where: and(eq(tasksTable.parentTaskId, parentTaskId), eq(tasksTable.deleted, false)),
-      orderBy: (_tasks, { asc }) => [asc(tasksTable.createdAt)],
-    });
-    return rows.map(toDomain);
-  }
-
-  /**
-   * Find all top-level tasks (no parent) for a user.
-   */
-  async findRootTasks(db: StrideDatabase, userId: string): Promise<Task[]> {
-    const rows = await db.query.tasksTable.findMany({
-      where: and(
-        eq(tasksTable.userId, userId),
-        isNull(tasksTable.parentTaskId),
-        eq(tasksTable.deleted, false)
-      ),
-      orderBy: (_tasks, { desc }) => [desc(tasksTable.createdAt)],
-    });
-    return rows.map(toDomain);
-  }
-
-  /**
    * Find tasks planned for a specific date.
    */
   async findByPlannedDate(db: StrideDatabase, userId: string, date: string): Promise<Task[]> {
@@ -208,14 +177,6 @@ export class TaskRepository {
       orderBy: (_tasks, { desc }) => [desc(tasksTable.completedAt)],
     });
     return rows.map(toDomain);
-  }
-
-  /**
-   * Find all subtasks of a parent task (alias for findSubtasks).
-   * Excludes deleted tasksTable.
-   */
-  async findByParentId(db: StrideDatabase, parentTaskId: string): Promise<Task[]> {
-    return this.findSubtasks(db, parentTaskId);
   }
 
   /**
@@ -319,7 +280,7 @@ export class TaskRepository {
             eq(tasksTable.deleted, false)
           )
         )
-        .orderBy(asc(tasksTable.displayOrder))
+        .orderBy(asc(tasksTable.createdAt))
     );
   }
 

@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../../primitives/Button";
-import { Badge } from "../../../primitives/Badge";
 import type { FreshSection, TrayFreshViewProps } from "./TrayFreshView.types";
 
 export function TrayFreshView({
@@ -98,14 +97,6 @@ export function TrayFreshView({
                         {t.title}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        {t.priority && t.priority !== "NONE" && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs capitalize px-1.5 py-0 h-4 font-medium"
-                          >
-                            {t.priority.toLowerCase()}
-                          </Badge>
-                        )}
                         {t.estimatedMinutes && (
                           <span className="text-xs text-muted-foreground">
                             {t.estimatedMinutes}min
@@ -203,14 +194,6 @@ export function TrayFreshView({
                           <Play className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         </div>
                         <div className="flex items-center gap-2">
-                          {t.priority && t.priority !== "NONE" && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs capitalize px-1.5 py-0 h-4 border-red-500/30 text-red-500 font-medium"
-                            >
-                              {t.priority.toLowerCase()}
-                            </Badge>
-                          )}
                           {t.estimatedMinutes && (
                             <span className="text-xs text-muted-foreground">
                               {t.estimatedMinutes}min

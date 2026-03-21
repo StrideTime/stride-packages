@@ -11,7 +11,7 @@ export function createMockProject(overrides: Partial<Project> = {}): Project {
   return {
     id: 'project-123',
     workspaceId: 'workspace-123',
-    userId: 'user-123',
+    createdByUserId: 'user-123',
     name: 'Test Project',
     description: null,
     color: '#3b82f6',

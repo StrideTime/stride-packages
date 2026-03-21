@@ -31,7 +31,7 @@ import { SupabaseConnector } from './connector';
 const drizzleSchema = {
   // Tables
   usersTable: schema.usersTable,
-  rolesTable: schema.rolesTable,
+  plansTable: schema.plansTable,
   featuresTable: schema.featuresTable,
   planFeaturesTable: schema.planFeaturesTable,
   planPricesTable: schema.planPricesTable,
@@ -52,13 +52,18 @@ const drizzleSchema = {
   teamMembersTable: schema.teamMembersTable,
   projectTeamsTable: schema.projectTeamsTable,
   goalsTable: schema.goalsTable,
+  habitsTable: schema.habitsTable,
+  habitCompletionsTable: schema.habitCompletionsTable,
   breaksTable: schema.breaksTable,
   workSessionsTable: schema.workSessionsTable,
+  focusSettingsTable: schema.focusSettingsTable,
+  focusSessionsTable: schema.focusSessionsTable,
   workspaceUserPreferencesTable: schema.workspaceUserPreferencesTable,
   workspaceStatusesTable: schema.workspaceStatusesTable,
+  workspaceUserStatusTable: schema.workspaceUserStatusTable,
   // Relations
   usersRelations: schema.usersRelations,
-  rolesRelations: schema.rolesRelations,
+  plansRelations: schema.plansRelations,
   featuresRelations: schema.featuresRelations,
   planFeaturesRelations: schema.planFeaturesRelations,
   planPricesRelations: schema.planPricesRelations,
@@ -79,10 +84,15 @@ const drizzleSchema = {
   teamMembersRelations: schema.teamMembersRelations,
   projectTeamsRelations: schema.projectTeamsRelations,
   goalsRelations: schema.goalsRelations,
+  habitsRelations: schema.habitsRelations,
+  habitCompletionsRelations: schema.habitCompletionsRelations,
   breaksRelations: schema.breaksRelations,
   workSessionsRelations: schema.workSessionsRelations,
+  focusSettingsRelations: schema.focusSettingsRelations,
+  focusSessionsRelations: schema.focusSessionsRelations,
   workspaceUserPreferencesRelations: schema.workspaceUserPreferencesRelations,
   workspaceStatusesRelations: schema.workspaceStatusesRelations,
+  workspaceUserStatusRelations: schema.workspaceUserStatusRelations,
 };
 
 /**

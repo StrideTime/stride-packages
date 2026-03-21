@@ -37,7 +37,7 @@ export function createTestDb(): TestDatabase {
       deleted INTEGER NOT NULL DEFAULT 0
     );
 
-    CREATE TABLE IF NOT EXISTS roles (
+    CREATE TABLE IF NOT EXISTS plans (
       id TEXT PRIMARY KEY,
       display_name TEXT NOT NULL,
       description TEXT,
@@ -66,7 +66,7 @@ export function createTestDb(): TestDatabase {
     CREATE TABLE IF NOT EXISTS projects (
       id TEXT PRIMARY KEY,
       workspace_id TEXT NOT NULL,
-      user_id TEXT NOT NULL,
+      created_by_user_id TEXT,
       name TEXT NOT NULL,
       description TEXT,
       color TEXT,
@@ -96,11 +96,9 @@ export function createTestDb(): TestDatabase {
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
       project_id TEXT NOT NULL,
-      parent_task_id TEXT,
       title TEXT NOT NULL,
       description TEXT,
       difficulty TEXT NOT NULL,
-      priority TEXT NOT NULL DEFAULT 'NONE',
       progress INTEGER NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'BACKLOG',
       assignee_user_id TEXT,
@@ -111,7 +109,7 @@ export function createTestDb(): TestDatabase {
       planned_for_date TEXT,
       due_date TEXT,
       task_type_id TEXT,
-      display_order INTEGER NOT NULL DEFAULT 0,
+      checklist_items TEXT,
       tags TEXT,
       external_id TEXT,
       external_source TEXT,
@@ -147,13 +145,13 @@ export function createTestDb(): TestDatabase {
       efficiency_rating REAL NOT NULL DEFAULT 0.0,
       standout_moment TEXT,
       created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
       UNIQUE(user_id, date)
     );
 
     CREATE TABLE IF NOT EXISTS user_preferences (
       user_id TEXT PRIMARY KEY,
       theme TEXT NOT NULL DEFAULT 'SYSTEM',
-      planning_mode TEXT NOT NULL DEFAULT 'WEEKLY',
       check_in_frequency INTEGER NOT NULL DEFAULT 30,
       check_in_enabled INTEGER NOT NULL DEFAULT 1,
       end_of_day_summary_time TEXT NOT NULL DEFAULT '17:00',
@@ -162,16 +160,15 @@ export function createTestDb(): TestDatabase {
       auto_pause_enabled INTEGER NOT NULL DEFAULT 1,
       break_reminder_enabled INTEGER NOT NULL DEFAULT 1,
       break_reminder_minutes INTEGER NOT NULL DEFAULT 90,
-      working_hours_start TEXT NOT NULL DEFAULT '09:00',
-      working_hours_end TEXT NOT NULL DEFAULT '17:00',
-      working_days TEXT NOT NULL DEFAULT '[1,2,3,4,5]',
       accent_color TEXT,
       font_size TEXT NOT NULL DEFAULT 'MEDIUM',
       density TEXT NOT NULL DEFAULT 'COMFORTABLE',
       keyboard_shortcuts TEXT,
-      enable_sound_effects INTEGER NOT NULL DEFAULT 1,
+      sound_enabled INTEGER NOT NULL DEFAULT 1,
+      sound_volume INTEGER NOT NULL DEFAULT 80,
       enable_haptic_feedback INTEGER NOT NULL DEFAULT 0,
       auto_start_timer INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
 
@@ -216,9 +213,23 @@ export function createTestDb(): TestDatabase {
       break_reminders INTEGER NOT NULL DEFAULT 1,
       daily_summary INTEGER NOT NULL DEFAULT 1,
       weekly_schedule TEXT,
+      working_hours_start TEXT NOT NULL DEFAULT '09:00',
+      working_hours_end TEXT NOT NULL DEFAULT '17:00',
+      working_days TEXT NOT NULL DEFAULT '[1,2,3,4,5]',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      deleted INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(user_id, workspace_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS workspace_user_status (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      workspace_id TEXT NOT NULL,
+      status TEXT NOT NULL,
+      status_text TEXT,
+      active_task_id TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
       UNIQUE(user_id, workspace_id)
     );
 
@@ -286,6 +297,45 @@ export function createTestDb(): TestDatabase {
       deleted INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS habits (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      icon TEXT NOT NULL,
+      schedule_type TEXT NOT NULL,
+      schedule_days_of_week TEXT,
+      schedule_start_date TEXT NOT NULL,
+      schedule_end_date TEXT,
+      target_count INTEGER,
+      tracking_type TEXT NOT NULL,
+      unit TEXT,
+      reminder_enabled INTEGER NOT NULL DEFAULT 0,
+      reminder_time TEXT,
+      reminder_message TEXT,
+      display_order INTEGER NOT NULL DEFAULT 0,
+      archived_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS habit_completions (
+      id TEXT PRIMARY KEY,
+      habit_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      completed INTEGER NOT NULL DEFAULT 0,
+      value INTEGER,
+      completed_at TEXT,
+      notes TEXT,
+      mood INTEGER,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(habit_id, user_id, date)
+    );
+
     CREATE TABLE IF NOT EXISTS breaks (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -308,6 +358,43 @@ export function createTestDb(): TestDatabase {
       total_focus_minutes INTEGER NOT NULL DEFAULT 0,
       total_break_minutes INTEGER NOT NULL DEFAULT 0,
       date TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS focus_settings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      pomodoro_mode_enabled INTEGER NOT NULL DEFAULT 0,
+      focus_duration INTEGER NOT NULL DEFAULT 25,
+      short_break_duration INTEGER NOT NULL DEFAULT 5,
+      long_break_duration INTEGER NOT NULL DEFAULT 15,
+      sessions_before_long_break INTEGER NOT NULL DEFAULT 4,
+      auto_start_breaks INTEGER NOT NULL DEFAULT 0,
+      auto_start_focus INTEGER NOT NULL DEFAULT 0,
+      sound_enabled INTEGER NOT NULL DEFAULT 1,
+      sound_volume INTEGER NOT NULL DEFAULT 80,
+      notifications_enabled INTEGER NOT NULL DEFAULT 1,
+      ticking_sound_enabled INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS focus_sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      workspace_id TEXT,
+      task_id TEXT,
+      task_name TEXT,
+      type TEXT NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      started_at TEXT NOT NULL,
+      ended_at TEXT,
+      completed INTEGER NOT NULL DEFAULT 0,
+      interrupted INTEGER NOT NULL DEFAULT 0,
+      interruptions INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       deleted INTEGER NOT NULL DEFAULT 0
@@ -355,18 +442,18 @@ export function createTestDb(): TestDatabase {
 
     CREATE TABLE IF NOT EXISTS plan_features (
       id TEXT PRIMARY KEY,
-      role_id TEXT NOT NULL,
+      plan_id TEXT NOT NULL,
       feature_id TEXT NOT NULL,
       enabled INTEGER NOT NULL DEFAULT 1,
       limit_value INTEGER,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      UNIQUE(role_id, feature_id)
+      UNIQUE(plan_id, feature_id)
     );
 
     CREATE TABLE IF NOT EXISTS plan_prices (
       id TEXT PRIMARY KEY,
-      role_id TEXT NOT NULL,
+      plan_id TEXT NOT NULL,
       billing_period TEXT NOT NULL,
       price_cents INTEGER NOT NULL,
       currency TEXT NOT NULL DEFAULT 'USD',
@@ -374,13 +461,13 @@ export function createTestDb(): TestDatabase {
       is_active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      UNIQUE(role_id, billing_period)
+      UNIQUE(plan_id, billing_period)
     );
 
     CREATE TABLE IF NOT EXISTS user_subscriptions (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL UNIQUE,
-      role_id TEXT NOT NULL,
+      plan_id TEXT NOT NULL,
       status TEXT NOT NULL,
       price_cents INTEGER NOT NULL,
       currency TEXT NOT NULL DEFAULT 'USD',

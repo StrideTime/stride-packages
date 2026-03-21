@@ -11,6 +11,8 @@ export type DraftTask = Partial<Task> &
   Pick<Task, "id" | "title"> & {
     /** Bullet-list nesting depth (0 = top-level, 1+ = subtask) */
     indent: number;
+    /** Quick-add UI only; persisted tasks use `checklistItems` / flat tasks. */
+    parentTaskId?: string | null;
   };
 
 export interface TaskListViewProps {

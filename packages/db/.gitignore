@@ -41,6 +41,10 @@ coverage
 # Drizzle
 drizzle/meta/_journal.json
 
+# Generated schema files (for visualization tools)
+schema.json
+schema.dbml
+
 # Misc
 .changeset/*.md
 !.changeset/README.md

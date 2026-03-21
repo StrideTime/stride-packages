@@ -7,7 +7,6 @@ export { TaskDifficulty } from './TaskDifficulty';
 export { TaskStatus } from './TaskStatus';
 export { ScheduledEventType } from './ScheduledEventType';
 export { Theme } from './Theme';
-export { PlanningMode } from './PlanningMode';
 export { PointsReason } from './PointsReason';
 export { TaskPriority } from './TaskPriority';
 export { BreakType } from './BreakType';

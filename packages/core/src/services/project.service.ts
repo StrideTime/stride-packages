@@ -104,7 +104,7 @@ export class ProjectService {
 
     // 3. Create project via repo with defaults
     const project = await this.projectRepo.create(db, {
-      userId: params.userId,
+      createdByUserId: params.userId,
       workspaceId: params.workspaceId,
       name: params.name.trim(),
       description: params.description?.trim() || null,

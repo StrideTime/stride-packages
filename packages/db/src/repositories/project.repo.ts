@@ -24,7 +24,7 @@ function toDomain(row: ProjectRow): Project {
   return {
     id: row.id,
     workspaceId: row.workspaceId,
-    userId: row.userId,
+    createdByUserId: row.createdByUserId,
     name: row.name,
     description: row.description,
     color: row.color,
@@ -47,7 +47,7 @@ function toDbInsert(
   const timestamp = now();
   return {
     workspaceId: project.workspaceId,
-    userId: project.userId,
+    createdByUserId: project.createdByUserId,
     name: project.name,
     description: project.description,
     color: project.color,
@@ -92,7 +92,7 @@ export class ProjectRepository {
    */
   async findByUserId(db: StrideDatabase, userId: string): Promise<Project[]> {
     const rows = await db.query.projectsTable.findMany({
-      where: and(eq(projectsTable.userId, userId), eq(projectsTable.deleted, false)),
+      where: and(eq(projectsTable.createdByUserId, userId), eq(projectsTable.deleted, false)),
       orderBy: (_projects, { desc }) => [desc(projectsTable.createdAt)],
     });
     return rows.map(toDomain);
@@ -170,7 +170,7 @@ export class ProjectRepository {
     const result = await db
       .select()
       .from(projectsTable)
-      .where(and(eq(projectsTable.userId, userId), eq(projectsTable.deleted, false)));
+      .where(and(eq(projectsTable.createdByUserId, userId), eq(projectsTable.deleted, false)));
     return result.length;
   }
 
@@ -198,7 +198,7 @@ export class ProjectRepository {
       db
         .select()
         .from(projectsTable)
-        .where(and(eq(projectsTable.userId, userId), eq(projectsTable.deleted, false)))
+        .where(and(eq(projectsTable.createdByUserId, userId), eq(projectsTable.deleted, false)))
     );
   }
 }

@@ -35,6 +35,7 @@ function toDomain(row: DailySummaryRow): DailySummary {
     clockInTime: row.clockInTime,
     clockOutTime: row.clockOutTime,
     createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -56,6 +57,7 @@ function toDbInsert(summary: CreateDailySummaryInput): Omit<NewDailySummaryRow, 
     clockInTime: summary.clockInTime,
     clockOutTime: summary.clockOutTime,
     createdAt: now(),
+    updatedAt: now(),
   };
 }
 
@@ -63,7 +65,10 @@ function toDbInsert(summary: CreateDailySummaryInput): Omit<NewDailySummaryRow, 
  * Map domain DailySummary partial update to database update row.
  */
 function toDbUpdate(summary: Partial<DailySummary>): Partial<DailySummaryRow> {
-  return summary;
+  return {
+    ...summary,
+    updatedAt: now(),
+  };
 }
 
 // ============================================================================

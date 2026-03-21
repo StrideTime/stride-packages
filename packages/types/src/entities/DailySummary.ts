@@ -13,4 +13,5 @@ export type DailySummary = {
   clockInTime: string | null;
   clockOutTime: string | null;
   createdAt: string;
+  updatedAt: string;
 };

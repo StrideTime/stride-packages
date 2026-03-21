@@ -6,7 +6,7 @@
 
 import {
   usersTable,
-  rolesTable,
+  plansTable,
   userSubscriptionsTable,
   subscriptionHistoryTable,
   workspacesTable,
@@ -23,19 +23,24 @@ import {
   teamMembersTable,
   projectTeamsTable,
   goalsTable,
+  habitsTable,
+  habitCompletionsTable,
   breaksTable,
   workSessionsTable,
+  focusSettingsTable,
+  focusSessionsTable,
   workspaceUserPreferencesTable,
   workspaceStatusesTable,
+  workspaceUserStatusTable,
 } from './schema';
 
 // User types
 export type UserRow = typeof usersTable.$inferSelect;
 export type NewUserRow = typeof usersTable.$inferInsert;
 
-// Role types
-export type RoleRow = typeof rolesTable.$inferSelect;
-export type NewRoleRow = typeof rolesTable.$inferInsert;
+// Plan types (subscription plans — SQL table `plans`)
+export type PlanRow = typeof plansTable.$inferSelect;
+export type NewPlanRow = typeof plansTable.$inferInsert;
 
 // UserSubscription types
 export type UserSubscriptionRow = typeof userSubscriptionsTable.$inferSelect;
@@ -100,6 +105,14 @@ export type NewProjectTeamRow = typeof projectTeamsTable.$inferInsert;
 export type GoalRow = typeof goalsTable.$inferSelect;
 export type NewGoalRow = typeof goalsTable.$inferInsert;
 
+// Habit types
+export type HabitRow = typeof habitsTable.$inferSelect;
+export type NewHabitRow = typeof habitsTable.$inferInsert;
+
+// HabitCompletion types
+export type HabitCompletionRow = typeof habitCompletionsTable.$inferSelect;
+export type NewHabitCompletionRow = typeof habitCompletionsTable.$inferInsert;
+
 // Break types
 export type BreakRow = typeof breaksTable.$inferSelect;
 export type NewBreakRow = typeof breaksTable.$inferInsert;
@@ -108,6 +121,14 @@ export type NewBreakRow = typeof breaksTable.$inferInsert;
 export type WorkSessionRow = typeof workSessionsTable.$inferSelect;
 export type NewWorkSessionRow = typeof workSessionsTable.$inferInsert;
 
+// FocusSettings types
+export type FocusSettingsRow = typeof focusSettingsTable.$inferSelect;
+export type NewFocusSettingsRow = typeof focusSettingsTable.$inferInsert;
+
+// FocusSession types
+export type FocusSessionRow = typeof focusSessionsTable.$inferSelect;
+export type NewFocusSessionRow = typeof focusSessionsTable.$inferInsert;
+
 // WorkspaceUserPreferences types
 export type WorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTable.$inferSelect;
 export type NewWorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTable.$inferInsert;
@@ -115,3 +136,7 @@ export type NewWorkspaceUserPreferencesRow = typeof workspaceUserPreferencesTabl
 // WorkspaceStatus types
 export type WorkspaceStatusRow = typeof workspaceStatusesTable.$inferSelect;
 export type NewWorkspaceStatusRow = typeof workspaceStatusesTable.$inferInsert;
+
+// WorkspaceUserStatus types
+export type WorkspaceUserStatusRow = typeof workspaceUserStatusTable.$inferSelect;
+export type NewWorkspaceUserStatusRow = typeof workspaceUserStatusTable.$inferInsert;

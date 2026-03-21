@@ -1,47 +1,45 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DndContext } from '@dnd-kit/core';
-import { DayPlannerSidebar } from './DayPlannerSidebar';
-import type { Task, Project } from '@stridetime/types';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { DndContext } from "@dnd-kit/core";
+import { DayPlannerSidebar } from "./DayPlannerSidebar";
+import type { Task, Project } from "@stridetime/types";
 
 const mockProject: Project = {
-  id: 'proj-1',
-  workspaceId: 'ws-1',
-  userId: 'user-1',
-  name: 'Website Redesign',
+  id: "proj-1",
+  workspaceId: "ws-1",
+  createdByUserId: "user-1",
+  name: "Website Redesign",
   description: null,
-  color: '#3b82f6',
-  icon: '🎨',
-  status: 'ACTIVE',
+  color: "#3b82f6",
+  icon: "🎨",
+  status: "ACTIVE",
   completionPercentage: 45,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const mockProject2: Project = {
-  id: 'proj-2',
-  workspaceId: 'ws-1',
-  userId: 'user-1',
-  name: 'Mobile App',
+  id: "proj-2",
+  workspaceId: "ws-1",
+  createdByUserId: "user-1",
+  name: "Mobile App",
   description: null,
-  color: '#10b981',
-  icon: '📱',
-  status: 'ACTIVE',
+  color: "#10b981",
+  icon: "📱",
+  status: "ACTIVE",
   completionPercentage: 30,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
-const base: Omit<Task, 'id' | 'title' | 'estimatedMinutes'> = {
-  userId: 'user-1',
-  projectId: 'proj-1',
-  parentTaskId: null,
+const base: Omit<Task, "id" | "title" | "estimatedMinutes"> = {
+  userId: "user-1",
+  projectId: "proj-1",
   description: null,
-  difficulty: 'MEDIUM',
-  priority: 'MEDIUM',
+  difficulty: "MEDIUM",
   progress: 0,
-  status: 'IN_PROGRESS',
+  status: "IN_PROGRESS",
   assigneeUserId: null,
   teamId: null,
   maxMinutes: null,
@@ -49,35 +47,55 @@ const base: Omit<Task, 'id' | 'title' | 'estimatedMinutes'> = {
   plannedForDate: null,
   dueDate: null,
   taskTypeId: null,
-  displayOrder: 0,
+  checklistItems: null,
   tags: null,
   externalId: null,
   externalSource: null,
   completedAt: null,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
   deleted: false,
 };
 
 const mockPlannedTasks: Task[] = [
-  { ...base, id: 'task-1', title: 'Design homepage mockup', estimatedMinutes: 90, priority: 'HIGH', difficulty: 'HARD' },
-  { ...base, id: 'task-2', title: 'Write unit tests', estimatedMinutes: 60, priority: 'MEDIUM', difficulty: 'MEDIUM' },
-  { ...base, id: 'task-3', title: 'Fix login bug', estimatedMinutes: 30, priority: 'CRITICAL', difficulty: 'EASY' },
+  {
+    ...base,
+    id: "task-1",
+    title: "Design homepage mockup",
+    estimatedMinutes: 90,
+    difficulty: "HARD",
+  },
+  { ...base, id: "task-2", title: "Write unit tests", estimatedMinutes: 60, difficulty: "MEDIUM" },
+  { ...base, id: "task-3", title: "Fix login bug", estimatedMinutes: 30, difficulty: "EASY" },
 ];
 
 const mockRecommendedTasks: Task[] = [
-  { ...base, id: 'task-4', title: 'Review analytics report', estimatedMinutes: 45, projectId: 'proj-2', difficulty: 'EASY' },
-  { ...base, id: 'task-5', title: 'Update documentation', estimatedMinutes: 60, projectId: 'proj-2', difficulty: 'TRIVIAL' },
+  {
+    ...base,
+    id: "task-4",
+    title: "Review analytics report",
+    estimatedMinutes: 45,
+    projectId: "proj-2",
+    difficulty: "EASY",
+  },
+  {
+    ...base,
+    id: "task-5",
+    title: "Update documentation",
+    estimatedMinutes: 60,
+    projectId: "proj-2",
+    difficulty: "TRIVIAL",
+  },
 ];
 
 const meta = {
-  title: 'Components/DailyPlanner/DayPlannerSidebar',
+  title: "Components/DailyPlanner/DayPlannerSidebar",
   component: DayPlannerSidebar,
-  parameters: { layout: 'padded' },
+  parameters: { layout: "padded" },
   decorators: [
-    Story => (
+    (Story) => (
       <DndContext>
-        <div style={{ height: '600px', display: 'flex' }}>
+        <div style={{ height: "600px", display: "flex" }}>
           <Story />
         </div>
       </DndContext>
@@ -103,11 +121,10 @@ export const WithRecommendations: Story = {
 export const WithSearchResults: Story = {
   args: {
     searchResults: mockPlannedTasks.slice(0, 2),
-    onSearchTasks: (q: string) => console.log('search:', q),
+    onSearchTasks: (q: string) => console.log("search:", q),
   },
 };
 
 export const Empty: Story = {
   args: { plannedTasks: [], recommendedTasks: mockRecommendedTasks },
 };
-

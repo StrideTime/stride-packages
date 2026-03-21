@@ -79,17 +79,6 @@ export function TrayUpNextView({
                     className="w-full p-3 rounded-lg border border-border hover:bg-accent/50 text-left transition-colors group"
                   >
                     <div className="flex items-start gap-3">
-                      {t.priority && t.priority !== "NONE" && (
-                        <div
-                          className={`w-1 self-stretch rounded-full shrink-0 ${
-                            t.priority === "CRITICAL"
-                              ? "bg-red-500"
-                              : t.priority === "HIGH"
-                                ? "bg-orange-500"
-                                : "bg-gray-400"
-                          }`}
-                        />
-                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span className="text-sm font-medium line-clamp-1">{t.title}</span>

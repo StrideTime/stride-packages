@@ -45,9 +45,11 @@ function toDomain(row: WorkspaceUserPreferencesRow): WorkspaceUserPreferences {
     breakReminders: row.breakReminders,
     dailySummary: row.dailySummary,
     weeklySchedule: row.weeklySchedule,
+    workingHoursStart: row.workingHoursStart,
+    workingHoursEnd: row.workingHoursEnd,
+    workingDays: row.workingDays,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    deleted: row.deleted,
   };
 }
 
@@ -79,9 +81,11 @@ function toDbInsert(
     breakReminders: prefs.breakReminders,
     dailySummary: prefs.dailySummary,
     weeklySchedule: prefs.weeklySchedule,
+    workingHoursStart: prefs.workingHoursStart,
+    workingHoursEnd: prefs.workingHoursEnd,
+    workingDays: prefs.workingDays,
     createdAt: timestamp,
     updatedAt: timestamp,
-    deleted: false,
   };
 }
 

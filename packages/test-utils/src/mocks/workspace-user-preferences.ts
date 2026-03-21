@@ -35,9 +35,11 @@ export function createMockWorkspaceUserPreferences(
     breakReminders: true,
     dailySummary: true,
     weeklySchedule: null,
+    workingHoursStart: '09:00',
+    workingHoursEnd: '17:00',
+    workingDays: '[1,2,3,4,5]',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    deleted: false,
     ...overrides,
   };
 }

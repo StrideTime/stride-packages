@@ -29,14 +29,14 @@ describe('PlanPriceRepository', () => {
   describe('create', () => {
     it('creates a plan price with generated ID', async () => {
       const { id, ...priceInput } = createMockMonthlyPrice({
-        roleId: testPlan.id,
+        planId: testPlan.id,
         priceCents: 999,
       });
 
       const created = await planPriceRepo.create(db, priceInput);
 
       expect(created.id).toBeTruthy();
-      expect(created.roleId).toBe(testPlan.id);
+      expect(created.planId).toBe(testPlan.id);
       expect(created.billingPeriod).toBe('MONTHLY');
       expect(created.priceCents).toBe(999);
       expect(created.isActive).toBe(true);
@@ -45,8 +45,8 @@ describe('PlanPriceRepository', () => {
 
   describe('findByPlan', () => {
     it('returns all prices for a plan', async () => {
-      const { id: id1, ...monthly } = createMockMonthlyPrice({ roleId: testPlan.id });
-      const { id: id2, ...yearly } = createMockYearlyPrice({ roleId: testPlan.id });
+      const { id: id1, ...monthly } = createMockMonthlyPrice({ planId: testPlan.id });
+      const { id: id2, ...yearly } = createMockYearlyPrice({ planId: testPlan.id });
 
       await planPriceRepo.create(db, monthly);
       await planPriceRepo.create(db, yearly);
@@ -54,14 +54,14 @@ describe('PlanPriceRepository', () => {
       const prices = await planPriceRepo.findByPlan(db, testPlan.id);
 
       expect(prices.length).toBe(2);
-      expect(prices.every(p => p.roleId === testPlan.id)).toBe(true);
+      expect(prices.every(p => p.planId === testPlan.id)).toBe(true);
     });
   });
 
   describe('findByPlanAndPeriod', () => {
     it('returns the price for a specific plan and billing period', async () => {
-      const { id: id1, ...monthly } = createMockMonthlyPrice({ roleId: testPlan.id });
-      const { id: id2, ...yearly } = createMockYearlyPrice({ roleId: testPlan.id });
+      const { id: id1, ...monthly } = createMockMonthlyPrice({ planId: testPlan.id });
+      const { id: id2, ...yearly } = createMockYearlyPrice({ planId: testPlan.id });
 
       await planPriceRepo.create(db, monthly);
       await planPriceRepo.create(db, yearly);
@@ -85,8 +85,8 @@ describe('PlanPriceRepository', () => {
       const testPlan1 = await planRepo.create(db, plan1);
       const testPlan2 = await planRepo.create(db, plan2);
 
-      const { id: id1, ...price1 } = createMockMonthlyPrice({ roleId: testPlan1.id });
-      const { id: id2, ...price2 } = createMockYearlyPrice({ roleId: testPlan2.id });
+      const { id: id1, ...price1 } = createMockMonthlyPrice({ planId: testPlan1.id });
+      const { id: id2, ...price2 } = createMockYearlyPrice({ planId: testPlan2.id });
       await planPriceRepo.create(db, price1);
       const created2 = await planPriceRepo.create(db, price2);
 
@@ -101,7 +101,7 @@ describe('PlanPriceRepository', () => {
 
   describe('update', () => {
     it('updates price fields', async () => {
-      const { id, ...priceInput } = createMockMonthlyPrice({ roleId: testPlan.id });
+      const { id, ...priceInput } = createMockMonthlyPrice({ planId: testPlan.id });
       const created = await planPriceRepo.create(db, priceInput);
 
       await planPriceRepo.update(db, created.id, {
@@ -118,7 +118,7 @@ describe('PlanPriceRepository', () => {
 
   describe('deactivate', () => {
     it('sets isActive to false', async () => {
-      const { id, ...priceInput } = createMockMonthlyPrice({ roleId: testPlan.id });
+      const { id, ...priceInput } = createMockMonthlyPrice({ planId: testPlan.id });
       const created = await planPriceRepo.create(db, priceInput);
 
       await planPriceRepo.deactivate(db, created.id);
